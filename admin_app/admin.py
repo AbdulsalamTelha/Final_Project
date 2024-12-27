@@ -1,9 +1,11 @@
 from django.contrib import admin
+# from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExportMixin
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget
 from import_export.resources import ModelResource
-from .models import File, Department, Course, Group
+from .models import File, Department, Course, Group, User, Admin, Instructor, Student
+from django.contrib.auth.hashers import make_password
 
 # Register your models here.
 
@@ -99,12 +101,118 @@ class GroupAdmin(ExportMixin, admin.ModelAdmin):
         (None, {
             'fields': ('name', 'level', 'department', 'status',),
         }),
-        # ('Department Information', {
-        #     'fields': ('department',),
-        #     'classes': ('collapse',)  # يمكنك استخدام collapse لجعل القسم قابلاً للطي
-        # }),
-        # ('Status', {
-        #     'fields': ('status',),
-        #     'classes': ('wide',)  # يمكنك استخدام wide لتوسيع هذا القسم
-        # }),
     )
+
+
+# User Resource
+class UserResource(ModelResource):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'status', 'last_name')
+
+@admin.register(User)
+class UserAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = UserResource
+    list_display = ('first_name', 'last_name', 'username', 'email', 'phone', 'gender', 'role', 'date_joined', 'is_active', 'is_staff', 'is_superuser')
+    list_filter = ('is_staff', 'is_superuser', 'role', 'gender', 'is_active')    
+    search_fields = ('first_name', 'last_name', 'username', 'email', 'phone')
+    ordering = ('username',)
+    fieldsets = (
+        (None, {
+            'fields': ('username', 'password', 'role'),
+            }),
+        ('Personal Information', {
+            'fields': ('first_name', 'last_name', 'email', 'phone', 'gender', 'birth_date', 'image'),
+            'classes': ('collapse',)
+        }),
+        ('Permissions', {
+            'fields': ('user_permissions', 'is_staff', 'is_active', 'is_superuser',),
+            'classes': ('collapse',)  # يمكنك استخدام collapse لجعل القسم قابلاً للطي
+        }),
+        ('Student Information', {
+            # 'fields': ('level', 'group', 'department'),
+            'fields': ('level',),
+            'classes': ('student-field', 'collapse',),  # إضافة `class` مخصص
+        }),
+        ('Instructor Information', {
+            # 'fields': ('course', 'department'),
+            'fields': (),
+            'classes': ('instructor-field', 'collapse',),  # إضافة `class` مخصص
+        }),
+    )
+
+    class Media:
+        js = ('js/admin/user_role.js',)
+    
+    def get_fieldsets(self, request, obj=None):
+        """
+        تخصيص الحقول التي تظهر في النموذج بناءً على المستخدم الحالي
+        """
+        fieldsets = super().get_fieldsets(request, obj)
+
+        # إضافة class حسب الدور (Student, Instructor, Admin)
+        for fieldset in fieldsets:
+            if 'role' in fieldset[1]['fields']:
+                # إذا كان الدور هو "طالب"، أضف class 'student-field' للحقول الخاصة بالطالب
+                if 'STUDENT' in request.POST.get('role', ''):
+                    fieldset[1]['fields'].append('student-field')
+                # إذا كان الدور هو "مدرس"، أضف class 'instructor-field' للحقول الخاصة بالمدرس
+                if 'INSTRUCTOR' in request.POST.get('role', ''):
+                    fieldset[1]['fields'].append('instructor-field')
+                # إذا كان الدور هو "إداري"، أضف class 'admin-field' للحقول الخاصة بالإداري
+                if 'ADMIN' in request.POST.get('role', ''):
+                    fieldset[1]['fields'].append('admin-field')
+        
+        
+        if not request.user.is_superuser and request.user.role == 'ADMIN':
+            # إذا كان المستخدم الحالي ليس superuser وكان له role=Admin
+            # إخفاء حقل is_superuser من الـ fieldsets
+            for fieldset in fieldsets:
+                if 'is_superuser' in fieldset[1]['fields']:
+                    fieldset[1]['fields'] = tuple(
+                        field for field in fieldset[1]['fields'] if field != 'is_superuser'
+                    )
+        return fieldsets
+    
+    def save_model(self, request, obj, form, change):
+        # تأكد من أن كلمة المرور مشفرة
+        if 'password' in form.changed_data:
+            obj.password = make_password(obj.password)
+
+        # عند إضافة مستخدم جديد، نقوم بإنشاء السجل المناسب في الجدول الابن بناءً على الدور
+        if not change:
+            obj.save()  # حفظ السجل في جدول User أولاً
+
+            # إضافة السجل إلى الجدول المناسب بناءً على الدور
+            if obj.role == 'ADMIN':
+                Admin.objects.create(user=obj)
+            elif obj.role == 'INSTRUCTOR':
+                Instructor.objects.create(user=obj)
+            elif obj.role == 'STUDENT':
+                Student.objects.create(user=obj)  
+        super().save_model(request, obj, form, change)
+
+
+# @admin.register(Admin)
+# class AdminAdmin(UserAdmin):
+#     fieldsets = UserAdmin.fieldsets + (
+#         ('Admin Information', {
+#             'fields': ('admin_specific_field',),
+#         }),
+#     )
+
+# @admin.register(Trainer)
+# class TrainerAdmin(UserAdmin):
+#     fieldsets = UserAdmin.fieldsets + (
+#         ('Trainer Information', {
+#             'fields': ('specialty',),
+#         }),
+#     )
+
+# @admin.register(Student)
+# class StudentAdmin(UserAdmin):
+#     fieldsets = UserAdmin.fieldsets + (
+#         ('Student Information', {
+#             'fields': ('enrollment_date', 'grade',),
+#         }),
+#     )

@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User, AbstractUser  # Use Django's built-in User model
+from django.contrib.auth.models import AbstractUser  # Use Django's built-in User model
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator
@@ -43,7 +44,7 @@ class File(models.Model):
     size = models.CharField(max_length=50, editable=False)  # تحديث الحقل ليكون نصيًا
     type = models.CharField(max_length=20, editable=False)  # Auto-detected
     upload_date = models.DateTimeField(auto_now_add=True,)  # Auto-detected
-    upload_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
+    upload_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
     description = models.TextField(max_length=500)  # Limit description length
     status = models.CharField(
         max_length=10,
@@ -197,32 +198,47 @@ class Group(ParentAll):
         return f"{self.name} - {self.level} - {self.department}"
 
 
-# class CustomUser(AbstractUser):
-#     phone = models.CharField(max_length=15, blank=True, null=True)
-#     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], blank=True, null=True)
-#     status = models.BooleanField(default=True)  # نشط أو غير نشط
-#     birthdate = models.DateField(blank=True, null=True)
-#     # image = models.ImageField(upload_to='user_images/', blank=True, null=True)
+class User(AbstractUser):
+    phone = models.PositiveIntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    role = models.CharField(max_length=10, choices=[('ADMIN', 'Admin'), ('INSTRUCTOR', 'Instructor'), ('STUDENT', 'Student')], null=True, blank=True)
+    image = models.ImageField(upload_to='user_images/%y/%m/%d', null=True, blank=True)
 
-#     def __str__(self):
-#         return f"{self.firstname} {self.lastname} ({self.role})"
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
-# class Admin(User):
-#     admin_specific_field = models.CharField(max_length=100, blank=True, null=True)
-
-#     def __str__(self):
-#         return f"Admin: {super().__str__()}"
-
-
-# class Instructor(User):
-#     instructor_specific_field = models.CharField(max_length=100, blank=True, null=True)
-
-#     def __str__(self):
-#         return f"Instructor: {super().__str__()}"
+class Admin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admin_profile")
+    # يمكنك إضافة خصائص إضافية خاصة بالأدمن هنا
     
-# class Student(User):
-#     student_specific_field = models.CharField(max_length=100, blank=True, null=True)
+    def __str__(self):
+        return f"Admin: {self.user.first_name} {self.user.last_name}"
 
-#     def __str__(self):
-#         return f"Student: {super().__str__()}"
+
+class Instructor(models.Model):
+    # course
+    # department
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructor_profile")
+    # خصائص إضافية خاصة بالمدرب مثل الدورة الدراسية، القسم، إلخ.
+
+    def __str__(self):
+        return f"Instructor: {self.user.first_name} {self.user.last_name}"
+    
+class Student(models.Model):
+    # group
+    # department
+    class Levels(models.IntegerChoices):
+        ONE = 1, _('1')
+        TWO = 2, _('2')
+        THREE = 3, _('3')
+        FOUR = 4, _('4')
+
+    level = models.IntegerField(choices=Levels.choices, default=Levels.FOUR)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
+    # خصائص إضافية خاصة بالطالب مثل المجموعة، القسم، المستوى، إلخ.
+
+    def __str__(self):
+        return f"Student: {self.user.first_name} {self.user.last_name}"
 

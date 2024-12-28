@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const roleField = document.querySelector('#id_role');  // تحديد حقل الدور
-    
-    // تحديد الحقول الخاصة بكل دور
-    const studentFields = document.querySelectorAll('.student-field');
-    const instructorFields = document.querySelectorAll('.instructor-field');
-    const adminFields = document.querySelectorAll('.admin-field');
-    
+
     // الحقول الإضافية الخاصة بالدور ADMIN
     const fieldsToToggle = ['is_staff', 'is_superuser'];
 
@@ -13,20 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function toggleFields() {
         const role = roleField.value;  // الحصول على الدور المحدد
 
-        // إخفاء جميع الحقول أولاً
-        studentFields.forEach(field => field.style.display = 'none');
-        instructorFields.forEach(field => field.style.display = 'none');
-        adminFields.forEach(field => field.style.display = 'none');
-
-        // إظهار الحقول بناءً على الدور المحدد
-        if (role === 'STUDENT') {
-            studentFields.forEach(field => field.style.display = 'block');
-        } else if (role === 'INSTRUCTOR') {
-            instructorFields.forEach(field => field.style.display = 'block');
-        } else if (role === 'ADMIN') {
-            adminFields.forEach(field => field.style.display = 'block');
-        }
-
+        //-----------------------------Admin--------------------
         // إظهار أو إخفاء الحقول الإضافية بناءً على الدور ADMIN
         fieldsToToggle.forEach(field => {
             const fieldContainer = document.querySelector(`.form-row.field-${field}`);
@@ -38,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+
     }
 
     // تنفيذ عند تحميل الصفحة أو عند تغيير الدور

@@ -8,7 +8,6 @@ import os
 
 # Create your models here.
 
-
 class File(models.Model):
     choices = (
         ('PENDING', _('Pending')),
@@ -39,7 +38,6 @@ class File(models.Model):
         ]
   # Validate file extensions
     )
-
     name = models.CharField(max_length=255, editable=False)  # Auto-detected
     size = models.CharField(max_length=50, editable=False)  # تحديث الحقل ليكون نصيًا
     type = models.CharField(max_length=20, editable=False)  # Auto-detected
@@ -144,7 +142,6 @@ class File(models.Model):
         verbose_name = "File"
         verbose_name_plural = "Library Files"
 
-
 class ParentAll(models.Model):
     name = models.CharField(max_length=100, unique=True)  # Common name field for all entities
     status = models.BooleanField(default=True)  # Common status field (active/inactive)
@@ -159,10 +156,8 @@ class ParentAll(models.Model):
     def __str__(self):
         return self.name  # String representation of the object
 
-
 class Department(ParentAll):
     pass
-
 
 class Course(ParentAll):
     class Levels(models.IntegerChoices):
@@ -178,7 +173,6 @@ class Course(ParentAll):
         parent_str = super().__str__()
         # return f"{self.name} ({self.get_level_display()})" ## OR:
         return f"{parent_str} ({self.get_level_display()})"
-
 
 class Group(ParentAll):
     class Levels(models.IntegerChoices):
@@ -197,7 +191,6 @@ class Group(ParentAll):
     def __str__(self):
         return f"{self.name} - {self.level} - {self.department}"
 
-
 class User(AbstractUser):
     phone = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
@@ -209,26 +202,21 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admin_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admins")
     # يمكنك إضافة خصائص إضافية خاصة بالأدمن هنا
     
     def __str__(self):
         return f"Admin: {self.user.first_name} {self.user.last_name}"
 
-
 class Instructor(models.Model):
-    # course
-    # department
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructor_profile")
-    # خصائص إضافية خاصة بالمدرب مثل الدورة الدراسية، القسم، إلخ.
+    department = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
+    course = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True})
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructors")
 
     def __str__(self):
         return f"Instructor: {self.user.first_name} {self.user.last_name}"
-    
+
 class Student(models.Model):
-    # group
-    # department
     class Levels(models.IntegerChoices):
         ONE = 1, _('1')
         TWO = 2, _('2')
@@ -236,9 +224,20 @@ class Student(models.Model):
         FOUR = 4, _('4')
 
     level = models.IntegerField(choices=Levels.choices, default=Levels.FOUR)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
-    # خصائص إضافية خاصة بالطالب مثل المجموعة، القسم، المستوى، إلخ.
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True, blank=True, related_name='students')
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True}, blank=True, null=True, )
+    course = models.ManyToManyField('Course', through='StudentCourse', related_name="students", blank=True)    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students")
 
     def __str__(self):
-        return f"Student: {self.user.first_name} {self.user.last_name}"
+        return f"Student: {self.user.first_name} {self.user.last_name} (L:{self.level}) (D: {self.department})"
 
+class StudentCourse(models.Model):
+    student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses')
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='course_students')
+    status = models.BooleanField(default=True)
+    semester = models.CharField(max_length=50, choices=[('1', _('First')), ('2', _('Second'))], default='1')
+    year = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.student.user.first_name} - {self.course.name}"

@@ -59,6 +59,7 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
         return ''.join([word[0].upper() for word in obj.name.split()])
     name_initials.short_description = 'Abb.'  # تغيير عنوان العمود في الجدول
 
+
 # Department Resource
 class DepartmentResource(ModelResource):
     class Meta:
@@ -89,7 +90,6 @@ class GroupResource(ModelResource):
     class Meta:
         model = Group
         fields = ('id', 'name', 'status', 'level')
-
 
 @admin.register(Group)
 class GroupAdmin(ExportMixin, admin.ModelAdmin):
@@ -129,41 +129,14 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
             'fields': ('user_permissions', 'is_staff', 'is_active', 'is_superuser',),
             'classes': ('collapse',)  # يمكنك استخدام collapse لجعل القسم قابلاً للطي
         }),
-        ('Student Information', {
-            # 'fields': ('level', 'group', 'department'),
-            'fields': ('level',),
-            'classes': ('student-field', 'collapse',),  # إضافة `class` مخصص
-        }),
-        ('Instructor Information', {
-            # 'fields': ('course', 'department'),
-            'fields': (),
-            'classes': ('instructor-field', 'collapse',),  # إضافة `class` مخصص
-        }),
     )
 
     class Media:
         js = ('js/admin/user_role.js',)
-    
+        
     def get_fieldsets(self, request, obj=None):
-        """
-        تخصيص الحقول التي تظهر في النموذج بناءً على المستخدم الحالي
-        """
         fieldsets = super().get_fieldsets(request, obj)
-
-        # إضافة class حسب الدور (Student, Instructor, Admin)
-        for fieldset in fieldsets:
-            if 'role' in fieldset[1]['fields']:
-                # إذا كان الدور هو "طالب"، أضف class 'student-field' للحقول الخاصة بالطالب
-                if 'STUDENT' in request.POST.get('role', ''):
-                    fieldset[1]['fields'].append('student-field')
-                # إذا كان الدور هو "مدرس"، أضف class 'instructor-field' للحقول الخاصة بالمدرس
-                if 'INSTRUCTOR' in request.POST.get('role', ''):
-                    fieldset[1]['fields'].append('instructor-field')
-                # إذا كان الدور هو "إداري"، أضف class 'admin-field' للحقول الخاصة بالإداري
-                if 'ADMIN' in request.POST.get('role', ''):
-                    fieldset[1]['fields'].append('admin-field')
-        
-        
+        # ------------------------Admin ---------------------
         if not request.user.is_superuser and request.user.role == 'ADMIN':
             # إذا كان المستخدم الحالي ليس superuser وكان له role=Admin
             # إخفاء حقل is_superuser من الـ fieldsets
@@ -182,7 +155,6 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
         # عند إضافة مستخدم جديد، نقوم بإنشاء السجل المناسب في الجدول الابن بناءً على الدور
         if not change:
             obj.save()  # حفظ السجل في جدول User أولاً
-
             # إضافة السجل إلى الجدول المناسب بناءً على الدور
             if obj.role == 'ADMIN':
                 Admin.objects.create(user=obj)
@@ -191,28 +163,3 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
             elif obj.role == 'STUDENT':
                 Student.objects.create(user=obj)  
         super().save_model(request, obj, form, change)
-
-
-# @admin.register(Admin)
-# class AdminAdmin(UserAdmin):
-#     fieldsets = UserAdmin.fieldsets + (
-#         ('Admin Information', {
-#             'fields': ('admin_specific_field',),
-#         }),
-#     )
-
-# @admin.register(Trainer)
-# class TrainerAdmin(UserAdmin):
-#     fieldsets = UserAdmin.fieldsets + (
-#         ('Trainer Information', {
-#             'fields': ('specialty',),
-#         }),
-#     )
-
-# @admin.register(Student)
-# class StudentAdmin(UserAdmin):
-#     fieldsets = UserAdmin.fieldsets + (
-#         ('Student Information', {
-#             'fields': ('enrollment_date', 'grade',),
-#         }),
-#     )

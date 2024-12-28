@@ -1,5 +1,37 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const roleField = document.querySelector('#id_role');  // تحديد حقل الدور
+document.addEventListener('DOMContentLoaded', function() {
+    const roleField = document.querySelector('select[name="role"]'); // حقل الدور
+
+    // استخدام أسماء الكلاسات الصحيحة
+    const studentInline = document.querySelector('#students-group'); // حقل الطالب
+    const instructorInline = document.querySelector('#instructors-group'); // حقل المدرس
+    const adminInline = document.querySelector('#admins-group'); // حقل المسؤول
+
+    function toggleInlines() {
+        const selectedRole = roleField.value;
+
+        // إخفاء جميع inlines
+        if (studentInline) studentInline.style.display = 'none';
+        if (instructorInline) instructorInline.style.display = 'none';
+        if (adminInline) adminInline.style.display = 'none';
+
+        // إظهار inline المناسب
+        if (selectedRole === 'STUDENT') {
+            if (studentInline) studentInline.style.display = 'block';
+        } else if (selectedRole === 'INSTRUCTOR') {
+            if (instructorInline) instructorInline.style.display = 'block';
+        } else if (selectedRole === 'ADMIN') {
+            if (adminInline) adminInline.style.display = 'block';
+        }
+    }
+
+    // استدعاء الدالة عند تحميل الصفحة
+    toggleInlines();
+    // استدعاء الدالة عند تغيير الدور
+    if (roleField) {
+        roleField.addEventListener('change', toggleInlines);
+    }
+    
+//////////////////////////////////
 
     // الحقول الإضافية الخاصة بالدور ADMIN
     const fieldsToToggle = ['is_staff', 'is_superuser'];
@@ -26,4 +58,5 @@ document.addEventListener('DOMContentLoaded', function () {
     // تنفيذ عند تحميل الصفحة أو عند تغيير الدور
     roleField.addEventListener('change', toggleFields);
     toggleFields();  // تأكد من تنفيذ عند تحميل الصفحة
+
 });

@@ -192,6 +192,11 @@ class Group(ParentAll):
         return f"{self.name} - {self.level} - {self.department}"
 
 class User(AbstractUser):
+    class Levels(models.TextChoices):
+        ADMIN = 'ADMIN', _('Admin')
+        INSTRUCTOR = 'INSTRUCTOR', _('Instructor')
+        STUDENT = 'STUDENT', _('Student')
+
     phone = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)

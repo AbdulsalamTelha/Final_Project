@@ -103,6 +103,33 @@ class GroupAdmin(ExportMixin, admin.ModelAdmin):
         }),
     )
 
+# نموذج إداري للطالب
+class StudentInline(admin.StackedInline):
+    model = Student
+    can_delete = False
+    extra = 1  # عدد النماذج الإضافية التي تظهر
+    verbose_name_plural = 'Student Details'
+    fk_name = 'user'  # الحقل الذي يربط Student بـ User
+    classes = ('collapse',)  # تقليص النموذج
+
+# نموذج إداري للمدرس
+class InstructorInline(admin.StackedInline):
+    model = Instructor
+    can_delete = False
+    extra = 1
+    verbose_name_plural = 'Instructor Details'
+    fk_name = 'user'
+    classes = ('collapse',)
+
+# نموذج إداري للمسؤول
+class AdminInline(admin.StackedInline):
+    model = Admin
+    can_delete = False
+    extra = 1
+    verbose_name_plural = 'Admin Details'
+    fk_name = 'user'
+    classes = ('collapse',)
+
 
 # User Resource
 class UserResource(ModelResource):
@@ -118,22 +145,21 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'username', 'email', 'phone')
     ordering = ('username',)
     fieldsets = (
-        (None, {
-            'fields': ('username', 'password', 'role'),
-            }),
+        (None, {'fields': ('username', 'password', 'role')}),
         ('Personal Information', {
             'fields': ('first_name', 'last_name', 'email', 'phone', 'gender', 'birth_date', 'image'),
             'classes': ('collapse',)
         }),
         ('Permissions', {
-            'fields': ('user_permissions', 'is_staff', 'is_active', 'is_superuser',),
-            'classes': ('collapse',)  # يمكنك استخدام collapse لجعل القسم قابلاً للطي
+            'fields': ('user_permissions', 'is_staff', 'is_active', 'is_superuser'),
+            'classes': ('collapse',)
         }),
     )
+    inlines = [StudentInline, InstructorInline, AdminInline]   # الحقول المضمنة ستتم إضافتها ديناميكيًا
 
     class Media:
         js = ('js/admin/user_role.js',)
-        
+    
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
         # ------------------------Admin ---------------------
@@ -163,3 +189,17 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
             elif obj.role == 'STUDENT':
                 Student.objects.create(user=obj)  
         super().save_model(request, obj, form, change)
+
+        # if obj.role == 'STUDENT':
+        #     Student.objects.update_or_create(user=obj, defaults={
+        #         'level': form.cleaned_data.get('level'),  # أو أي قيمة افتراضية
+        #         'group': form.cleaned_data.get('group'),
+        #         'department': form.cleaned_data.get('department'),
+        #     })
+        # elif obj.role == 'INSTRUCTOR':
+        #     Instructor.objects.update_or_create(user=obj, defaults={
+        #         'department': form.cleaned_data.get('department'),
+        #         'course': form.cleaned_data.get('course'),
+        #     })
+        # elif obj.role == 'ADMIN':
+        #     Admin.objects.update_or_create(user=obj)

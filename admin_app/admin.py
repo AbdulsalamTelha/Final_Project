@@ -4,7 +4,9 @@ from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExpor
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget
 from import_export.resources import ModelResource
-from .models import File, Department, Course, Group, User, Admin, Instructor, Student
+
+from admin_app.forms import CombinedStudentInline
+from .models import File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
 from django.contrib.auth.hashers import make_password
 
 # Register your models here.
@@ -103,14 +105,27 @@ class GroupAdmin(ExportMixin, admin.ModelAdmin):
         }),
     )
 
+# نموذج إداري للنموذج الوسيط StudentCourse
+class StudentCourseInline(admin.TabularInline):
+    model = StudentCourse
+    extra = 1  # عدد الحقول الإضافية
+    verbose_name_plural = 'Student Courses'
+    # fk_name = 'student'  # تحديد العلاقة عبر الطالب
+    # classes = ('collapse',)  # تقليص النموذج الفرعي إذا لزم الأمر
+    fields = ['course', 'status', 'semester', 'year']
+    
+
 # نموذج إداري للطالب
 class StudentInline(admin.StackedInline):
     model = Student
     can_delete = False
     extra = 1  # عدد النماذج الإضافية التي تظهر
     verbose_name_plural = 'Student Details'
+    # fields = ['level', 'group', 'department']  # الحقول التي ستظهر
     fk_name = 'user'  # الحقل الذي يربط Student بـ User
     classes = ('collapse',)  # تقليص النموذج
+    # filter_horizontal = ('course',) 
+    inlines = [StudentCourseInline]
 
 # نموذج إداري للمدرس
 class InstructorInline(admin.StackedInline):
@@ -129,7 +144,6 @@ class AdminInline(admin.StackedInline):
     verbose_name_plural = 'Admin Details'
     fk_name = 'user'
     classes = ('collapse',)
-
 
 # User Resource
 class UserResource(ModelResource):
@@ -176,30 +190,6 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         # تأكد من أن كلمة المرور مشفرة
         if 'password' in form.changed_data:
-            obj.password = make_password(obj.password)
-
-        # عند إضافة مستخدم جديد، نقوم بإنشاء السجل المناسب في الجدول الابن بناءً على الدور
-        if not change:
-            obj.save()  # حفظ السجل في جدول User أولاً
-            # إضافة السجل إلى الجدول المناسب بناءً على الدور
-            if obj.role == 'ADMIN':
-                Admin.objects.create(user=obj)
-            elif obj.role == 'INSTRUCTOR':
-                Instructor.objects.create(user=obj)
-            elif obj.role == 'STUDENT':
-                Student.objects.create(user=obj)  
+            obj.password = make_password(obj.password)  
         super().save_model(request, obj, form, change)
 
-        # if obj.role == 'STUDENT':
-        #     Student.objects.update_or_create(user=obj, defaults={
-        #         'level': form.cleaned_data.get('level'),  # أو أي قيمة افتراضية
-        #         'group': form.cleaned_data.get('group'),
-        #         'department': form.cleaned_data.get('department'),
-        #     })
-        # elif obj.role == 'INSTRUCTOR':
-        #     Instructor.objects.update_or_create(user=obj, defaults={
-        #         'department': form.cleaned_data.get('department'),
-        #         'course': form.cleaned_data.get('course'),
-        #     })
-        # elif obj.role == 'ADMIN':
-        #     Admin.objects.update_or_create(user=obj)

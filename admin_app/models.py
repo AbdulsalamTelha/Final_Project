@@ -192,7 +192,7 @@ class Group(ParentAll):
         return f"{self.name} - {self.level} - {self.department}"
 
 class User(AbstractUser):
-    class Levels(models.TextChoices):
+    class Roles(models.TextChoices):
         ADMIN = 'ADMIN', _('Admin')
         INSTRUCTOR = 'INSTRUCTOR', _('Instructor')
         STUDENT = 'STUDENT', _('Student')
@@ -200,7 +200,7 @@ class User(AbstractUser):
     phone = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    role = models.CharField(max_length=10, choices=[('ADMIN', 'Admin'), ('INSTRUCTOR', 'Instructor'), ('STUDENT', 'Student')], null=True, blank=True)
+    role = models.CharField(max_length=10, choices=Roles.choices, null=True, blank=True)
     image = models.ImageField(upload_to='user_images/%y/%m/%d', null=True, blank=True)
 
     def __str__(self):
@@ -231,7 +231,8 @@ class Student(models.Model):
     level = models.IntegerField(choices=Levels.choices, default=Levels.FOUR)
     group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True, blank=True, related_name='students')
     department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True}, blank=True, null=True, )
-    course = models.ManyToManyField('Course', through='StudentCourse', related_name="students", blank=True)    
+    course = models.ManyToManyField('Course', through='StudentCourse', related_name="students", blank=True, )    
+    # course = models.ManyToManyField('Course', related_name="students", blank=True, )    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students")
 
     def __str__(self):
@@ -239,10 +240,14 @@ class Student(models.Model):
 
 class StudentCourse(models.Model):
     student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses')
-    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='course_students')
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='student_courses')
     status = models.BooleanField(default=True)
     semester = models.CharField(max_length=50, choices=[('1', _('First')), ('2', _('Second'))], default='1')
     year = models.PositiveIntegerField()
 
+    @property
+    def user(self):
+        return self.student.user  # الوصول إلى المستخدم عبر الطالب
+    
     def __str__(self):
         return f"{self.student.user.first_name} - {self.course.name}"

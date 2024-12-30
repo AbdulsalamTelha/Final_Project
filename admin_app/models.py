@@ -9,10 +9,6 @@ import re
 
 # Create your models here.
 
-def validate_description(value):
-    # تعبير منتظم للتحقق من المدخلات
-    if not re.match(r'^[\w\s()\'".]+$', value):
-        raise ValidationError(_('Letters, numbers, ), (, \', \", and .  '))
 
 class File(models.Model):
     choices = (
@@ -70,7 +66,7 @@ class File(models.Model):
             raise ValidationError(_("File size must be less than 80MB."))
                 # تحقق من وصف الملف
         if self.description:
-            valid_pattern = re.compile(r'^[a-zA-Z0-9()\s]*$')
+            valid_pattern = re.compile(r'^[a-zA-Z0-9(),."\'\s]*$')
             if not valid_pattern.match(self.description):
                 raise ValidationError({
                     'description': _("Description can only contain letters, numbers, and parentheses.")
@@ -170,7 +166,14 @@ class ParentAll(models.Model):
         return self.name  # String representation of the object
 
 class Department(ParentAll):
-    pass
+    def clean(self):
+        super().clean()
+        if self.name:
+            valid_pattern = re.compile(r'^[a-zA-Z0-9\s]*$')
+            if not valid_pattern.match(self.name):
+                raise ValidationError({
+                    'name': _("Name can only contain letters and numbers.")
+                })
 
 class Course(ParentAll):
     class Levels(models.IntegerChoices):
@@ -182,6 +185,14 @@ class Course(ParentAll):
     level = models.IntegerField(choices=Levels.choices)
     departments = models.ManyToManyField('Department', related_name='courses', limit_choices_to={'status': True})
 
+    def clean(self):
+        super().clean()
+        if self.name:
+            valid_pattern = re.compile(r'^[a-zA-Z0-9\s]*$')
+            if not valid_pattern.match(self.name):
+                raise ValidationError({
+                    'name': _("Name can only contain letters and numbers.")
+                })
     def __str__(self):
         return f"{self.name} ({self.get_level_display()})"
 

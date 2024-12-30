@@ -1,6 +1,8 @@
 from django.contrib import admin
 from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExportMixin
 from import_export.resources import ModelResource
+from import_export import resources, fields
+from import_export.widgets import ManyToManyWidget
 from .models import File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
 from django.contrib.auth.hashers import make_password
 from django.utils.html import format_html
@@ -17,7 +19,7 @@ class FileAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['description'].widget.attrs.update({'class': 'validate-field'})  # إضافة فئة CSS
+        self.fields['description'].widget.attrs.update({'class': 'validate-letters-numbers'})  # إضافة فئة CSS
 
 
 class FileResource(ModelResource):
@@ -34,8 +36,8 @@ class FileAdmin(ExportMixin, admin.ModelAdmin):
     search_fields = ('name', 'upload_by__username', 'type', 'category')
     readonly_fields = ('name', 'category', 'size', 'type', 'upload_by', 'upload_date')
 
-    # class Media:
-    #     js = ('js/validation.js',)
+    class Media:
+        js = ('js/validation.js',)
 
     def display_upload_by(self, obj):
         return obj.upload_by.username if obj.upload_by else "N/A"
@@ -58,9 +60,17 @@ class FileAdmin(ExportMixin, admin.ModelAdmin):
         return ()
 
 class CourseResource(ModelResource):
+    departments = fields.Field(
+        attribute='departments',
+        widget=ManyToManyWidget(Department, field='name'),  # استخدام الاسم لتحديد القسم
+        column_name='departments'
+    )
+
     class Meta:
         model = Course
-        fields = ('id', 'name', 'level', 'status')
+        fields = ('id', 'name', 'level', 'status', 'departments')
+
+        
 
 @admin.register(Course)
 class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -78,6 +88,16 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     def name_initials(self, obj):  # أخذ أول حرف من كل كلمة في اسم القسم
         return ''.join([word[0].upper() for word in obj.name.split()])
     name_initials.short_description = 'Abb.'  # تغيير عنوان العمود في الجدول
+
+
+class DepartmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'validate-field'})
 
 class DepartmentResource(ModelResource):
     class Meta:

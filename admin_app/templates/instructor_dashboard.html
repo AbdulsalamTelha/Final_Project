@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instructor Dashboard</title>
+</head>
+<body>
+    <h1>Instructor Dashboard</h1>
+    {% for file in files %}
+        <p>{{ file.name }} - {{ file.description }}</p>
+    {% empty %}
+        <p>No files found.</p>
+    {% endfor %}
+</body>
+</html>

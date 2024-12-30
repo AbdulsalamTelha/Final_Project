@@ -126,8 +126,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'sss/static')]
 
 # Media
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'sss/media')
+MEDIA_URL = '/media/' # هو الرابط الذي سيُستخدم للوصول إلى الملفات عبر المتصفح.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'sss/media') # هو المسار الفعلي الذي سيتم تخزين الملفات فيه على الخادم.
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

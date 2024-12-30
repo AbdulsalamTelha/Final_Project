@@ -3,49 +3,21 @@ from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExpor
 from import_export.resources import ModelResource
 from .models import File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
 from django.contrib.auth.hashers import make_password
-from django.utils.html import format_html
-from django import forms
+
 # Register your models here.
-
-class FileAdminForm(forms.ModelForm):
-    class Meta:
-        model = File
-        fields = '__all__'
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3, 'cols': 40}),  # تعديل الحجم
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['description'].widget.attrs.update({'class': 'validate-field'})  # إضافة فئة CSS
-
 
 class FileResource(ModelResource):
     class Meta:
         model = File
-        fields = ('id', 'name', 'category', 'type', 'size', 'upload_by', 'upload_by__username', 'status', 'upload_date', 'course__name', 'file')
+        fields = ('id', 'name', 'category', 'type', 'size', 'upload_by__username', 'status', 'upload_date')
 
 @admin.register(File)
 class FileAdmin(ExportMixin, admin.ModelAdmin):
-    form = FileAdminForm
     resource_class = FileResource
-    list_display = ('name', 'course__name' ,'category', 'type', 'size', 'display_upload_by', 'status', 'upload_date', 'view_file')
+    list_display = ('name', 'course__name' ,'category', 'type', 'size', 'upload_by', 'status', 'upload_date')
     list_filter = ('status', 'type', 'upload_date', 'category')
     search_fields = ('name', 'upload_by__username', 'type', 'category')
     readonly_fields = ('name', 'category', 'size', 'type', 'upload_by', 'upload_date')
-
-    # class Media:
-    #     js = ('js/validation.js',)
-
-    def display_upload_by(self, obj):
-        return obj.upload_by.username if obj.upload_by else "N/A"
-    display_upload_by.short_description = "Upload_By"
-    
-    def view_file(self, obj):    # دالة لاستعراض الملف
-        if obj.file and obj.file.url:  # التحقق من وجود الملف والرابط
-            return format_html('<a href="{}" target="_blank">View File</a>', obj.file.url)
-        return "No file"
-    view_file.short_description = "View File"
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
@@ -69,13 +41,14 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     list_filter = ('level', 'status')
     search_fields = ('name',)
     list_display_links = ('id', 'name', 'name_initials')
-    ordering = ('id',)
 
-    def list_departments(self, obj): # إرجاع أسماء الأقسام المرتبطة بالكورس
+    def list_departments(self, obj):
+        # إرجاع أسماء الأقسام المرتبطة بالكورس
         return ", ".join(department.name for department in obj.departments.all())
     list_departments.short_description = 'Departments'  # تغيير عنوان العمود في الجدول
 
-    def name_initials(self, obj):  # أخذ أول حرف من كل كلمة في اسم القسم
+    def name_initials(self, obj):
+        # أخذ أول حرف من كل كلمة في اسم القسم
         return ''.join([word[0].upper() for word in obj.name.split()])
     name_initials.short_description = 'Abb.'  # تغيير عنوان العمود في الجدول
 
@@ -89,15 +62,16 @@ class DepartmentAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = DepartmentResource
     list_display = ('id', 'name', 'name_initials', 'list_courses', 'status') # إضافة دالة لعرض الكورسات
     list_filter = ('status',)
-    search_fields = ('name', 'id')
+    search_fields = ('name',)
     list_display_links = ('id', 'name', 'name_initials')
-    ordering = ('id',)
 
-    def list_courses(self, obj): # إرجاع أسماء الكورسات المرتبطة بالقسم
+    def list_courses(self, obj):
+        # إرجاع أسماء الكورسات المرتبطة بالقسم
         return ", ".join(course.name for course in obj.courses.all())
     list_courses.short_description = 'Courses'  # تغيير عنوان العمود في الجدول
 
-    def name_initials(self, obj): # أخذ أول حرف من كل كلمة في اسم القسم
+    def name_initials(self, obj):
+        # أخذ أول حرف من كل كلمة في اسم القسم
         return ''.join([word[0].upper() for word in obj.name.split()])
     name_initials.short_description = 'Abb.'  # تغيير عنوان العمود في الجدول
 

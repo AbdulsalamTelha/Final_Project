@@ -3,10 +3,16 @@ from django.contrib.auth.models import AbstractUser  # Use Django's built-in Use
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
 import os
+import re
 
 # Create your models here.
+
+def validate_description(value):
+    # تعبير منتظم للتحقق من المدخلات
+    if not re.match(r'^[\w\s()\'".]+$', value):
+        raise ValidationError(_('Letters, numbers, ), (, \', \", and .  '))
 
 class File(models.Model):
     choices = (
@@ -62,6 +68,13 @@ class File(models.Model):
         # Validate file size (max 80MB)
         if self.file and self.file.size > 80 * 1024 * 1024:
             raise ValidationError(_("File size must be less than 80MB."))
+                # تحقق من وصف الملف
+        if self.description:
+            valid_pattern = re.compile(r'^[a-zA-Z0-9()\s]*$')
+            if not valid_pattern.match(self.description):
+                raise ValidationError({
+                    'description': _("Description can only contain letters, numbers, and parentheses.")
+                })
 
     def save(self, *args, **kwargs):
         # Auto-detect file name, size, and type on save
@@ -170,9 +183,7 @@ class Course(ParentAll):
     departments = models.ManyToManyField('Department', related_name='courses', limit_choices_to={'status': True})
 
     def __str__(self):
-        parent_str = super().__str__()
-        # return f"{self.name} ({self.get_level_display()})" ## OR:
-        return f"{parent_str} ({self.get_level_display()})"
+        return f"{self.name} ({self.get_level_display()})"
 
 class Group(ParentAll):
     class Levels(models.IntegerChoices):
@@ -231,23 +242,18 @@ class Student(models.Model):
     level = models.IntegerField(choices=Levels.choices, default=Levels.FOUR)
     group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True, blank=True, related_name='students')
     department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True}, blank=True, null=True, )
-    course = models.ManyToManyField('Course', through='StudentCourse', related_name="students", blank=True, )    
-    # course = models.ManyToManyField('Course', related_name="students", blank=True, )    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students")
+    course = models.ManyToManyField('Course', through='StudentCourse', limit_choices_to={'status': True}, related_name="students", blank=True, )    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True})
 
     def __str__(self):
         return f"Student: {self.user.first_name} {self.user.last_name} (L:{self.level}) (D: {self.department})"
 
 class StudentCourse(models.Model):
     student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses')
-    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='student_courses')
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, limit_choices_to={'status': True}, related_name='student_courses')
     status = models.BooleanField(default=True)
     semester = models.CharField(max_length=50, choices=[('1', _('First')), ('2', _('Second'))], default='1')
     year = models.PositiveIntegerField()
-
-    @property
-    def user(self):
-        return self.student.user  # الوصول إلى المستخدم عبر الطالب
     
     def __str__(self):
         return f"{self.student.user.first_name} - {self.course.name}"

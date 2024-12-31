@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>edit_profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+        <h1 class="text-xl font-bold">Edit Profile</h1>
+        <nav class="flex items-center space-x-4">
+            <a href="{% url 'library' %}" class="text-white hover:text-gray-200">Library</a>
+        </nav>
+    </header>
+
+    <!-- محتوى تعديل البيانات الشخصية -->
+    <div class="max-w-3xl mx-auto mt-10 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6"> Edit Personal Information </h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700">Username :</label>
+                <input type="text" name="username" value="{{ user.username }}" class="w-full border rounded p-2">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Personal Image :</label>
+                <input type="file" name="image" class="w-full border rounded p-2">
+            </div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Save
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

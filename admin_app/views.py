@@ -6,6 +6,9 @@ from .models import File, User, Instructor, Student,Course
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
 # Login view
 def login_view(request):
     if request.method == 'POST':
@@ -109,44 +112,32 @@ def student_library_view(request):
 
     return render(request, 'student_library_view.html', {'student': student, 'courses': courses})
 
-# # File upload view (instructors only)
-# @login_required
-# def upload_file_view(request):
-#     if request.user.role != User.Roles.INSTRUCTOR:
-#         return redirect('access_denied')
+@login_required
+def profile_view(request):
+    return render(request,'profile.html')
 
-#     if request.method == 'POST':
-#         file = request.FILES.get('file')
-#         description = request.POST.get('description')
-#         course_id = request.POST.get('course')
 
-#         instructor = get_object_or_404(Instructor, user=request.user)
-#         course = get_object_or_404(instructor.course, id=course_id)
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # الحفاظ على تسجيل الدخول بعد تغيير كلمة المرور
+            return redirect('profile')
+        else:
+            messages.error(request, "هناك خطأ في تغيير كلمة المرور. الرجاء المحاولة مرة أخرى.")
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, 'change_password.html', {'form': form})
 
-#         uploaded_file = File(
-#             file=file,
-#             description=description,
-#             upload_by=request.user,
-#             course=course
-#         )
-#         uploaded_file.save()
-
-#         messages.success(request, "File uploaded successfully.")
-#         return redirect('instructor_dashboard')
-
-#     instructor = get_object_or_404(Instructor, user=request.user)
-#     courses = instructor.course.all()
-#     return render(request, 'upload_file.html', {'courses': courses})
-
-# File approval view (admins only)
-# @login_required
-# def approve_file_view(request, file_id):
-#     if request.user.role != User.Roles.ADMIN:
-#         return redirect('access_denied')
-
-#     file = get_object_or_404(File, id=file_id)
-#     file.status = 'APPROVED'
-#     file.save()
-
-#     messages.success(request, "File approved successfully.")
-#     return redirect('admin_dashboard')
+@login_required
+def edit_profile_view(request):
+    if request.method == 'POST':
+        user = request.user
+        user.username = request.POST.get('username', user.username)
+        if 'image' in request.FILES:
+            user.image = request.FILES['image']
+        user.save()
+        return redirect('profile')
+    return render(request, 'edit_profile.html')

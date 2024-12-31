@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Website{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- شريط التنقل -->
+    <header class="bg-blue-700 text-white shadow">
+        <div class="container mx-auto flex justify-between items-center p-4">
+            <h1 class="text-xl font-semibold">Django user</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm">Welcome, <strong>{{ user.username }}</strong></span>
+                <div class="relative">
+                    <img 
+                        src="{% if user.image %}{{ user.image.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
+                        alt="Profile Picture" 
+                        class="w-10 h-10 rounded-full cursor-pointer" 
+                        id="profileMenuButton"
+                    >
+                    <!-- القائمة المنسدلة -->
+                    <ul id="profileMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded w-48">
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'profile' %}">View Profile</a></li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'change_password' %}">Change Password</a></li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'logout' %}">Log Out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="container mx-auto mt-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        // إظهار/إخفاء القائمة المنسدلة
+        document.getElementById('profileMenuButton').addEventListener('click', function() {
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

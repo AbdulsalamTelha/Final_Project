@@ -1,3 +1,8 @@
+{% extends "navbar.html" %}
+
+
+{% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +14,7 @@
 </head>
 <body class="bg-gray-100">
     {% comment %} <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Library</h1> {% endcomment %}
-    <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+    {% comment %} <header class="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
     <h1 class="text-xl font-bold">Library</h1>
     <nav class="flex items-center space-x-4">
             <!-- أيقونة البروفايل -->
@@ -18,7 +23,7 @@
                 <span class="sr-only">الملف الشخصي</span>
             </a>
         </nav>
-    </header>
+    </header>  {% endcomment %}
     <div class="container mx-auto p-4">
         <!-- Filters and Search -->
         <form method="get" class="mb-8">
@@ -113,3 +118,6 @@
     </div>
 </body>
 </html>
+
+{% endblock content %}
+

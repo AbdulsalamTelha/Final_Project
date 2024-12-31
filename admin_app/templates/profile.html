@@ -50,6 +50,21 @@
                     <p class="text-gray-600"> Last_name:</p>
                     <p class="text-gray-800 font-semibold">{{ user.last_name }}</p>
                 </div>
+
+{% comment %}                 
+                {% if user.role == 'STUDENT' %}
+                <div>
+                    <p class="text-gray-600"> Department:</p>
+                    <p class="text-gray-800 font-semibold">{{ user.Student.department.name }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600"> Role:</p>
+                    <p class="text-gray-800 font-semibold">{{ user.role }}</p>
+                </div>
+                    
+                {% endif %} {% endcomment %}
+                    
+
             </div>
         </div>
 

@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser  # Use Django's built-in Use
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
+from django.core.validators import FileExtensionValidator, RegexValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
 import os
 import re
 
@@ -42,7 +42,7 @@ class File(models.Model):
     )
     name = models.CharField(max_length=255, editable=False)  # Auto-detected
     size = models.CharField(max_length=50, editable=False)  # تحديث الحقل ليكون نصيًا
-    type = models.CharField(max_length=20, editable=False)  # Auto-detected
+    type = models.CharField(max_length=10, editable=False)  # Auto-detected
     upload_date = models.DateTimeField(auto_now_add=True,)  # Auto-detected
     upload_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
     description = models.TextField(max_length=500)  # Limit description length
@@ -51,7 +51,7 @@ class File(models.Model):
         choices=choices,
         default=choices[0]
     )
-    category = models.CharField(max_length=50, editable=False)
+    category = models.CharField(max_length=20, editable=False)
     course = models.ForeignKey(
         'Course',  # الربط مع كلاس Course
         on_delete=models.CASCADE,  # حذف الملفات عند حذف الدورة
@@ -61,6 +61,7 @@ class File(models.Model):
 
     def clean(self):
         super().clean()
+        self.description = self.description.strip().capitalize()
         # Validate file size (max 80MB)
         if self.file and self.file.size > 80 * 1024 * 1024:
             raise ValidationError(_("File size must be less than 80MB."))
@@ -193,6 +194,7 @@ class Course(ParentAll):
                 raise ValidationError({
                     'name': _("Name can only contain letters and numbers.")
                 })
+            
     def __str__(self):
         return f"{self.name} ({self.get_level_display()})"
 
@@ -210,6 +212,15 @@ class Group(ParentAll):
     class Meta:
         unique_together = ('name', 'level', 'department')  # Ensure uniqueness based on these fields
 
+    def clean(self):
+        super().clean()
+        if self.name:
+            valid_pattern = re.compile(r'^[a-zA-Z0-9\s-]*$')
+            if not valid_pattern.match(self.name):
+                raise ValidationError({
+                    'name': _("Name can only contain letters, numbers and - .")
+                })
+            
     def __str__(self):
         return f"{self.name} - {self.level} - {self.department}"
 
@@ -219,29 +230,78 @@ class User(AbstractUser):
         INSTRUCTOR = 'INSTRUCTOR', _('Instructor')
         STUDENT = 'STUDENT', _('Student')
 
-    phone = models.PositiveIntegerField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
-    role = models.CharField(max_length=10, choices=Roles.choices, null=True, blank=True)
-    image = models.ImageField(upload_to='user_images/%y/%m/%d', null=True, blank=True)
+    first_name = models.CharField(
+        max_length=150,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z]+$',  # يسمح فقط بالأحرف الإنجليزية
+                message='First name must contain letters only.'
+            )
+        ],)
+    last_name = models.CharField(
+        max_length=150,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z]+$',  # يسمح فقط بالأحرف الإنجليزية
+                message='Last name must contain letters only.'
+            )
+        ],)
+    email = models.EmailField(
+        verbose_name='email address',
+        unique=True,  # يضمن عدم تكرار الإيميلات
+    )
+    phone = models.PositiveIntegerField(
+        verbose_name='phone number',
+        help_text='Digits only.',
+        validators=[
+            RegexValidator(
+                regex=r'^\d{9}$',  # يسمح فقط بتسعة أرقام
+                message='Phone number must contain exactly 9 digits without any letters or special characters.'
+            )
+        ],)
+    gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')],)
+    birth_date = models.DateField()
+    role = models.CharField(max_length=10, choices=Roles.choices,)
+    image = models.ImageField(upload_to='user_images/%y/%m/%d')
 
+    def clean(self):
+        super().clean()  # استدعاء التحقق الأساسي للنموذج
+        self.first_name = self.first_name.strip().title()
+        self.last_name = self.last_name.strip().title()
+        if self.phone:
+            valid_range = (
+                (770000000 <= self.phone <= 789999999) or
+                (710000000 <= self.phone <= 719999999) or
+                (730000000 <= self.phone <= 739999999)
+            )
+            # استبعاد الأرقام الممنوعة
+            excluded_numbers = {777777777}
+            
+            if not valid_range or self.phone in excluded_numbers:
+                raise ValidationError({
+                    'phone': _(
+                        'Phone number must be in the allowed ranges: '
+                        '77*******, 78*******, 71*******, or 73*******, '
+                        'and must not include restricted numbers like 777777777.'
+                    )
+                })
+                
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admins")
-    # يمكنك إضافة خصائص إضافية خاصة بالأدمن هنا
     
     def __str__(self):
-        return f"Admin: {self.user.first_name} {self.user.last_name}"
+        return f"{self.user.get_full_name()}"
 
 class Instructor(models.Model):
-    department = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
+    department = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True})
     course = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True})
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructors")
 
     def __str__(self):
-        return f"Instructor: {self.user.first_name} {self.user.last_name}"
+        return f"{self.user.get_full_name()}"
 
 class Student(models.Model):
     class Levels(models.IntegerChoices):
@@ -250,11 +310,22 @@ class Student(models.Model):
         THREE = 3, _('3')
         FOUR = 4, _('4')
 
-    level = models.IntegerField(choices=Levels.choices, default=Levels.FOUR)
-    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True, blank=True, related_name='students')
-    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True}, blank=True, null=True, )
-    course = models.ManyToManyField('Course', through='StudentCourse', limit_choices_to={'status': True}, related_name="students", blank=True, )    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True})
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True},)
+    level = models.IntegerField(choices=Levels.choices, default=Levels.ONE,)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='students',)
+    course = models.ManyToManyField('Course', through='StudentCourse', limit_choices_to={'status': True}, related_name="students",)    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True},)
+    
+    # def clean(self):
+    #     if self.group:
+    #         if self.group.level != self.level:
+    #             raise ValidationError({
+    #                 'group': _("Student's level should match the group's level.")
+    #             })
+    #         if self.group.department != self.department:
+    #             raise ValidationError({
+    #                 'group': _("Student's department should match the group's department.")
+    #             })
 
     def __str__(self):
         return f"Student: {self.user.first_name} {self.user.last_name} (L:{self.level}) (D: {self.department})"

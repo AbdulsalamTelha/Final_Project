@@ -2,11 +2,12 @@ from django.contrib import admin
 from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExportMixin
 from import_export.resources import ModelResource
 from import_export import resources, fields
-from import_export.widgets import ManyToManyWidget
+from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
 from .models import File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
 from django.contrib.auth.hashers import make_password
 from django.utils.html import format_html
 from django import forms
+from django.core.exceptions import ValidationError
 # Register your models here.
 
 class FileAdminForm(forms.ModelForm):
@@ -70,8 +71,6 @@ class CourseResource(ModelResource):
         model = Course
         fields = ('id', 'name', 'level', 'status', 'departments')
 
-        
-
 @admin.register(Course)
 class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = CourseResource
@@ -122,12 +121,18 @@ class DepartmentAdmin(ImportExportMixin, admin.ModelAdmin):
     name_initials.short_description = 'Abb.'  # تغيير عنوان العمود في الجدول
 
 class GroupResource(ModelResource):
+    # استخدام ForeignKeyWidget لربط القسم باستخدام اسم القسم
+    department = fields.Field(
+        column_name='department',  # اسم العمود في ملف الاستيراد
+        attribute='department',    # الحقل في نموذج Group الذي يجب ربطه
+        widget=ForeignKeyWidget(Department, 'name')  # ربط بواسطة اسم القسم\
+    )
     class Meta:
         model = Group
-        fields = ('id', 'name', 'status', 'level')
+        fields = ('id', 'name', 'status', 'level', 'department')
 
 @admin.register(Group)
-class GroupAdmin(ExportMixin, admin.ModelAdmin):
+class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = GroupResource
     list_display = ('name', 'level', 'department', 'status')
     list_filter = ('department', 'level', 'status')
@@ -148,13 +153,53 @@ class StudentCourseAdmin(admin.ModelAdmin):
     resource_class = StudentCourseResource
     list_display = ('student', 'course','status','semester', 'year')
 
+
+
+
+
+
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ('department', 'level', 'group')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        department = cleaned_data.get('department')
+        level = cleaned_data.get('level')
+        group = cleaned_data.get('group')
+        # التحقق من أن القسم والمستوى متطابقان مع المجموعة
+        if group:
+            if group.department != department:
+                raise ValidationError({'group': 'The selected group does not match the selected department.'})
+            if group.level != level:
+                raise ValidationError({'group': 'The selected group does not match the selected level.'})
+        return cleaned_data
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'department' in self.initial and 'level' in self.initial:
+            department = self.initial['department']
+            level = self.initial['level']
+            self.fields['group'].queryset = Group.objects.filter(department=department, level=level)
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    form = StudentForm
+    pass  
+
+
+
+
+
 class StudentInline(admin.StackedInline):
     model = Student
     extra = 1  # عدد النماذج الإضافية التي تظهر
     verbose_name_plural = 'Student Details'
     verbose_name = 'Student Details'
-    fields = ['level', 'group', 'department']  # الحقول التي ستظهر
+    fields = ['department', 'level', 'group']  # الحقول التي ستظهر
     fk_name = 'user'  # الحقل الذي يربط Student بـ User
+    can_delete = False
     classes = ('collapse',)  # تقليص النموذج
 
 class InstructorInline(admin.StackedInline):
@@ -163,6 +208,7 @@ class InstructorInline(admin.StackedInline):
     verbose_name_plural = 'Instructor Details'
     verbose_name = 'Instructor Details'
     fk_name = 'user'
+    can_delete = False
     classes = ('collapse',)
 
 class AdminInline(admin.StackedInline):
@@ -171,6 +217,7 @@ class AdminInline(admin.StackedInline):
     verbose_name_plural = 'Admin Details'
     verbose_name = 'Admin Details'
     fk_name = 'user'
+    can_delete = False
     classes = ('collapse',)
 
 class UserResource(ModelResource):
@@ -181,10 +228,10 @@ class UserResource(ModelResource):
 @admin.register(User)
 class UserAdmin(ExportMixin, admin.ModelAdmin):
     resource_class = UserResource
-    list_display = ('first_name', 'last_name', 'username', 'email', 'phone', 'gender', 'role', 'date_joined', 'is_active', 'is_staff', 'is_superuser')
+    list_display = ('user_image', 'first_name', 'last_name', 'username', 'email', 'phone', 'gender', 'role', 'birth_date', 'date_joined', 'is_active', 'is_staff', 'is_superuser')
     list_filter = ('is_staff', 'is_superuser', 'role', 'gender', 'is_active')    
     search_fields = ('first_name', 'last_name', 'username', 'email', 'phone')
-    ordering = ('username',)
+    list_display_links = ('username', 'first_name', 'last_name', 'user_image',)
     fieldsets = (
         (None, {'fields': ('username', 'password', 'role')}),
         ('Personal Information', {
@@ -213,6 +260,12 @@ class UserAdmin(ExportMixin, admin.ModelAdmin):
                         field for field in fieldset[1]['fields'] if field != 'is_superuser'
                     )
         return fieldsets
+    
+    def user_image(self, obj):
+        if obj.image:  # التحقق إذا كان للمستخدم صورة
+            return format_html('<img src="{}" style="width: 40px; height: 40px; border-radius: 50%;" />', obj.image.url)
+        return "No Image"
+    user_image.short_description = 'Image'  # تغيير عنوان العمود
     
     def save_model(self, request, obj, form, change):
         # تأكد من أن كلمة المرور مشفرة

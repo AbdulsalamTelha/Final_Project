@@ -6,14 +6,14 @@
     <title>{% block title %}My Website{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 text-gray-900" id="body">
     <!-- شريط التنقل -->
     <header class="bg-blue-700 text-white shadow">
         <div class="container mx-auto flex justify-between items-center p-4">
             <h1 class="text-xl font-semibold">Django user</h1>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4 relative">
                 <span class="text-sm">Welcome, <strong>{{ user.username }}</strong></span>
-                <div class="relative">
+                <div>
                     <img 
                         src="{% if user.image %}{{ user.image.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
                         alt="Profile Picture" 
@@ -22,9 +22,15 @@
                     >
                     <!-- القائمة المنسدلة -->
                     <ul id="profileMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded w-48">
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'profile' %}">View Profile</a></li>
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'change_password' %}">Change Password</a></li>
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer"><a href="{% url 'logout' %}">Log Out</a></li>
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'profile' %}" class="block px-4 py-2">View Profile</a>
+                        </li>
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'change_password' %}" class="block px-4 py-2">Change Password</a>
+                        </li>
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'logout' %}" class="block px-4 py-2">Log Out</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -38,10 +44,26 @@
     </main>
 
     <script>
-        // إظهار/إخفاء القائمة المنسدلة
-        document.getElementById('profileMenuButton').addEventListener('click', function() {
-            const menu = document.getElementById('profileMenu');
-            menu.classList.toggle('hidden');
+        // مرجع للزر والقائمة
+        const profileMenuButton = document.getElementById('profileMenuButton');
+        const profileMenu = document.getElementById('profileMenu');
+
+        // إظهار/إخفاء القائمة عند الضغط على الصورة
+        profileMenuButton.addEventListener('click', function (event) {
+            profileMenu.classList.toggle('hidden');
+            event.stopPropagation(); // منع التفاعل مع الأحداث الأخرى
+        });
+
+        // إخفاء القائمة عند الضغط خارجها
+        document.addEventListener('click', function () {
+            if (!profileMenu.classList.contains('hidden')) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // منع إخفاء القائمة عند النقر داخلها
+        profileMenu.addEventListener('click', function (event) {
+            event.stopPropagation();
         });
     </script>
 </body>

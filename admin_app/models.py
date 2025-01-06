@@ -347,7 +347,7 @@ class AccountRequest(models.Model):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20)
-    profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
+    profile_image = models.ImageField(upload_to="account_requests/%y/%m/%d/", null=True, blank=True)
     is_approved = models.BooleanField(default=False)
     status = models.CharField(max_length=50, choices=[('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
     created_at = models.DateTimeField(auto_now_add=True)

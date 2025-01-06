@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import File, User, Instructor, Student,Course
+from .models import File, User, Instructor, Student,Course,AccountRequest
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.http import JsonResponse
 
 # Login view
 def login_view(request):
@@ -141,3 +142,35 @@ def edit_profile_view(request):
         user.save()
         return redirect('profile')
     return render(request, 'edit_profile.html')
+
+
+def request_account(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        phone_number = request.POST.get("phone_number")
+        profile_image = request.FILES.get("profile_image")
+
+        if not full_name or not email:
+            return render(request, "request_account.html", {
+                "error": "Please fill all required fields."
+            })
+
+        # إنشاء الطلب
+        AccountRequest.objects.create(
+            full_name=full_name,
+            email=email,
+            phone_number=phone_number,
+            profile_image=profile_image
+            
+        )
+        return redirect('login')
+
+    return render(request, "request_account.html")
+
+
+def check_email_request(request):
+    email = request.GET.get('email')
+    if email and AccountRequest.objects.filter(email=email).exists():
+        return JsonResponse({'exists': True})
+    return JsonResponse({'exists': False})

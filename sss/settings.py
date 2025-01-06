@@ -72,6 +72,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sss.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'ytrudtrfjd@gmail.com'  # بريدك الإلكتروني
+EMAIL_HOST_PASSWORD = 'etch wino zkgx kbcv'  # كلمة مرور التطبيق
+DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # البريد الافتراضي للإرسال
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

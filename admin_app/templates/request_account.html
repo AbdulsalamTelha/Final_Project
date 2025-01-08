@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">Request an Account</h1>
+
+        <form method="post" enctype="multipart/form-data" id="requestForm">
+            {% csrf_token %}
+            
+            <!-- Full Name Field -->
+            <div class="mb-4">
+                <label for="full_name" class="block text-gray-700 text-sm font-semibold mb-2">Full Name</label>
+                <input type="text" id="full_name" name="full_name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your full name">
+                <p id="fullNameError" class="text-red-500 text-sm mt-1 hidden">Full name is required.</p>
+            </div>
+        
+            <!-- Email Field -->
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Email Address</label>
+                <input type="email" id="email" name="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your email">
+                <p id="emailError" class="text-red-500 text-sm mt-1 hidden">Please enter a valid email address.</p>
+                <p id="emailExistsError" class="text-red-500 text-sm mt-1 hidden">You have already submitted a request with this email.</p>
+            </div>
+        
+            <!-- Phone Field -->
+            <div class="mb-4">
+                <label for="phone_number" class="block text-gray-700 text-sm font-semibold mb-2">Phone Number</label>
+                <input type="tel" id="phone_number" name="phone_number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your phone number">
+                <p id="phoneError" class="text-red-500 text-sm mt-1 hidden">Please enter a valid Yemeni phone number.</p>
+            </div>
+        
+            <!-- Profile Picture Upload -->
+            <div class="mb-6">
+                <label for="profile_image" class="block text-gray-700 text-sm font-semibold mb-2">Upload Profile Picture</label>
+                <input type="file" id="profile_image" name="profile_image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" accept="image/*" required>
+                <p id="profileError" class="text-red-500 text-sm mt-1 hidden">Profile picture is required.</p>
+            </div>
+        
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none transition duration-200">
+                Submit Request
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById("requestForm");
+
+        // Email Validation on Blur
+        const emailInput = document.getElementById("email");
+        const emailExistsError = document.getElementById("emailExistsError");
+
+        emailInput.addEventListener("blur", () => {
+            const email = emailInput.value.trim();
+
+            if (email) {
+                fetch(`/check-email-request/?email=${encodeURIComponent(email)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            emailExistsError.classList.remove("hidden");
+                            emailInput.setCustomValidity("You have already submitted a request.");
+                        } else {
+                            emailExistsError.classList.add("hidden");
+                            emailInput.setCustomValidity("");
+                        }
+                    })
+                    .catch(error => console.error("Error checking email:", error));
+            }
+        });
+
+    form.addEventListener("submit", (event) => {
+        let isValid = true;
+
+        // Full Name Validation (only letters)
+        const fullName = document.getElementById("full_name");
+        const fullNameError = document.getElementById("fullNameError");
+        const fullNamePattern = /^[\p{L}\s]+$/u; // Allows letters and spaces only
+        if (!fullNamePattern.test(fullName.value.trim())) {
+            fullNameError.textContent = "Full name must contain letters only.";
+            fullNameError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            fullNameError.classList.add("hidden");
+        }
+
+        // Phone Number Validation 
+        const phone = document.getElementById("phone_number");
+        const phoneError = document.getElementById("phoneError");
+        const phonePattern = /^(70|71|73|77|78)\d{7}$/; 
+        if (!phonePattern.test(phone.value)) {
+            phoneError.textContent = "Please enter a valid Yemeni phone number.";
+            phoneError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            phoneError.classList.add("hidden");
+        }
+
+        // Profile Picture Validation
+        const profile = document.getElementById("profile_image");
+        const profileError = document.getElementById("profileError");
+        if (profile.files.length === 0) {
+            profileError.classList.remove("hidden");
+            isValid = false;
+        } else {
+            profileError.classList.add("hidden");
+        }
+
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    </script>
+
+</body>
+</html>

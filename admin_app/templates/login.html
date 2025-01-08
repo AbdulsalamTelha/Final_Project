@@ -39,12 +39,57 @@
                 </div>
             </div>
 
+            <!-- Remember Me Checkbox -->
+            <div class="mb-6 flex items-center">
+                <input type="checkbox" id="remember" name="remember" class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label for="remember" class="ml-2 text-gray-700 text-sm font-semibold">Remember Me</label>
+            </div>
+
             <!-- Submit Button -->
             <button type="submit" class="w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none transition duration-200">
                 Login
             </button>
         </form>
+        <!-- Request Account Link -->
+        <div class="mt-4 text-center">
+            <p class="text-sm text-gray-600">
+                Don't have an account? 
+                <a href="{% url 'request_account' %}" class="text-blue-500 hover:underline">Request an account</a>
+            </p>
+        </div>
+    </div>
     </div>
 
+    <!-- Script to save username and password -->
+    <script>
+        // استرجاع القيم إذا كانت محفوظة
+        window.onload = function () {
+            const savedUsername = localStorage.getItem('username');
+            const savedPassword = localStorage.getItem('password');
+            const rememberChecked = localStorage.getItem('remember') === 'true';
+
+            if (savedUsername && savedPassword && rememberChecked) {
+                document.getElementById('username').value = savedUsername;
+                document.getElementById('password').value = savedPassword;
+                document.getElementById('remember').checked = true;
+            }
+        };
+
+        // حفظ القيم إذا تم تحديد "تذكرني"
+        document.querySelector('form').addEventListener('submit', function () {
+            const remember = document.getElementById('remember').checked;
+            if (remember) {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                localStorage.setItem('username', username);
+                localStorage.setItem('password', password);
+                localStorage.setItem('remember', true);
+            } else {
+                localStorage.removeItem('username');
+                localStorage.removeItem('password');
+                localStorage.setItem('remember', false);
+            }
+        });
+    </script>
 </body>
 </html>

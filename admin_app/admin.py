@@ -3,15 +3,13 @@ from import_export.admin import ExportMixin, ImportExportModelAdmin, ImportExpor
 from import_export.resources import ModelResource
 from import_export import resources, fields
 from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
-from .models import File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
+from .models import AccountRequest, File, Department, Course, Group, User, Admin, Instructor, Student, StudentCourse
 from django.contrib.auth.hashers import make_password
 from django.utils.html import format_html
+from django.contrib import messages
 from django import forms
 from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-
-
 # Register your models here.
 admin.site.site_title = "SSS Admin"
 admin.site.site_header = 'Student Services System'
@@ -335,3 +333,111 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
         
 
         
+
+
+@admin.register(AccountRequest)
+class AccountRequestAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at')
+    list_filter = ('is_approved', 'status', 'created_at')
+    search_fields = ('full_name', 'email', 'phone_number')
+    actions = ['check_users', 'approve_requests', 'reject_requests']
+
+    @admin.action(description='Check if users exist in the system')
+    def check_users(self, request, queryset):
+        """
+        تحقق إذا كان المستخدم موجودًا في جدول User وأظهر رسالة للإدمن.
+        """
+        for account_request in queryset:
+            user = User.objects.filter(email=account_request.email).first()
+            if user:
+                messages.success(
+                    request, 
+                    f"User with email {account_request.email} exists. Username: {user.username}. Role:{user.role}"
+                )
+            else:
+                messages.error(
+                    request, 
+                    f"User with email {account_request.email} does not exist."
+                )
+
+    
+    @admin.action(description='Approve selected account requests')
+
+
+    @admin.action(description='Approve selected account requests')
+    def approve_requests(self, request, queryset):
+        """
+        إرسال رسالة الموافقة مع توليد كلمة مرور عشوائية من 8 أرقام.
+        """
+        for account_request in queryset:
+            if account_request.is_approved:
+                user = User.objects.filter(email=account_request.email).first()
+                if user:
+                    if user.role in ['STUDENT', 'INSTRUCTOR']:  # التحقق من الدور
+                        try:
+                            # توليد كلمة مرور عشوائية من 8 أرقام
+                            temp_password = ''.join(random.choices('0123456789', k=8))
+
+                            # تحديث كلمة المرور للمستخدم
+                            user.set_password(temp_password)
+                            user.save()
+
+                            # إرسال رسالة الموافقة عبر الإيميل
+                            send_mail(
+                                'Account Approved',
+                                f'Hello {account_request.full_name},\n\nYour account has been approved.\n\nUsername: {user.username}\nPassword: {temp_password}\n\nPlease log in and change your password immediately.',
+                                'ytrudtrfjd@gmail.com',
+                                [account_request.email],
+                                fail_silently=False,
+                            )
+
+                            # تحديث حالة الطلب
+                            account_request.is_approved = True
+                            account_request.status = 'approved'
+                            account_request.save()
+
+                            messages.success(request, f"Approval email sent to {account_request.full_name}.")
+                        except Exception as e:
+                            messages.warning(request, f"Error while sending email to {account_request.email}: {str(e)}")
+                    else:
+                        messages.error(
+                            request,
+                            f"Cannot approve. User with email {account_request.email} has an invalid role: {user.role}."
+                        )
+                else:
+                    messages.error(request, f"Cannot approve. User with email {account_request.email} does not exist.")
+            else:
+                messages.error(request,"Must be verified by admin and check is_approved")
+
+    @admin.action(description='Reject selected account requests')
+    def reject_requests(self, request, queryset):
+        """
+        إرسال رسالة الرفض فقط إذا كان المستخدم غير موجود في جدول User.
+        """
+        for account_request in queryset:
+            if not account_request.is_approved:
+                # تحقق من عدم وجود المستخدم
+                user = User.objects.filter(email=account_request.email).first()
+                if not user:
+                    try:
+                        # إرسال رسالة الرفض عبر الإيميل
+                        send_mail(
+                            'Account Request Denied',
+                            f'Dear {account_request.full_name},\n\nWe regret to inform you that your account request has been denied as you are not registered in our system.',
+                            'ytrudtrfjd@gmail.com',
+                            [account_request.email],
+                            fail_silently=False,
+                        )
+
+                        # تحديث حالة الطلب
+                        account_request.is_approved = False
+                        account_request.status = 'rejected'
+                        account_request.save()
+
+                        messages.success(request, f"Rejection email sent to {account_request.full_name}.")
+                    except Exception as e:
+                        messages.error(request, f"Error while sending email to {account_request.email}: {str(e)}")
+                else:
+                    messages.error(request, f"Cannot reject. User with email {account_request.email} exists.")
+            else:
+                messages.error(request,"Must be verified by admin and check is_approved")

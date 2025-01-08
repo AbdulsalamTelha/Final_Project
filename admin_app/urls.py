@@ -1,7 +1,8 @@
-from django.urls import include, path
-from .views import (get_groups, access_denied, change_password_view, edit_profile_view,
+from django.urls import path
+from .views import (access_denied, change_password_view, edit_profile_view,
     instructor_dashboard_view, library_view, login_view, profile_view, student_library_view)
 from django.contrib.auth.views import LogoutView
+
 
 urlpatterns = [
     path('get-groups/', get_groups, name='get_groups'),
@@ -19,5 +20,6 @@ urlpatterns = [
     path('change_password/', change_password_view, name='change_password'),
     path('edit_profile/', edit_profile_view, name='edit_profile'),
     path('', LogoutView.as_view, name='logout'),
-
+    path('request-account/', request_account, name='request_account'),
+    path('check-email-request/', check_email_request, name='check_email_request'),
 ]

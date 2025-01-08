@@ -1,6 +1,8 @@
+from django import forms
 from django.db import models
 from django.contrib.auth.models import AbstractUser  # Use Django's built-in User model
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import FileExtensionValidator, RegexValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
@@ -372,3 +374,21 @@ class StudentCourse(models.Model):
 
     def __str__(self):
         return f"{self.student.user.first_name} - {self.course.name}"
+
+
+class AccountRequest(models.Model):
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=20)
+    profile_image = models.ImageField(upload_to="account_requests/%y/%m/%d/", null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    status = models.CharField(max_length=50, choices=[('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name
+    
+class AccountRequestForm(forms.ModelForm):
+    class Meta:
+        model = AccountRequest
+        fields = ['full_name', 'email', 'phone_number', 'profile_image']

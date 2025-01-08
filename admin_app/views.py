@@ -8,6 +8,26 @@ from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.http import JsonResponse
+from .models import Group
+
+def get_groups(request):
+    department_id = request.GET.get('department')
+    level = request.GET.get('level')
+
+    if not department_id or not level:
+        return JsonResponse({'groups': []})  # لا توجد بيانات إذا لم يتم تحديد القسم أو المستوى
+    groups = Group.objects.filter(department_id=department_id, level=level)
+    formatted_groups = [
+        {
+            'id': group.id,
+            'display': f"{group.name} - {group.level} - {group.department.name}"
+        }
+        for group in groups
+    ]
+    return JsonResponse({'groups': formatted_groups})
+
+
 
 # Login view
 def login_view(request):

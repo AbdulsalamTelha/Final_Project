@@ -1,9 +1,14 @@
-from django.urls import path
-from .views import (access_denied, change_password_view, edit_profile_view,
+from django.urls import include, path
+from .views import (get_groups, access_denied, change_password_view, edit_profile_view,
     instructor_dashboard_view, library_view, login_view, profile_view, student_library_view)
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
+    path('get-groups/', get_groups, name='get_groups'),
+    # path('set_language/', include('django.conf.urls.i18n')), for jazzmin settings
+
+
+
     path('',  login_view, name='home'),
     path('login/', login_view, name='login'),
     path('student-library/', student_library_view, name='student_library'),

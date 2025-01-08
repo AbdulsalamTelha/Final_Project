@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import FileExtensionValidator, RegexValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
 import os
 import re
+from datetime import date
 
 # Create your models here.
 
@@ -44,7 +45,7 @@ class File(models.Model):
     size = models.CharField(max_length=50, editable=False)  # تحديث الحقل ليكون نصيًا
     type = models.CharField(max_length=10, editable=False)  # Auto-detected
     upload_date = models.DateTimeField(auto_now_add=True,)  # Auto-detected
-    upload_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
+    upload_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='files' ,on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
     description = models.TextField(max_length=500)  # Limit description length
     status = models.CharField(
         max_length=10,
@@ -76,6 +77,7 @@ class File(models.Model):
     def save(self, *args, **kwargs):
         # Auto-detect file name, size, and type on save
         if self.file:
+
             original_name = os.path.basename(self.file.name) # Get file name
             if len(original_name) > 100:
                 self.name = original_name[:97] + '...'  # تقصير الاسم مع إضافة "..."
@@ -86,16 +88,6 @@ class File(models.Model):
             self.type = self.get_file_extension()  # Detect file extension/type
             self.category = self.detect_category()  # Detect and set the category
 
-            try:
-                # إذا كان الكائن موجودًا مسبقًا وكان الملف قد تغير
-                old_instance = File.objects.get(pk=self.pk)
-                if old_instance.file and old_instance.file != self.file:
-                    # حذف الملف القديم
-                    if os.path.isfile(old_instance.file.path):
-                        os.remove(old_instance.file.path)
-            except ObjectDoesNotExist:
-                pass  # الكائن جديد، لذا لا يوجد ملف قديم لحذفه
-    
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -170,10 +162,10 @@ class Department(ParentAll):
     def clean(self):
         super().clean()
         if self.name:
-            valid_pattern = re.compile(r'^[a-zA-Z0-9\s]*$')
+            valid_pattern = re.compile(r'^[a-zA-Z\s]*$')
             if not valid_pattern.match(self.name):
                 raise ValidationError({
-                    'name': _("Name can only contain letters and numbers.")
+                    'name': _("Name can only contain letters.")
                 })
 
 class Course(ParentAll):
@@ -252,6 +244,7 @@ class User(AbstractUser):
     )
     phone = models.PositiveIntegerField(
         verbose_name='phone number',
+        unique=True,
         help_text='Digits only.',
         validators=[
             RegexValidator(
@@ -260,10 +253,13 @@ class User(AbstractUser):
             )
         ],)
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')],)
-    birth_date = models.DateField()
+    birth_date = models.DateField(null=False, blank=False)
     role = models.CharField(max_length=10, choices=Roles.choices,)
     image = models.ImageField(upload_to='user_images/%y/%m/%d')
 
+    class Meta:
+        unique_together = ('first_name', 'last_name',)
+        
     def clean(self):
         super().clean()  # استدعاء التحقق الأساسي للنموذج
         self.first_name = self.first_name.strip().title()
@@ -285,6 +281,7 @@ class User(AbstractUser):
                         'and must not include restricted numbers like 777777777.'
                     )
                 })
+    
                 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -296,10 +293,10 @@ class Admin(models.Model):
         return f"{self.user.get_full_name()}"
 
 class Instructor(models.Model):
-    department = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True})
-    course = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True})
+    departments = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
+    courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructors")
-
+                
     def __str__(self):
         return f"{self.user.get_full_name()}"
 
@@ -312,30 +309,66 @@ class Student(models.Model):
 
     department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True},)
     level = models.IntegerField(choices=Levels.choices, default=Levels.ONE,)
-    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='students',)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True},)
     course = models.ManyToManyField('Course', through='StudentCourse', limit_choices_to={'status': True}, related_name="students",)    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True},)
     
-    # def clean(self):
-    #     if self.group:
-    #         if self.group.level != self.level:
-    #             raise ValidationError({
-    #                 'group': _("Student's level should match the group's level.")
-    #             })
-    #         if self.group.department != self.department:
-    #             raise ValidationError({
-    #                 'group': _("Student's department should match the group's department.")
-    #             })
+    def clean(self):
+        super().clean()
+        try:
+            if self.group:
+                if self.group.level != self.level:
+                    raise ValidationError({
+                        'group': _("Student's level should match the group's level.")
+                    })
+                if self.group.department != self.department:
+                    raise ValidationError({
+                        'group': _("Student's department should match the group's department.")
+                    })
+        except self.__class__.group.RelatedObjectDoesNotExist:
+            pass  # Ignore if the group is not set
 
     def __str__(self):
-        return f"Student: {self.user.first_name} {self.user.last_name} (L:{self.level}) (D: {self.department})"
+        return f"{self.user.get_full_name()}"
 
 class StudentCourse(models.Model):
-    student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses')
-    course = models.ForeignKey("Course", on_delete=models.CASCADE, limit_choices_to={'status': True}, related_name='student_courses')
-    status = models.BooleanField(default=True)
-    semester = models.CharField(max_length=50, choices=[('1', _('First')), ('2', _('Second'))], default='1')
-    year = models.PositiveIntegerField()
+    class Levels(models.TextChoices):
+        STUDY = 'STUDY', _('Study')
+        SUSPENDED = 'SUSPENDED', _('Suspended')
+        COMPLETED = 'COMPLETED', _('Completed')
+
+    student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses', limit_choices_to={'user__is_active': True},)
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='student_courses', limit_choices_to={'status': True},)
+    status = models.CharField(choices=Levels.choices, default=Levels.STUDY, max_length=10, )
+    semester = models.CharField(max_length=10, choices=[('1', _('First')), ('2', _('Second'))], default='1')
+    year = models.PositiveIntegerField(default=date.today().year, editable=False,)
     
+    class Meta:
+        unique_together = ('student', 'course',)
+
+    def clean(self):
+        super().clean()
+        try:
+            # التحقق من مستوى الطالب ومادة الكورس
+            if self.student.level != self.course.level:
+                raise ValidationError({
+                    'course': _("The student's level must match the course's level.")
+                })
+
+            # التحقق من تخصص الطالب ومادة الكورس
+            if not self.course.departments.filter(id=self.student.department.id).exists():
+                raise ValidationError({
+                    'course': _("The student's department must match the course's department.")
+                })
+
+            # التحقق من السنة
+            current_year = date.today().year
+            if self.year < current_year or self.year > current_year:
+                raise ValidationError({
+                    'year': _("The year must be equal to the current year.")
+                })
+        except self.__class__.student.RelatedObjectDoesNotExist:
+            pass
+
     def __str__(self):
         return f"{self.student.user.first_name} - {self.course.name}"

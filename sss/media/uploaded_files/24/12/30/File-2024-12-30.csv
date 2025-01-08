@@ -1,3 +1,0 @@
-id,name,category,type,size,upload_by__username,status,upload_date,course__name,file
-2,ERD.png,Images,png,609.53 KB,lenovo,APPROVED,2024-12-30 13:00:31,Database,uploaded_files/24/12/30/ERD.png
-1,admin.py,Code and Markup,py,7.27 KB,lenovo,PENDING,2024-12-30 12:23:04,Database,uploaded_files/24/12/30/admin.py

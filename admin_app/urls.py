@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import (access_denied, change_password_view, edit_profile_view,
-    instructor_dashboard_view, library_view, login_view, profile_view, student_library_view)
+from .views import (get_groups, access_denied, change_password_view, edit_profile_view,
+    instructor_dashboard_view, library_view, login_view, profile_view, student_library_view,
+    check_email_request, request_account)
 from django.contrib.auth.views import LogoutView
 
 

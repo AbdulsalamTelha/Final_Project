@@ -73,13 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sss.wsgi.application'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'ytrudtrfjd@gmail.com'  # بريدك الإلكتروني
-EMAIL_HOST_PASSWORD = 'etch wino zkgx kbcv'  # كلمة مرور التطبيق
-DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # البريد الافتراضي للإرسال
+
 
 
 # Database
@@ -147,6 +141,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'admin_app.User'
 
 
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'ytrudtrfjd@gmail.com'  # بريدك الإلكتروني
+EMAIL_HOST_PASSWORD = 'etch wino zkgx kbcv'  # كلمة مرور التطبيق
+DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # البريد الافتراضي للإرسال
 
 
 

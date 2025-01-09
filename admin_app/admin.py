@@ -477,9 +477,10 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
 
 @admin.register(AccountRequest)
 class AccountRequestAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at')
+    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at','status')
     list_filter = ('is_approved', 'status', 'created_at')
     search_fields = ('full_name', 'email', 'phone_number')
+    exclude = ('status',)
     actions = ['check_users', 'approve_requests', 'reject_requests']
 
     @admin.action(description='Check if users exist in the system')
@@ -488,17 +489,19 @@ class AccountRequestAdmin(admin.ModelAdmin):
         تحقق إذا كان المستخدم موجودًا في جدول User وأظهر رسالة للإدمن.
         """
         for account_request in queryset:
-            user = User.objects.filter(email=account_request.email).first()
+            user = User.objects.filter(email=account_request.email, phone=account_request.phone_number).first()
             if user:
                 messages.success(
                     request, 
-                    f"User with email {account_request.email} exists. Username: {user.username}. Role:{user.role}"
+                    f"User with email {account_request.email} and phone {account_request.phone_number} exists. "
+                    f"Username: {user.username}. Role: {user.role}."
                 )
             else:
                 messages.error(
                     request, 
-                    f"User with email {account_request.email} does not exist."
+                    f"User with email {account_request.email} and phone {account_request.phone_number} does not exist."
                 )
+
 
     
     @admin.action(description='Approve selected account requests')
@@ -547,7 +550,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
                 else:
                     messages.error(request, f"Cannot approve. User with email {account_request.email} does not exist.")
             else:
-                messages.error(request,"Must be verified by admin and check is_approved")
+                messages.error(request,"Must be verified by admin and must check is_approved equal true")
 
     @admin.action(description='Reject selected account requests')
     def reject_requests(self, request, queryset):
@@ -580,4 +583,4 @@ class AccountRequestAdmin(admin.ModelAdmin):
                 else:
                     messages.error(request, f"Cannot reject. User with email {account_request.email} exists.")
             else:
-                messages.error(request,"Must be verified by admin and check is_approved")
+                messages.error(request,"Must be verified by admin and must check is_approved equal false")

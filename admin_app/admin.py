@@ -357,17 +357,30 @@ class StudentResource(ModelResource):
 class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = StudentResource
     form = StudentForm
-    list_display = ('user__id', 'user', 'department', 'level', 'group', 'list_courses', )
-    list_filter = ('department', 'level', 'group',)    
+    list_display = ('user_id', 'user', 'department', 'level', 'group', 'list_courses', 'edit_user_link')
+    list_filter = ('department', 'level', 'group',)
     search_fields = ('user__first_name', 'user__last_name')
     inlines = [StudentCourseInline]
     fieldsets = (
         ('Student Details', {'fields': ('user', 'department', 'level', 'group',)}),
     )
 
-    def list_courses(self, obj): # إرجاع أسماء الكورسات المرتبطة بالقسم
+    def list_courses(self, obj):  # إرجاع أسماء الكورسات المرتبطة بالقسم
         return ", ".join(course.name for course in obj.course.all())
     list_courses.short_description = 'Courses'
+
+    def user_id(self, obj):
+        return obj.user.id
+    user_id.short_description = 'User ID'
+
+    def edit_user_link(self, obj):
+        from django.utils.html import format_html
+        # رابط تعديل المستخدم
+        return format_html(
+            '<a href="/admin/admin_app/user/{}/change/">Edit Information</a>',
+            obj.user.id
+        )
+    edit_user_link.short_description = 'Edit User'
 
 class InstructorInline(admin.StackedInline):
     model = Instructor

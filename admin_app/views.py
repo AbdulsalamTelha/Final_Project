@@ -188,3 +188,16 @@ def check_email_request(request):
     if email and AccountRequest.objects.filter(email=email).exists():
         return JsonResponse({'exists': True})
     return JsonResponse({'exists': False})
+
+from django.contrib.auth.decorators import user_passes_test
+
+
+# التحقق إذا كان المستخدم دكتورًا
+def is_doctor(user):
+    return user.is_authenticated and user.role == "INSTRUCTOR"  # عدّل role حسب جدولك
+
+@login_required
+@user_passes_test(is_doctor)
+def students_list(request):
+    students = Student.objects.all()
+    return render(request, 'students_list.html', {'students': students})

@@ -1,11 +1,9 @@
-from django import forms
 from django.db import models
 from django.contrib.auth.models import AbstractUser  # Use Django's built-in User model
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import FileExtensionValidator, RegexValidator, MinValueValidator, MaxValueValidator, MaxLengthValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator, RegexValidator
 import os
 import re
 from datetime import date
@@ -289,7 +287,7 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admins")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="admins")
     
     def __str__(self):
         return f"{self.user.get_full_name()}"
@@ -297,7 +295,7 @@ class Admin(models.Model):
 class Instructor(models.Model):
     departments = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
     courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructors")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
                 
     def __str__(self):
         return f"{self.user.get_full_name()}"
@@ -313,7 +311,7 @@ class Student(models.Model):
     level = models.IntegerField(choices=Levels.choices, default=Levels.ONE,)
     group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='students', limit_choices_to={'status': True},)
     course = models.ManyToManyField('Course', through='StudentCourse', limit_choices_to={'status': True}, related_name="students",)    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True},)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="students", limit_choices_to={'role': 'STUDENT', 'is_active': True},)
     
     def clean(self):
         super().clean()
@@ -338,7 +336,6 @@ class StudentCourse(models.Model):
         STUDY = 'STUDY', _('Study')
         SUSPENDED = 'SUSPENDED', _('Suspended')
         COMPLETED = 'COMPLETED', _('Completed')
-
     student = models.ForeignKey("Student", on_delete=models.CASCADE, related_name='student_courses', limit_choices_to={'user__is_active': True},)
     course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name='student_courses', limit_choices_to={'status': True},)
     status = models.CharField(choices=Levels.choices, default=Levels.STUDY, max_length=10, )
@@ -382,13 +379,9 @@ class AccountRequest(models.Model):
     phone_number = models.CharField(max_length=20)
     profile_image = models.ImageField(upload_to="account_requests/%y/%m/%d/", null=True, blank=True)
     is_approved = models.BooleanField(default=False)
-    status = models.CharField(max_length=50, choices=[('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    status = models.CharField(max_length=10, choices=[('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('PENDING', 'Pending')], default='PENDING')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.full_name
-    
-class AccountRequestForm(forms.ModelForm):
-    class Meta:
-        model = AccountRequest
-        fields = ['full_name', 'email', 'phone_number', 'profile_image']
+

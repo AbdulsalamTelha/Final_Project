@@ -2,18 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import File, User, Instructor, Student,Course,AccountRequest
-from django.db.models import Q
-from django.utils.dateparse import parse_date
+from .models import File, User, Instructor, Student, Course, AccountRequest, Group
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-
 from django.http import JsonResponse
-from .models import Group
 
-
-def get_groups(request):
+def get_groups_view(request):
     department_id = request.GET.get('department')
     level = request.GET.get('level')
 
@@ -28,8 +23,6 @@ def get_groups(request):
         for group in groups
     ]
     return JsonResponse({'groups': formatted_groups})
-
-
 
 # Login view
 def login_view(request):
@@ -66,8 +59,6 @@ def access_denied(request):
     return render(request, 'access_denied.html')
 
 # Library view for students and instructors
-
-
 @login_required
 def library_view(request):
     # Ensure the user has the correct role

@@ -43,7 +43,7 @@ def login_view(request):
                 return redirect('library')  # Student dashboard view
             else:
                 messages.error(request, "Your role is not recognized.")
-                return redirect('access_denied')
+                # return redirect('access_denied')
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'login.html')
@@ -176,7 +176,9 @@ def request_account(request):
             profile_image=profile_image
             
         )
-        return redirect('login')
+
+        messages.success(request,"Your request has been sent successfully. We will respond to you soon")
+        return redirect('request_account') # إعادة توجيه المستخدم إلى نفس الصفحة بعد الإرسال
 
     return render(request, "request_account.html")
 

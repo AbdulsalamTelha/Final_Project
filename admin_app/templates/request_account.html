@@ -7,6 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    
+    <div class="absolute top-1 left-0 right-0 max-w-3xl mx-auto px-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 rounded-lg text-white text-center 
+                            {% if message.tags == 'success' %} bg-green-500 {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    
 
     <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
         <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">Request an Account</h1>
@@ -38,7 +51,7 @@
         
             <!-- Profile Picture Upload -->
             <div class="mb-6">
-                <label for="profile_image" class="block text-gray-700 text-sm font-semibold mb-2">Upload Profile Picture</label>
+                <label for="profile_image" class="block text-gray-700 text-sm font-semibold mb-2">Upload Your Picture</label>
                 <input type="file" id="profile_image" name="profile_image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" accept="image/*" required>
                 <p id="profileError" class="text-red-500 text-sm mt-1 hidden">Profile picture is required.</p>
             </div>
@@ -47,6 +60,13 @@
             <button type="submit" class="w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none transition duration-200">
                 Submit Request
             </button>
+
+            <div class="mt-4 text-center">
+                <p class="text-sm text-gray-600">
+                    Have you sent a request? 
+                    <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Login</a>
+                </p>
+            </div>
         </form>
     </div>
 

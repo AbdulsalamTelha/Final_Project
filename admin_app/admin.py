@@ -293,17 +293,30 @@ class StudentResource(ModelResource):
 class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = StudentResource
     form = StudentForm
-    list_display = ('user__id', 'user', 'department', 'level', 'group', 'list_courses', )
-    list_filter = ('department', 'level', 'group',)    
+    list_display = ('user_id', 'user', 'department', 'level', 'group', 'list_courses', 'edit_user_link')
+    list_filter = ('department', 'level', 'group',)
     search_fields = ('user__first_name', 'user__last_name')
     inlines = [StudentCourseInline]
     fieldsets = (
         ('Student Details', {'fields': ('user', 'department', 'level', 'group',)}),
     )
 
-    def list_courses(self, obj): # إرجاع أسماء الكورسات المرتبطة بالقسم
+    def list_courses(self, obj):  # إرجاع أسماء الكورسات المرتبطة بالقسم
         return ", ".join(course.name for course in obj.course.all())
     list_courses.short_description = 'Courses'
+
+    def user_id(self, obj):
+        return obj.user.id
+    user_id.short_description = 'User ID'
+
+    def edit_user_link(self, obj):
+        from django.utils.html import format_html
+        # رابط تعديل المستخدم
+        return format_html(
+            '<a href="/admin/admin_app/user/{}/change/">Edit Information</a>',
+            obj.user.id
+        )
+    edit_user_link.short_description = 'Edit User'
 
 class InstructorInline(admin.StackedInline):
     model = Instructor
@@ -403,9 +416,10 @@ class AccountRequestForm(forms.ModelForm):
 
 @admin.register(AccountRequest)
 class AccountRequestAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at')
+    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at','status')
     list_filter = ('is_approved', 'status', 'created_at')
     search_fields = ('full_name', 'email', 'phone_number')
+    exclude = ('status',)
     actions = ['check_users', 'approve_requests', 'reject_requests']
 
     @admin.action(description='Check if users exist in the system')
@@ -414,17 +428,19 @@ class AccountRequestAdmin(admin.ModelAdmin):
         تحقق إذا كان المستخدم موجودًا في جدول User وأظهر رسالة للإدمن.
         """
         for account_request in queryset:
-            user = User.objects.filter(email=account_request.email).first()
+            user = User.objects.filter(email=account_request.email, phone=account_request.phone_number).first()
             if user:
                 messages.success(
                     request, 
-                    f"User with email {account_request.email} exists. Username: {user.username}. Role:{user.role}"
+                    f"User with email {account_request.email} and phone {account_request.phone_number} exists. "
+                    f"Username: {user.username}. Role: {user.role}."
                 )
             else:
                 messages.error(
                     request, 
-                    f"User with email {account_request.email} does not exist."
+                    f"User with email {account_request.email} and phone {account_request.phone_number} does not exist."
                 )
+
 
     
     @admin.action(description='Approve selected account requests')
@@ -473,7 +489,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
                 else:
                     messages.error(request, f"Cannot approve. User with email {account_request.email} does not exist.")
             else:
-                messages.error(request,"Must be verified by admin and check is_approved")
+                messages.error(request,"Must be verified by admin and must check is_approved equal true")
 
     @admin.action(description='Reject selected account requests')
     def reject_requests(self, request, queryset):
@@ -506,4 +522,4 @@ class AccountRequestAdmin(admin.ModelAdmin):
                 else:
                     messages.error(request, f"Cannot reject. User with email {account_request.email} exists.")
             else:
-                messages.error(request,"Must be verified by admin and check is_approved")
+                messages.error(request,"Must be verified by admin and must check is_approved  equal false")

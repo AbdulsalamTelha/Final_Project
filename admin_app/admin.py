@@ -293,9 +293,10 @@ class StudentResource(ModelResource):
 class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = StudentResource
     form = StudentForm
-    list_display = ('user_id', 'user', 'department', 'level', 'group', 'list_courses', 'edit_user_link')
+    list_display = ('student_id', 'student_user', 'department', 'level', 'group', 'list_courses', 'edit_user_link')
     list_filter = ('department', 'level', 'group',)
-    search_fields = ('user__first_name', 'user__last_name')
+    search_fields = ('student_user__first_name', 'student_user__last_name')
+    list_display_links = ('student_id', 'student_user',)
     inlines = [StudentCourseInline]
     fieldsets = (
         ('Student Details', {'fields': ('user', 'department', 'level', 'group',)}),
@@ -305,17 +306,16 @@ class StudentAdmin(ImportExportMixin, admin.ModelAdmin):
         return ", ".join(course.name for course in obj.course.all())
     list_courses.short_description = 'Courses'
 
-    def user_id(self, obj):
+    def student_id(self, obj):
         return obj.user.id
-    user_id.short_description = 'User ID'
+    student_id.short_description = "ID"
 
-    def edit_user_link(self, obj):
-        from django.utils.html import format_html
-        # رابط تعديل المستخدم
-        return format_html(
-            '<a href="/admin/admin_app/user/{}/change/">Edit Information</a>',
-            obj.user.id
-        )
+    def student_user(self, obj):
+        return obj.user
+    student_user.short_description = "Student"
+
+    def edit_user_link(self, obj): # رابط تعديل المستخدم
+        return format_html('<a href="/admin/admin_app/user/{}/change/">Edit</a>', obj.user.id)
     edit_user_link.short_description = 'Edit User'
 
 class InstructorInline(admin.StackedInline):
@@ -416,7 +416,7 @@ class AccountRequestForm(forms.ModelForm):
 
 @admin.register(AccountRequest)
 class AccountRequestAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at','status')
+    list_display = ('full_name', 'email', 'phone_number', 'is_approved', 'created_at', 'status')
     list_filter = ('is_approved', 'status', 'created_at')
     search_fields = ('full_name', 'email', 'phone_number')
     exclude = ('status',)
@@ -440,11 +440,6 @@ class AccountRequestAdmin(admin.ModelAdmin):
                     request, 
                     f"User with email {account_request.email} and phone {account_request.phone_number} does not exist."
                 )
-
-
-    
-    @admin.action(description='Approve selected account requests')
-
 
     @admin.action(description='Approve selected account requests')
     def approve_requests(self, request, queryset):
@@ -522,4 +517,4 @@ class AccountRequestAdmin(admin.ModelAdmin):
                 else:
                     messages.error(request, f"Cannot reject. User with email {account_request.email} exists.")
             else:
-                messages.error(request,"Must be verified by admin and must check is_approved  equal false")
+                messages.error(request,"Must be verified by admin and must check is_approved equal false")

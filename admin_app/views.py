@@ -2,11 +2,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import File, User, Instructor, Student, Course, AccountRequest, Group
-from django.shortcuts import render, redirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.timezone import now
+from django.db.models import Q
+
+from .models import (
+    File,
+    User,
+    Instructor,
+    Student,
+    Course,
+    AccountRequest,
+    Group,
+    OTP
+)
+from .utils import generate_otp, send_otp_email
 
 def get_groups_view(request):
     department_id = request.GET.get('department')
@@ -201,3 +217,119 @@ def is_doctor(user):
 def students_list(request):
     students = Student.objects.all()
     return render(request, 'students_list.html', {'students': students})
+
+
+
+
+
+def request_otp(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            OTP.objects.filter(user=user).delete()  # Clear old OTPs
+            otp = generate_otp()
+            expires_at = timezone.now() + timezone.timedelta(minutes=5)
+            OTP.objects.create(user=user, otp=otp, expires_at=expires_at)
+
+            if send_otp_email(user.email, otp):
+                return render(request, "verify_otp.html", {
+                    "username": username,
+                    "message": "OTP sent successfully!"
+                })
+            else:
+                return render(request, "request_otp.html", {
+                    "error": "Failed to send OTP. Please try again."
+                })
+        else:
+            return render(request, "request_otp.html", {
+                "error": "Username not found."
+            })
+
+    return render(request, "request_otp.html")
+
+
+def verify_otp(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        otp = request.POST.get("otp")
+
+        # Check if the user exists
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return render(request, "verify_otp.html", {
+                "error": "User not found. Please try again.",
+                "username": username,
+            })
+
+        # Check if the OTP exists for the user
+        otp_record = OTP.objects.filter(user=user, otp=otp).first()
+        if not otp_record:
+            return render(request, "verify_otp.html", {
+                "error": "Invalid OTP. Please try again.",
+                "username": username,
+            })
+
+        # Check if the OTP is expired
+        if otp_record.expires_at and timezone.now() > otp_record.expires_at:
+            return render(request, "verify_otp.html", {
+                "error": "OTP has expired. Please request a new one.",
+                "username": username,
+            })
+
+        # OTP is valid; delete the OTP record and redirect to reset password
+        otp_record.delete()
+        reset_password_url = reverse("reset_password") + f"?username={username}"
+        return redirect(reset_password_url)
+
+    # Render the verify OTP page for GET requests
+    return render(request, "verify_otp.html")
+
+def reset_password(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        new_password = request.POST.get("new_password")
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            user.set_password(new_password)
+            user.save()
+            return redirect("login")
+        else:
+            return render(request, "reset_password.html", {"error": "Username not found."})
+
+    username = request.GET.get("username")
+    if username:
+        return render(request, "reset_password.html", {"username": username})
+
+    return redirect("request_otp")
+
+def resend_otp(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            OTP.objects.filter(user=user).delete()
+
+            otp = generate_otp()
+            expires_at = timezone.now() + timezone.timedelta(minutes=5)
+            OTP.objects.create(user=user, otp=otp, expires_at=expires_at)
+
+            if send_otp_email(user.email, otp):
+                return render(request, "verify_otp.html", {
+                    "username": username,
+                    "message": "A new OTP has been sent to your email."
+                })
+            else:
+                return render(request, "verify_otp.html", {
+                    "username": username,
+                    "error": "Failed to resend OTP. Please try again."
+                })
+        else:
+            return render(request, "verify_otp.html", {
+                "error": "Username not found. Please try again."
+            })
+
+    return redirect("request_otp")

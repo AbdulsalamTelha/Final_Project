@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        let timeLeft = {{ time_left|default:300 }}; // Pass remaining time from the backend
+        const timerElement = document.getElementById("timer");
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                timerElement.textContent = "OTP Expired";
+                document.getElementById("resend-button").style.display = "block"; // Show resend button
+            }
+        }
+
+        window.onload = updateTimer;
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h1 class="text-2xl font-bold mb-6 text-center">Verify OTP</h1>
+        <form method="post" action="{% url 'verify_otp' %}">
+            {% csrf_token %}
+            <input type="hidden" name="username" value="{{ username }}">
+            <div class="mb-4">
+                <input type="text" name="otp" placeholder="Enter OTP" required
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                Verify OTP
+            </button>
+        </form>
+
+        <!-- Resend OTP Button -->
+        <form method="post" action="{% url 'resend_otp' %}" class="mt-4">
+            {% csrf_token %}
+            <input type="hidden" name="username" value="{{ username }}">
+            <button type="submit" id="resend-button"
+                    class="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition duration-200"
+                    style="display: none;"> <!-- Initially hidden -->
+                Resend OTP
+            </button>
+        </form>
+
+        <!-- Timer and Error Messages -->
+        <p class="text-center mt-4">Time remaining: <span id="timer" class="font-bold">5:00</span></p>
+        {% if error %}
+            <p class="text-red-500 mt-4 text-center">{{ error }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

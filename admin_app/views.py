@@ -78,8 +78,8 @@ def access_denied(request):
 @login_required
 def library_view(request):
     # Ensure the user has the correct role
-    if request.user.role not in [User.Roles.STUDENT, User.Roles.INSTRUCTOR]:
-        return redirect('access_denied')
+    # if request.user.role not in [User.Roles.STUDENT, User.Roles.INSTRUCTOR]:
+    #     return redirect('access_denied')
 
     # Get search and filter parameters
     search_query = request.GET.get('search', '').strip()
@@ -333,3 +333,12 @@ def resend_otp(request):
             })
 
     return redirect("request_otp")
+
+
+
+
+
+def instructor_list(request):
+    # استرجاع جميع المدرسين من قاعدة البيانات
+    instructors = Instructor.objects.select_related('user').prefetch_related('departments', 'courses')
+    return render(request, 'instructors_list.html', {'instructors': instructors})

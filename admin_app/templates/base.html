@@ -1,0 +1,58 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        SSS | {% block title %}{% endblock %}
+    </title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> -->
+    
+    <link  rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css'%}">
+    <!-- <script src="{% static 'js/user_app/cdn.tailwindcss.com.3.4.16.js' %}"></script> -->
+    <link href="{% static 'css/user_app/all.min.css' %}" rel="stylesheet">
+
+    <script src="{% static 'js/user_app/profile_menu.js' %}"></script>
+</head>
+<body class="bg-gray-100 text-gray-900" id="body">
+    <!-- شريط التنقل -->
+    <header class="bg-blue-700 text-white shadow">
+        <div class="container mx-auto flex justify-between items-center p-4">
+            <h1 class="text-xl font-semibold">SSS</h1>
+            <div class="flex items-center space-x-4 relative">
+                <span class="text-sm">Welcome, <strong>{{ user.username }}</strong></span>
+                <div>
+                    <img 
+                        src="{{ user.get_profile_image_url }}"
+                        alt="Profile Picture" 
+                        class="w-10 h-10 rounded-full cursor-pointer" 
+                        id="profileMenuButton"
+                    >
+                    <!-- القائمة المنسدلة -->
+                    <ul id="profileMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded w-48">
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'profile' %}" class="block px-4 py-2">View Profile</a>
+                        </li>
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'change_password' %}" class="block px-4 py-2">Change Password</a>
+                        </li>
+                        <li class="hover:bg-gray-100 cursor-pointer">
+                            <a href="{% url 'logout' %}" class="block px-4 py-2">Log Out</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="container mx-auto mt-6">
+        {% block content %}
+        {% endblock content %}
+    </main>
+</body>
+</html>

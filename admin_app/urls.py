@@ -1,7 +1,13 @@
 from django.urls import path
+
 from .views import (get_groups_view, access_denied, change_password_view, edit_profile_view, group_students,
                     instructor_dashboard, instructor_upload_file, library_view, login_view, profile_view, request_otp, resend_otp, reset_password, 
                     student_library_view, check_email_request, request_account, students_list, verify_otp)
+
+from .views import (get_groups_view, access_denied, change_password_view, edit_profile_view,
+                    instructor_dashboard_view, library_view, login_view, profile_view, 
+                    student_library_view, check_email_request, request_account, instructor_list, students_list)
+
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -20,6 +26,10 @@ urlpatterns = [
     path('', LogoutView.as_view, name='logout'),
     path('request-account/', request_account, name='request_account'),
     path('check-email-request/', check_email_request, name='check_email_request'),
+
+
+    path('instructors/', instructor_list, name='instructor_list'),
+    
     path('students-list/', students_list, name='students_list'),
     path('request-otp/', request_otp, name='request_otp'),
     path('verify-otp/', verify_otp, name='verify_otp'),

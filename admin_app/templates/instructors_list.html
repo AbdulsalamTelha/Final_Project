@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Instructors List{% endblock title %}
+
+{% block content %}
+<h1>Instructors List</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Departments</th>
+            <th>Courses</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for instructor in instructors %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ instructor.user.get_full_name }}</td>
+            <td>{{ instructor.user.email }}</td>
+            <td>
+                {% for department in instructor.departments.all %}
+                    {{ department.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                {% for course in instructor.courses.all %}
+                    {{ course.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No instructors found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}

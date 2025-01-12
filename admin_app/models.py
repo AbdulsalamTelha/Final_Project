@@ -7,6 +7,7 @@ from django.core.validators import FileExtensionValidator, RegexValidator
 import os
 import re
 from datetime import date
+from django.templatetags.static import static
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -259,7 +260,7 @@ class User(AbstractUser):
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')],)
     birth_date = models.DateField(null=False, blank=False)
     role = models.CharField(max_length=10, choices=Roles.choices,)
-    image = models.ImageField(upload_to='user_images/%y/%m/%d')
+    image = models.ImageField(upload_to='user_images/%y/%m/%d', default='logo.png')
 
     class Meta:
         unique_together = ('first_name', 'last_name',)
@@ -286,6 +287,13 @@ class User(AbstractUser):
                     )
                 })
     
+    def get_profile_image_url(self):
+        """
+        Returns the URL of the user's profile image if it exists, otherwise the default logo.
+        """
+        if self.image and os.path.isfile(self.image.path):  # تحقق من وجود الملف فعليًا
+            return self.image.url
+        return static('img/logo.png')  # الصورة الافتراضية
                 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

@@ -1,21 +1,33 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Website{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>
+        SSS | {% block title %}{% endblock %}
+    </title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> -->
+    
+    <link  rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css'%}">
+    <!-- <script src="{% static 'js/user_app/cdn.tailwindcss.com.3.4.16.js' %}"></script> -->
+    <link href="{% static 'css/user_app/all.min.css' %}" rel="stylesheet">
+
+    <script src="{% static 'js/user_app/profile_menu.js' %}"></script>
 </head>
 <body class="bg-gray-100 text-gray-900" id="body">
     <!-- شريط التنقل -->
     <header class="bg-blue-700 text-white shadow">
         <div class="container mx-auto flex justify-between items-center p-4">
-            <h1 class="text-xl font-semibold">Django user</h1>
+            <h1 class="text-xl font-semibold">SSS</h1>
             <div class="flex items-center space-x-4 relative">
                 <span class="text-sm">Welcome, <strong>{{ user.username }}</strong></span>
                 <div>
                     <img 
-                        src="{% if user.image %}{{ user.image.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
+                        src="{{ user.get_profile_image_url }}"
                         alt="Profile Picture" 
                         class="w-10 h-10 rounded-full cursor-pointer" 
                         id="profileMenuButton"
@@ -40,31 +52,7 @@
     <!-- المحتوى -->
     <main class="container mx-auto mt-6">
         {% block content %}
-        {% endblock %}
+        {% endblock content %}
     </main>
-
-    <script>
-        // مرجع للزر والقائمة
-        const profileMenuButton = document.getElementById('profileMenuButton');
-        const profileMenu = document.getElementById('profileMenu');
-
-        // إظهار/إخفاء القائمة عند الضغط على الصورة
-        profileMenuButton.addEventListener('click', function (event) {
-            profileMenu.classList.toggle('hidden');
-            event.stopPropagation(); // منع التفاعل مع الأحداث الأخرى
-        });
-
-        // إخفاء القائمة عند الضغط خارجها
-        document.addEventListener('click', function () {
-            if (!profileMenu.classList.contains('hidden')) {
-                profileMenu.classList.add('hidden');
-            }
-        });
-
-        // منع إخفاء القائمة عند النقر داخلها
-        profileMenu.addEventListener('click', function (event) {
-            event.stopPropagation();
-        });
-    </script>
 </body>
 </html>

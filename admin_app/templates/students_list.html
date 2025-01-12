@@ -17,7 +17,6 @@
                         <th class="px-4 py-2 text-left">Email</th>
                         <th class="px-4 py-2 text-left">Phone</th>
                         <th class="px-4 py-2 text-left">Department</th>
-                        {% comment %} <th class="px-4 py-2 text-left">Courses</th> {% endcomment %}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -39,15 +38,6 @@
                         <td class="px-4 py-2">{{ student.user.phone }}</td> <!-- Assuming username is used as phone -->
                         <!-- Department -->
                         <td class="px-4 py-2">{{ student.department }}</td>
-                        <!-- Courses -->
-                        {% comment %} <td class="px-4 py-2">
-                            {% for course in student.courses.all %}
-                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                                    {{ course.name }}
-                                </span>
-                                {% if not forloop.last %} {% endif %}
-                            {% endfor %}
-                        </td> {% endcomment %}
                     </tr>
                     {% endfor %}
                 </tbody>

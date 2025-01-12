@@ -28,7 +28,7 @@ class File(models.Model):
         validators=[
             FileExtensionValidator([
                 # Documents
-                'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'csv', 'ppt', 'pptx',
+                'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'csv', 'ppt', 'pptx','eddx',
                 # Images
                 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'svg',
                 # Audio
@@ -106,7 +106,7 @@ class File(models.Model):
         return ext if ext else "unknown"
 
     def detect_category(self):
-        doc_ext = {'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'}
+        doc_ext = {'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'csv', 'ppt', 'pptx','eddx'}
         img_ext = {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'svg'}
         audio_ext = {'mp3', 'wav', 'aac', 'ogg', 'wma', 'flac'}
         video_ext = {'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm'}
@@ -306,7 +306,6 @@ class OTP(models.Model):
         return f"{self.user.username} - {self.otp}"
 
 
-
 class Admin(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="admins")
     
@@ -317,11 +316,12 @@ class Instructor(models.Model):
     departments = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
     courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
-                
+    groups = models.ManyToManyField('Group', related_name="instructors", limit_choices_to={'status': True}, blank=True,) 
+            
     def __str__(self):
         return f"{self.user.get_full_name()}"
 
-class Student(models.Model):
+class  Student(models.Model):
     class Levels(models.IntegerChoices):
         ONE = 1, _('1')
         TWO = 2, _('2')

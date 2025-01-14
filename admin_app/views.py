@@ -197,9 +197,8 @@ def check_email_request(request):
         return JsonResponse({'exists': True})
     return JsonResponse({'exists': False})
 
+
 from django.contrib.auth.decorators import user_passes_test
-
-
 # التحقق إذا كان المستخدم دكتورًا
 def is_doctor(user):
     return user.is_authenticated and user.role == "INSTRUCTOR"  # عدّل role حسب جدولك
@@ -378,14 +377,26 @@ def instructor_dashboard(request):
 
 @login_required
 def instructor_upload_file(request):
+    errors = {}  # لتخزين الأخطاء لكل حقل
+    
     if request.method == 'POST':
         # الحصول على البيانات من الطلب
         file = request.FILES.get('file')
         description = request.POST.get('description')
         course_id = request.POST.get('course')
-        # تحقق من أن جميع البيانات تم إرسالها
-        if file and description and course_id:
-            # إنشاء الكائن وحفظه في قاعدة البيانات
+
+        # التحقق من الحقول
+        if not file:
+            errors['file'] = 'File is required.'
+        if not description:
+            errors['description'] = 'Description is required.'
+        elif len(description) < 10:
+            errors['description'] = 'Description must be at least 10 characters.'
+        if not course_id:
+            errors['course'] = 'You must select a course.'
+
+        # إذا لم تكن هناك أخطاء، احفظ الملف
+        if not errors:
             try:
                 file_instance = File(
                     file=file,
@@ -398,22 +409,17 @@ def instructor_upload_file(request):
                 messages.success(request, 'File uploaded successfully!')
                 return redirect('instructor_upload_file')  # العودة إلى صفحة الدكتور
             except Instructor.DoesNotExist:
-                return messages.error(request,  'You are not registered as an instructor.')
-        else:
-            # إذا كانت البيانات غير مكتملة، عرض رسالة خطأ
-            return messages.error(request,  'All fields are required')
-    # جلب كائن Instructor المرتبط بـ request.user
+                errors['general'] = 'You are not registered as an instructor.'
+
+    # جلب الكورسات المرتبطة بالمستخدم الحالي
     try:
         instructor = Instructor.objects.get(user=request.user)
-        # جلب الكورسات التي يدرسها الدكتور فقط
-        courses = instructor.courses.filter(status=True)  # التحقق من حالة الكورس
+        courses = instructor.courses.filter(status=True)  # التحقق من حالة الكورسات
     except Instructor.DoesNotExist:
-        return messages.error(request,  'You are not registered as an instructor.')
+        courses = []
+        errors['general'] = 'You are not registered as an instructor.'
 
-    return render(request, 'instructor_upload_file.html', {'courses': courses})
-
-
-
+    return render(request, 'instructor_upload_file.html', {'courses': courses, 'errors': errors})
 
 
 def instructor_list(request):

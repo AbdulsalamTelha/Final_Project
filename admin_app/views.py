@@ -24,6 +24,7 @@ from .models import (
 )
 from .utils import generate_otp, send_otp_email
 
+
 def get_groups_view(request):
     department_id = request.GET.get('department')
     level = request.GET.get('level')
@@ -54,7 +55,7 @@ def login_view(request):
             if user.role == User.Roles.ADMIN:
                 return redirect('admin_dashboard')  # Admin dashboard view
             elif user.role == User.Roles.INSTRUCTOR:
-                return redirect('library')  # Instructor dashboard view
+                return redirect('instructor_dashboard')  # Instructor dashboard view
             elif user.role == User.Roles.STUDENT:
                 return redirect('library')  # Student dashboard view
             else:
@@ -120,15 +121,6 @@ def library_view(request):
     })
 
 # Instructor dashboard view
-@login_required
-def instructor_dashboard_view(request):
-    if request.user.role != User.Roles.INSTRUCTOR:
-        return redirect('access_denied')
-
-    instructor = get_object_or_404(Instructor, user=request.user)
-    courses = instructor.course.all()
-
-    return render(request, 'instructor_dashboard.html', {'file': File, 'courses': courses})
 
 # Student dashboard view
 @login_required
@@ -334,6 +326,92 @@ def resend_otp(request):
 
     return redirect("request_otp")
 
+@login_required
+def group_students(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    department = group.department
+    students = group.students.all()  # جلب الطلاب المرتبطين بالجروب
+    return render(request, 'group_students.html', {
+        'group': group,
+        'students': students,
+        'department': department,
+    })
+    
+@login_required
+def instructor_dashboard(request):
+    instructor = Instructor.objects.get(user=request.user)
+    groups_with_courses = []
+    # الجروبات التي يدرسها الدكتور
+    groups = instructor.groups.all()
+    courses = instructor.courses.all()
+    departments = instructor.departments.all()
+
+    for group in groups:
+        # الكورسات المرتبطة بالقسم والمستوى الخاصين بالجروب
+        courses_set = Course.objects.filter(
+            departments=group.department,
+            level=group.level
+        ).distinct()
+
+        courses_names = ", ".join(course.name for course in courses_set)
+        # إضافة البيانات للجروبات مع رابط
+        group_link = reverse('group_students', kwargs={'group_id': group.id})
+        groups_with_courses.append({
+            'group': group.name,
+            'group_link': group_link,
+            'level': group.level,
+            'department': group.department.name,
+            'courses': courses_names,
+        })
+    # جمع الإحصائيات
+    total_groups = groups.count()  # عدد الجروبات
+    total_courses = courses.count()  # عدد الكورسات
+    total_departments = departments.count()  # عدد الكورسات
+
+    return render(request, 'instructor_dashboard.html', {
+        'instructor': instructor,
+        'groups_with_courses': groups_with_courses,
+        'total_groups': total_groups,
+        'total_courses': total_courses,
+        'total_departments': total_departments,
+    })
+
+@login_required
+def instructor_upload_file(request):
+    if request.method == 'POST':
+        # الحصول على البيانات من الطلب
+        file = request.FILES.get('file')
+        description = request.POST.get('description')
+        course_id = request.POST.get('course')
+        # تحقق من أن جميع البيانات تم إرسالها
+        if file and description and course_id:
+            # إنشاء الكائن وحفظه في قاعدة البيانات
+            try:
+                file_instance = File(
+                    file=file,
+                    description=description,
+                    course_id=course_id,
+                    upload_by=request.user,  # تعيين المستخدم الحالي
+                    status='APPROVED'  # الحالة دائمًا Approved للدكتور
+                )
+                file_instance.save()
+                messages.success(request, 'File uploaded successfully!')
+                return redirect('instructor_upload_file')  # العودة إلى صفحة الدكتور
+            except Instructor.DoesNotExist:
+                return messages.error(request,  'You are not registered as an instructor.')
+        else:
+            # إذا كانت البيانات غير مكتملة، عرض رسالة خطأ
+            return messages.error(request,  'All fields are required')
+    # جلب كائن Instructor المرتبط بـ request.user
+    try:
+        instructor = Instructor.objects.get(user=request.user)
+        # جلب الكورسات التي يدرسها الدكتور فقط
+        courses = instructor.courses.filter(status=True)  # التحقق من حالة الكورس
+    except Instructor.DoesNotExist:
+        return messages.error(request,  'You are not registered as an instructor.')
+
+    return render(request, 'instructor_upload_file.html', {'courses': courses})
+
 
 
 
@@ -342,3 +420,4 @@ def instructors_list(request):
     # استرجاع جميع المدرسين من قاعدة البيانات
     instructors = Instructor.objects.select_related('user').prefetch_related('departments', 'courses')
     return render(request, 'instructors_list.html', {'instructors': instructors})
+

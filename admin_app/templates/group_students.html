@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Students in {{ group.name }}</title>
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <h1 class="text-4xl font-bold text-blue-600 mb-6">
+            Students in Department: '{{department.name}}'  Group: '{{ group.name }}'
+        </h1>
+
+        <!-- قائمة الطلاب -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Student List</h2>
+            <div class="overflow-x-auto">
+                <table class="table-auto w-full bg-white rounded-lg shadow-md overflow-hidden">
+                    <thead class="bg-blue-600 text-white">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Student</th>
+                            <th class="px-4 py-2 text-left">Email</th>
+                            <th class="px-4 py-2 text-left">Phone</th>
+                            <th class="px-4 py-2 text-left">Department</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for student in students %}
+                        <tr class="hover:bg-gray-100">
+                            <!-- Student Info with Image -->
+                            <td class="px-4 py-2 flex items-center">
+                                <img class="w-12 h-12 rounded-full mr-4" 
+                                    src="{{ student.user.image.url }}" 
+                                    alt="Profile Picture">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ student.user.first_name }} {{ student.user.last_name }}</p>
+                                    {% comment %} <p class="text-sm text-gray-500">ID: {{ student.user.id }}</p> {% endcomment %}
+                                </div>
+                            </td>
+                            <!-- Email -->
+                            <td class="px-4 py-2">{{ student.user.email }}</td>
+                            <!-- Phone -->
+                            <td class="px-4 py-2">{{ student.user.phone }}</td> <!-- Assuming username is used as phone -->
+                            <!-- Department -->
+                            <td class="px-4 py-2">{{ student.department }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not students %}
+                        <tr>
+                            <td colspan="4" class="border border-gray-300 px-4 py-2 text-center text-gray-500">
+                                No students found.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

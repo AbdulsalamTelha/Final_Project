@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Upload File </title>
+</head>
+<body class="bg-gray-100">
+    {% comment %} <div class="absolute top-1 left-0 right-0 max-w-3xl mx-auto px-4">
+        {% if messages %}
+            <div class="fixed top-5 right-5">
+                {% for message in messages %}
+                    <div class="bg-green-500 text-white px-4 py-2 rounded shadow mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    <div> {% endcomment %}
+        <div class="absolute top-1 left-0 right-0 max-w-3xl mx-auto px-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg text-white text-center 
+                                {% if message.tags == 'success' %} bg-green-500 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    <div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Upload File</h2>
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="file" class="block text-gray-700 font-medium">File</label>
+                    <input type="file" name="file" id="file" 
+                           class="w-full mt-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200" required>
+                </div>
+                <div>
+                    <label for="description" class="block text-gray-700 font-medium">Description</label>
+                    <textarea name="description" id="description" rows="4"
+                              class="w-full mt-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200" required></textarea>
+                </div>
+                <div>
+                    <label for="course" class="block text-gray-700 font-medium">Select Course</label>
+                    <select name="course" id="course" 
+                    class="w-full mt-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200" required>
+                    {% for course in courses %}
+                            <option value="{{ course.id }}">{{ course.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit"
+                        class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+                    Upload
+                </button>
+            </form>
+        </div>
+    </div>
+    
+
+<body>
+<html>

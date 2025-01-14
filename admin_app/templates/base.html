@@ -2,38 +2,82 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        SSS | {% block title %}{% endblock %}
-    </title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> -->
-    
-    <link  rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css'%}">
-    <!-- <script src="{% static 'js/user_app/cdn.tailwindcss.com.3.4.16.js' %}"></script> -->
-    <link href="{% static 'css/user_app/all.min.css' %}" rel="stylesheet">
+    <title>SSS | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/user_app/all.min.css' %}">
+    <script src="{% static 'js/user_app/profile_menu.js' %}" defer></script>
+    <style>
+        .primary-bg {
+            background-color: #1C75BC;
+        }
 
-    <script src="{% static 'js/user_app/profile_menu.js' %}"></script>
+        .secondary-bg {
+            background-color: #29ABE2;
+        }
+
+        .primary-text {
+            color: #1C75BC;
+        }
+
+        .secondary-text {
+            color: #29ABE2;
+        }
+
+        .hover-primary:hover {
+            color: #1C75BC;
+        }
+
+        .hover-secondary:hover {
+            color: #abdff5;
+        }
+        
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900" id="body">
-    <!-- شريط التنقل -->
-    <header class="bg-blue-700 text-white shadow">
-        <div class="container mx-auto flex justify-between items-center p-4">
-            <h1 class="text-xl font-semibold">SSS</h1>
-            <div class="flex items-center space-x-4 relative">
-                <span class="text-sm">Welcome, <strong>{{ user.username }}</strong></span>
+
+<body class="bg-gray-100 text-gray-900">
+
+    <!-- شريط التنقل العلوي -->
+    <header class="primary-bg text-white shadow-md">
+        <div class="container mx-auto flex justify-between items-center py-4 px-6">
+            <!-- منطقة في أعلى الصفحة لعرض رسائل التنبيه (مثل نجاح العملية، تحذير، خطأ) باستخدام Django messages -->
+            {% if messages %}
+            <div class="container mx-auto mt-4">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }} p-4 rounded shadow-md">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- الشعار -->
+            <h1 class="text-2xl font-bold flex items-center">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-10 mr-2">
+                <a href="#" class="hover:text-gray-300">SSS</a>
+            </h1>
+
+            <!-- قائمة التبويبات -->
+            <nav class="flex-grow">
+                <ul class="flex justify-center space-x-6">
+                    <li><a href="{% url 'home' %}" class="hover-secondary">Home</a></li>
+                    <li><a href="{% url 'instructors_list' %}" class="hover-secondary">Instructors</a></li>
+                    <li><a href="{% url 'library' %}" class="hover-secondary">Library</a></li>
+                    <li><a href="{% url 'students_list' %}" class="hover-secondary">Students</a></li>
+                </ul>
+            </nav>
+
+            <!-- القائمة المنسدلة للصورة الشخصية -->
+            <div class="relative flex items-center space-x-2">
+                <span class="hidden sm:block text-sm"><strong>{{ user.username|capfirst }}</strong></span>
                 <div>
-                    <img 
-                        src="{{ user.get_profile_image_url }}"
-                        alt="Profile Picture" 
-                        class="w-10 h-10 rounded-full cursor-pointer" 
-                        id="profileMenuButton"
-                    >
-                    <!-- القائمة المنسدلة -->
-                    <ul id="profileMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded w-48">
+                    <img src="{{ user.get_profile_image_url }}" alt="Profile Picture"
+                        class="w-10 h-10 rounded-full cursor-pointer border-2 border-white" id="profileMenuButton">
+                    <ul id="profileMenu"
+                        class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded w-48 z-10">
                         <li class="hover:bg-gray-100 cursor-pointer">
                             <a href="{% url 'profile' %}" class="block px-4 py-2">View Profile</a>
                         </li>
@@ -49,10 +93,23 @@
         </div>
     </header>
 
-    <!-- المحتوى -->
+    <!-- المحتوى الرئيسي -->
     <main class="container mx-auto mt-6">
         {% block content %}
         {% endblock content %}
     </main>
+
+    <!-- تذييل الصفحة -->
+    <footer class="primary-bg text-white mt-8 py-2">
+        <div class="container mx-auto text-center">
+            <p class="text-sm">&copy; 2025 SSS. All Rights Reserved.</p>
+            <!-- <nav class="text-sm space-x-4">
+                <a href="{% url 'instructors_list' %}" class="hover-secondary">About</a>
+                <a href="{% url 'library' %}" class="hover-secondary">Privacy Policy</a>
+                <a href="{% url 'library' %}" class="hover-secondary">Terms & Conditions</a>
+            </nav> -->
+        </div>
+    </footer>
 </body>
+
 </html>

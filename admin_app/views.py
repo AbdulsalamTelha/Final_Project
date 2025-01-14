@@ -338,7 +338,7 @@ def resend_otp(request):
 
 
 
-def instructor_list(request):
+def instructors_list(request):
     # استرجاع جميع المدرسين من قاعدة البيانات
     instructors = Instructor.objects.select_related('user').prefetch_related('departments', 'courses')
     return render(request, 'instructors_list.html', {'instructors': instructors})

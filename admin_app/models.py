@@ -310,7 +310,6 @@ class Instructor(models.Model):
     courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
     groups = models.ManyToManyField('Group', related_name='instructors', limit_choices_to={'status': True},)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
-    groups = models.ManyToManyField('Group', related_name="instructors", limit_choices_to={'status': True}, blank=True,) 
             
     def __str__(self):
         return f"{self.user.get_full_name()}"

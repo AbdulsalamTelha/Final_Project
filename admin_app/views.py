@@ -1,3 +1,4 @@
+from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -13,6 +14,7 @@ from django.utils.timezone import now
 from django.db.models import Q
 
 from .models import (
+    Department,
     File,
     User,
     Instructor,
@@ -428,3 +430,63 @@ def instructors_list(request):
     instructors = Instructor.objects.select_related('user').prefetch_related('departments', 'courses')
     return render(request, 'instructors_list.html', {'instructors': instructors})
 
+def departments_with_groups(request):
+    departments = Department.objects.prefetch_related('groups')
+    context = {'departments': departments}
+    return render(request, 'departments_with_groups.html', context)
+
+def courses_with_books(request):
+    if not request.user.is_authenticated:
+        return redirect('login')  # توجيه المستخدم إذا لم يكن مسجلاً للدخول
+    
+    try:
+        # الحصول على كائن الدكتور المرتبط بالمستخدم الحالي
+        instructor = Instructor.objects.get(user=request.user)
+    except Instructor.DoesNotExist:
+        return HttpResponse("You are not authorized to access this page.")  # رسالة خطأ إذا لم يكن الدكتور موجودًا
+
+    # جلب الكورسات المرتبطة بالدكتور الحالي
+    courses = Course.objects.filter(instructors=instructor).prefetch_related('files')
+
+    context = {'courses': courses}
+    return render(request, 'courses_with_books.html', context)
+
+
+def instructor_update_file(request, file_id):
+    # جلب الملف بناءً على ID
+    file_instance = get_object_or_404(File, id=file_id)
+    courses = request.user.instructors.courses.all()
+
+
+    if request.method == 'POST':
+        # الحصول على البيانات المُرسلة
+        description = request.POST.get('description')
+        course_id = request.POST.get('course')
+        uploaded_file = request.FILES.get('file')
+
+        # التحقق من عدم ترك الحقول فارغة
+        if not description or not course_id:
+            messages.error(request, "All fields are required.")
+            return render(request, 'instructor_update_file.html', {'file': file_instance, 'courses': courses})
+
+        # تحديث البيانات
+        file_instance.description = description
+        file_instance.course_id = course_id
+        if uploaded_file:
+            file_instance.file = uploaded_file
+        file_instance.save()
+
+        return redirect('courses_with_books')  # استبدلها برابط صفحة عرض الملفات
+
+    return render(request, 'instructor_update_file.html', {'file': file_instance, 'courses': courses})
+
+def delete_file(request, file_id):
+    file = get_object_or_404(File, id=file_id)
+    file.file.delete()  # حذف الملف المرفوع من السيرفر
+    file.delete()       # حذف السجل من قاعدة البيانات
+    messages.success(request, "File deleted successfully.")
+    return redirect('courses_with_books')  
+
+def all_departments(request):
+    departments = Department.objects.all()
+    return render(request, 'all_departments.html', {'departments': departments})

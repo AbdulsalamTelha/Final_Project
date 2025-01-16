@@ -293,25 +293,10 @@ class User(AbstractUser):
         """
         if self.image and os.path.isfile(self.image.path):  # تحقق من وجود الملف فعليًا
             return self.image.url
-        return static('img/logo.png')  # الصورة الافتراضية
+        return static('img/user.svg')  # الصورة الافتراضية
                 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
-
-def default_expiry():
-     return now() + timedelta(minutes=5)
-class OTP(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=default_expiry)
-
-    def is_expired(self):
-        return now() > self.expires_at
-
-    def __str__(self):
-        return f"{self.user.username} - {self.otp}"
 
 
 class Admin(models.Model):
@@ -413,6 +398,10 @@ class AccountRequest(models.Model):
 
     def __str__(self):
         return self.full_name
+    
+    class Meta:
+        verbose_name = "Account Request"
+        verbose_name_plural = "Account Requests"
 
 def default_expiry():
      return now() + timedelta(minutes=5)

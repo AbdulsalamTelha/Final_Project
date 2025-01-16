@@ -338,7 +338,8 @@ def group_students(request, group_id):
     
 @login_required
 def instructor_dashboard(request):
-    instructor = Instructor.objects.get(user=request.user)
+    # instructor = Instructor.objects.get(user=request.user)  
+    instructor = get_object_or_404(Instructor, user=request.user)
     groups_with_courses = []
     # الجروبات التي يدرسها الدكتور
     groups = instructor.groups.all()

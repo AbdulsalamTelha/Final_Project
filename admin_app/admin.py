@@ -352,7 +352,7 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
     inlines = [InstructorInline]   # الحقول المضمنة ستتم إضافتها ديناميكيًا
 
     class Media:
-        js = ('js/admin/user_role.js',)
+        js = ('js/admin_app/user_role.js',)
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)

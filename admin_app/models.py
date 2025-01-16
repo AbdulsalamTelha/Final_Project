@@ -299,21 +299,6 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
 
-def default_expiry():
-     return now() + timedelta(minutes=5)
-class OTP(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=default_expiry)
-
-    def is_expired(self):
-        return now() > self.expires_at
-
-    def __str__(self):
-        return f"{self.user.username} - {self.otp}"
-
-
 class Admin(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="admins")
     
@@ -325,7 +310,6 @@ class Instructor(models.Model):
     courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
     groups = models.ManyToManyField('Group', related_name='instructors', limit_choices_to={'status': True},)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
-    groups = models.ManyToManyField('Group', related_name="instructors", limit_choices_to={'status': True}, blank=True,) 
             
     def __str__(self):
         return f"{self.user.get_full_name()}"

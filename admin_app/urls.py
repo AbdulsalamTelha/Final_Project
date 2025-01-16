@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import (get_groups_view, access_denied, change_password_view, edit_profile_view, group_students,
-                    instructor_dashboard, instructor_upload_file, library_view, login_view, profile_view, request_otp, resend_otp, reset_password, 
+from .views import (all_departments, courses_with_books, delete_file, departments_with_groups, get_groups_view, access_denied, change_password_view, edit_profile_view, group_students,
+                    instructor_dashboard, instructor_update_file, instructor_upload_file, library_view, login_view, profile_view, request_otp, resend_otp, reset_password, 
                     student_library_view, check_email_request, request_account, students_list, verify_otp)
 
 from .views import (get_groups_view, access_denied, change_password_view, edit_profile_view,
@@ -37,5 +37,12 @@ urlpatterns = [
     path('resend_otp/', resend_otp, name='resend_otp'),
     path('group/<int:group_id>/students/', group_students, name='group_students'),
     path('instructor-upload-file/',instructor_upload_file, name='instructor_upload_file'),
+    path('departments-with-groups/', departments_with_groups, name='departments_with_groups'),
+    path('courses-with-books/', courses_with_books, name='courses_with_books'),
+    path('file/edit/<int:file_id>/', instructor_update_file, name='instructor_update_file'),
+    path('delete_file/<int:file_id>/', delete_file, name='delete_file'),
+    path('departments/', all_departments, name='all_departments'),
+
+
 
 ]

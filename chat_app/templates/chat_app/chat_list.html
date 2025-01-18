@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <!-- Sidebar -->
+    <div class="w-1/4 bg-white dark:bg-gray-800 p-4 shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">Chats</h2>
+            <!-- Dark Mode Toggle -->
+            {% comment %} <button id="dark-mode-toggle" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                <span class="dark:hidden">🌙</span>
+                <span class="hidden dark:inline">☀️</span>
+            </button> {% endcomment %}
+        </div>
+        <ul>
+            {% for room in chat_rooms %}
+            <li class="mb-2">
+                <a href="{% url 'chat_room' room.name %}" class="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200">
+                    <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {{ room.name|slice:":1"|upper }} <!-- Display the first letter of the chat room name -->
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ room.name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Last message preview...</p> <!-- Placeholder for last message -->
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">10:30 AM</span> <!-- Placeholder for last message time -->
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-3/4 flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Select a chat to start messaging</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Click on a chat from the sidebar to begin.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+  // Debugging: Log the list of chat rooms
+  console.log("Chat Rooms:", {{ chat_rooms|safe }});
+
+  // Debugging: Log the current user
+  console.log("Current User:", "{{ request.user }}");
+
+  // Debugging: Log dark mode preference
+  console.log("Dark Mode Preference:", localStorage.getItem('darkMode'));
+
+  // Dark Mode Toggle
+  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const htmlElement = document.documentElement;
+
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
+        console.log("Dark Mode Toggled. New State:", htmlElement.classList.contains('dark'));
+    });
+  }
+
+  // Check for saved dark mode preference
+  if (localStorage.getItem('darkMode') === 'true') {
+      htmlElement.classList.add('dark');
+      console.log("Dark Mode Enabled on Page Load");
+  } else {
+      console.log("Dark Mode Disabled on Page Load");
+  }
+</script>
+{% endblock %}

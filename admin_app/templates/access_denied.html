@@ -1,11 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Access Denied</title>
-</head>
-<body>
-    <h1>Access Denied</h1>
-    <p>You do not have permission to access this page.</p>
-</body>
-</html>
+{%extends "base.html" %}
+
+{%block title%}Access Denied{%endblock title%}
+
+{% block breadcrumb %}
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="flex items-center justify-center">
+    <div class="text-center bg-white dark:bg-gray-700 p-12 rounded-lg shadow-md w-full max-w-2xl mx-auto">
+        <h1 class="text-6xl font-bold text-yellow-400 mb-6">Access Denied</h1>
+        <p class="text-xl mb-8">You do not have permission to access this page.</p>
+        <a href="{% url 'home' %}" class="text-blue-500 hover:text-blue-700 hover:underline">
+            Return to the homepage
+        </a>
+    </div>
+</div>
+{% endblock content %}

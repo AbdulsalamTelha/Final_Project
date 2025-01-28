@@ -37,7 +37,7 @@ class FileResource(ModelResource):
 class FileAdmin(ExportMixin, admin.ModelAdmin):
     form = FileAdminForm
     resource_class = FileResource
-    list_display = ('name', 'course__name' ,'category', 'type', 'size', 'display_upload_by', 'status', 'upload_date', 'view_file')
+    list_display = ('name', 'course__name' ,'category', 'type', 'get_human_readable_size', 'display_upload_by', 'status', 'upload_date', 'view_file')
     list_filter = ('status', 'type', 'upload_date', 'category')
     search_fields = ('name', 'upload_by__username', 'type', 'category')
     readonly_fields = ('name', 'category', 'size', 'type', 'upload_by', 'upload_date')
@@ -50,7 +50,7 @@ class FileAdmin(ExportMixin, admin.ModelAdmin):
 
     def display_upload_by(self, obj):
         return obj.upload_by.username if obj.upload_by else "N/A"
-    display_upload_by.short_description = "Upload_By"
+    display_upload_by.short_description = "Upload By"
     
     def view_file(self, obj):    # دالة لاستعراض الملف
         if obj.file and obj.file.url:  # التحقق من وجود الملف والرابط
@@ -163,7 +163,7 @@ class StudentForm(forms.ModelForm):
         fields = '__all__'
 
     class Media:
-        js = ('js/admin/select_group.js',)
+        js = ('js/admin_app/select_group.js',)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

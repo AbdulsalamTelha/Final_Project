@@ -1,27 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Request Account</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    
-    <div class="absolute top-1 left-0 right-0 max-w-3xl mx-auto px-4">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="p-4 rounded-lg text-white text-center 
-                            {% if message.tags == 'success' %} bg-green-500 {% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-    
-    
+{%extends "base.html" %}
 
-    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+{%block title%}Request an Account{%endblock title%}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen overflow-hidden">
+    <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg max-w-md w-full">
         <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">Request an Account</h1>
 
         <form method="post" enctype="multipart/form-data" id="requestForm">
@@ -30,14 +13,28 @@
             <!-- Full Name Field -->
             <div class="mb-4">
                 <label for="full_name" class="block text-gray-700 text-sm font-semibold mb-2">Full Name</label>
-                <input type="text" id="full_name" name="full_name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your full name">
-                <p id="fullNameError" class="text-red-500 text-sm mt-1 hidden">Full name is required.</p>
+                <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" autofocus
+                        class="w-full px-4 py-2 border dark:bg-gray-800 
+                        {% if errors.full_name %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-lg focus:outline-none focus:ring" value="{{ full_name }}">
+                {% if errors.full_name %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.full_name }}</p>
+                {% endif %}
             </div>
         
             <!-- Email Field -->
             <div class="mb-4">
                 <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Email Address</label>
-                <input type="email" id="email" name="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your email">
+                <input type="email" id="email" name="email" placeholder="Enter your email"
+                        class="w-full px-4 py-2 border dark:bg-gray-800 
+                        {% if errors.email %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-lg focus:outline-none focus:ring" value="{{ email }}">
+                {% if errors.email %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.email }}</p>
+                {% endif %}
+
                 <p id="emailError" class="text-red-500 text-sm mt-1 hidden">Please enter a valid email address.</p>
                 <p id="emailExistsError" class="text-red-500 text-sm mt-1 hidden">You have already submitted a request with this email.</p>
             </div>
@@ -45,15 +42,27 @@
             <!-- Phone Field -->
             <div class="mb-4">
                 <label for="phone_number" class="block text-gray-700 text-sm font-semibold mb-2">Phone Number</label>
-                <input type="tel" id="phone_number" name="phone_number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" required placeholder="Enter your phone number">
-                <p id="phoneError" class="text-red-500 text-sm mt-1 hidden">Please enter a valid Yemeni phone number.</p>
+                <input type="tel" id="phone_number" name="phone_number" placeholder="Enter your phone number" maxlength="9"
+                        class="w-full px-4 py-2 border dark:bg-gray-800 
+                        {% if errors.phone_number %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-lg focus:outline-none focus:ring" value="{{ phone_number }}"  >
+                {% if errors.phone_number %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.phone_number }}</p>
+                {% endif %}
             </div>
         
             <!-- Profile Picture Upload -->
             <div class="mb-6">
                 <label for="profile_image" class="block text-gray-700 text-sm font-semibold mb-2">Upload Your Picture</label>
-                <input type="file" id="profile_image" name="profile_image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none" accept="image/*" required>
-                <p id="profileError" class="text-red-500 text-sm mt-1 hidden">Profile picture is required.</p>
+                <input type="file" id="profile_image" name="profile_image" accept="image/*"
+                        class="w-full px-4 py-2 border dark:bg-gray-800 
+                        {% if errors.profile_image %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-lg focus:outline-none focus:ring"  >
+                {% if errors.profile_image %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.profile_image }}</p>
+                {% endif %}
             </div>
         
             <!-- Submit Button -->
@@ -69,75 +78,5 @@
             </div>
         </form>
     </div>
-
-    <script>
-        const form = document.getElementById("requestForm");
-
-        // Email Validation on Blur
-        const emailInput = document.getElementById("email");
-        const emailExistsError = document.getElementById("emailExistsError");
-
-        emailInput.addEventListener("blur", () => {
-            const email = emailInput.value.trim();
-
-            if (email) {
-                fetch(`/check-email-request/?email=${encodeURIComponent(email)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.exists) {
-                            emailExistsError.classList.remove("hidden");
-                            emailInput.setCustomValidity("You have already submitted a request.");
-                        } else {
-                            emailExistsError.classList.add("hidden");
-                            emailInput.setCustomValidity("");
-                        }
-                    })
-                    .catch(error => console.error("Error checking email:", error));
-            }
-        });
-
-    form.addEventListener("submit", (event) => {
-        let isValid = true;
-
-        // Full Name Validation (only letters)
-        const fullName = document.getElementById("full_name");
-        const fullNameError = document.getElementById("fullNameError");
-        const fullNamePattern = /^[\p{L}\s]+$/u; // Allows letters and spaces only
-        if (!fullNamePattern.test(fullName.value.trim())) {
-            fullNameError.textContent = "Full name must contain letters only.";
-            fullNameError.classList.remove("hidden");
-            isValid = false;
-        } else {
-            fullNameError.classList.add("hidden");
-        }
-
-        // Phone Number Validation 
-        const phone = document.getElementById("phone_number");
-        const phoneError = document.getElementById("phoneError");
-        const phonePattern = /^(70|71|73|77|78)\d{7}$/; 
-        if (!phonePattern.test(phone.value)) {
-            phoneError.textContent = "Please enter a valid Yemeni phone number.";
-            phoneError.classList.remove("hidden");
-            isValid = false;
-        } else {
-            phoneError.classList.add("hidden");
-        }
-
-        // Profile Picture Validation
-        const profile = document.getElementById("profile_image");
-        const profileError = document.getElementById("profileError");
-        if (profile.files.length === 0) {
-            profileError.classList.remove("hidden");
-            isValid = false;
-        } else {
-            profileError.classList.add("hidden");
-        }
-
-        if (!isValid) {
-            event.preventDefault();
-        }
-    });
-    </script>
-
-</body>
-</html>
+</div>
+{% endblock content %}

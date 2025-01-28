@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Departments List{% endblock title %}
+
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        All Departments
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+    <div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+        <h1 class="text-2xl font-semibold mb-4">Departments List</h1>
+        
+        <!-- Filters and Search  -->
+        <div class="py-4">
+            <form method="GET" class="mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-5">
+
+                    <!-- حقل البحث العام -->
+                    <input type="text" name="search" value="{{ search_query }}" 
+                        placeholder="Search for Departments ..." 
+                        id="search-field"
+                        class="border border-gray-300 dark:bg-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400"/>
+
+                    <div class="flex gap-3">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                            Search
+                        </button>
+    
+                        <a href="{% url 'departments_list' %}"
+                        class="bg-gray-300 px-4 py-2 rounded shadow hover:bg-gray-400 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-500">
+                            Reset
+                        </a>
+                    </div>
+                </div>            
+            </form>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800">
+                    <tr>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=id{% if actual_ordering == 'id' %}&ordering=-id{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                ID
+                                {% if actual_ordering == 'id' %}
+                                    ↑
+                                {% elif actual_ordering == '-id' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=name{% if actual_ordering == 'name' %}&ordering=-name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Name
+                                {% if actual_ordering == 'name' %}
+                                    ↑
+                                {% elif actual_ordering == '-name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for department in departments %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="p-3">{{ department.id }}</td>
+                        <td class="p-3 font-bold">{{ department.name }} </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="border-b py-3 px-6 italic text-center dark:text-white">
+                            No departments found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-end mt-4">
+            <!-- مجموع السجلات -->
+            <span class="font-semibold text-gray-700 dark:text-white">
+                Total Records: {{ total_count }}
+            </span>
+        </div>
+    </div>
+{% endblock content %} 

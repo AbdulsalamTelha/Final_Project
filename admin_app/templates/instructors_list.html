@@ -2,48 +2,253 @@
 
 {% block title %}Instructors List{% endblock title %}
 
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        All Instructors
+    </li>
+{% endblock breadcrumb %}
+
 {% block content %}
-<div class="bg-white shadow-md rounded my-6 p-4">
-    <h1 class="text-2xl font-bold text-blue-700 mb-4">Instructors List</h1>
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-300">
-            <thead class="bg-blue-700 text-white">
-                <tr>
-                    <th class="py-3 px-6 text-left">#</th>
-                    <th class="py-3 px-6 text-left">Full Name</th>
-                    <th class="py-3 px-6 text-left">Email</th>
-                    <th class="py-3 px-6 text-left">Departments</th>
-                    <th class="py-3 px-6 text-left">Courses</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700">
-                {% for instructor in instructors %}
-                <tr class="border-b hover:bg-gray-100">
-                    <td class="py-3 px-6">{{ forloop.counter }}</td>
-                    <td class="py-3 px-6">{{ instructor.user.get_full_name }}</td>
-                    <td class="py-3 px-6">{{ instructor.user.email }}</td>
-                    <td class="py-3 px-6">
-                        {% for department in instructor.departments.all %}
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">{{ department.name }}</span>
-                            {% if not forloop.last %}<br>{% endif %}
-                        {% endfor %}
-                    </td>
-                    <td class="py-3 px-6">
-                        {% for course in instructor.courses.all %}
-                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">{{ course.name }}</span>
-                            {% if not forloop.last %}<br>{% endif %}
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="py-3 px-6 text-center text-gray-500">
-                        No instructors found.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    <h1 class="text-2xl font-semibold mb-4">Instructors List</h1>
+    
+    <!-- Filters and Search  -->
+    <div class="py-4">
+        <form method="GET" class="mb-4">
+            <input type="hidden" name="view" value="{{ view_mode }}"> <!-- حقل مخفي لنقل وضع العرض -->
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <!-- قائمة الفلترة للأقسام -->
+                <select name="department" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Departments</option>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" {% if department.id|stringformat:"s" == department_filter %}selected{% endif %}>
+                            {{ department.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+        
+                <!-- قائمة الفلترة للمواد -->
+                <select name="course" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if course.id|stringformat:"s" == course_filter %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <!-- قائمة الفلترة للجنس -->
+                <select name="gender" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Genders</option>
+                    {% for gender in genders %}
+                        <option value="{{ gender }}" {% if gender == gender_filter %}selected{% endif %}>
+                            {% if gender == 'M' %}
+                                Male
+                            {% else %}
+                                Female
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- حقل البحث العام -->
+                <input type="text" name="search" value="{{ search_query }}" 
+                    placeholder="Search for Instructors ..." 
+                    id="search-field"
+                    class="border border-gray-300 dark:bg-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400" />           
+            </div>
+
+            <div class="flex mt-4 justify-end gap-5">
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        Filter
+                    </button>
+
+                    <a href="{% url 'instructors_list' %}"
+                    class="bg-gray-300 px-4 py-2 rounded shadow hover:bg-gray-400 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-500">
+                        Reset
+                    </a>
+                </div>
+
+                <div class="flex gap-3">
+                    <a href="?view=card{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-grip-horizontal text-2xl"></i>
+                    </a>
+                    
+                    <a href="?view=list{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-list-ul text-2xl"></i> 
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+    
+    {% if view_mode == 'list' %}
+        <!-- عرض القائمة -->
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800">
+                    <tr>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__id{% if actual_ordering == 'user__id' %}&ordering=-user__id{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                ID
+                                {% if actual_ordering == 'user__id' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__id' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__first_name{% if actual_ordering == 'user__first_name' %}&ordering=-user__first_name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Instructor
+                                {% if actual_ordering == 'user__first_name' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__first_name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__email{% if actual_ordering == 'user__email' %}&ordering=-user__email{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Email
+                                {% if actual_ordering == 'user__email' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__email' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__phone{% if actual_ordering == 'user__phone' %}&ordering=-user__phone{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Phone
+                                {% if actual_ordering == 'user__phone' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__phone' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__gender{% if actual_ordering == 'user__gender' %}&ordering=-user__gender{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Gender
+                                {% if actual_ordering == 'user__gender' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__gender' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">Departments</th>
+                        <th class="p-3 text-left">Courses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instructor in page_obj %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="p-4">{{ instructor.user.id }}</td>
+                        <td class="p-4">
+                            <div class="flex items-center space-x-3 min-w-60">
+                                <img 
+                                    src="{{ instructor.user.get_profile_image_url }}" 
+                                    alt="{{ instructor.user.get_full_name }}" 
+                                    class="w-12 h-12 rounded-full shadow-md object-cover"
+                                >
+                                <span class="font-medium">{{ instructor.user.get_full_name }}</span>
+                            </div>
+                        </td>
+                        <td class="p-4">{{ instructor.user.email }}</td>
+                        <td class="p-4">{{ instructor.user.phone }}</td>
+                        <td class="p-4">
+                            {% if instructor.user.gender == "M" %}
+                                <span>Male</span>
+                            {% else %}
+                                <span>Female</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 min-w-60 max-w-80">
+                            {% for department in instructor.departments.all %}
+                                <span>{{ department.name }}</span>{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td class="p-4 min-w-60 max-w-80">
+                            {% for course in instructor.courses.all %}
+                                <span>{{ course.name }} ({{ course.level }})</span>{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="border-b py-3 px-6 italic text-center dark:text-white">
+                            No instructors found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <!-- عرض الكروت -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for instructor in page_obj %}
+            <div class="bg-white dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer shadow-md rounded-lg p-4 flex flex-col items-center text-center">
+                <img src="{{ instructor.user.get_profile_image_url }}" alt="{{ instructor.user.get_full_name }}" class="w-24 h-24 rounded-full shadow-md object-cover mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ instructor.user.get_full_name }}</h2>
+                <p class="text-gray-600 dark:text-gray-400">{{ instructor.user.email }}</p>
+            </div>
+            {% empty %}
+            <div class="col-span-full italic text-center py-4">No instructors found.</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- أزرار التنقل -->
+    <div class="flex justify-between items-center mt-4">
+         <!-- أزرار التقسيم -->
+         <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Previous</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                    class="px-4 py-2 {% if num == page_obj.number %}bg-blue-500 text-white dark:bg-gray-400{% else %}bg-gray-300 dark:bg-gray-800 hover:text-white{% endif %} rounded hover:bg-blue-600 dark:hover:bg-gray-500">
+                    {{ num }}
+                </a>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Next</a>
+            {% endif %}
+        </div>
+
+        <!-- العدد الإجمالي للسجلات مع رابط عرض جميع السجلات -->
+        <div class="flex items-center space-x-4 ">
+            <!-- زر عرض جميع السجلات -->
+            {% if show_all %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'show_all' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Paginate Records
+                </a>
+            {% else %}
+                <a href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}show_all=true" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Show All Records
+                </a>
+            {% endif %}
+
+            <!-- مجموع السجلات -->
+            <span class="font-semibold text-gray-700 dark:text-white">
+                Total Records: {{ total_count }}
+            </span>
+        </div>
     </div>
 </div>
 {% endblock content %}

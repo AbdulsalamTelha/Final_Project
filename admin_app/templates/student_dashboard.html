@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard{% endblock title %}
+
+{% block breadcrumb %}
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-700 rounded-lg mb-8 p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <!-- صورة المستخدم -->
+    <div class="p-6">
+        <div class="flex flex-col items-center">
+            <img src="{{ user.get_profile_image_url }}" alt="Personal Image" class="w-40 h-40 rounded-full border-2 border-white dark:border-gray-800 shadow-lg">
+            <h2 class="text-2xl font-semibold text-center uppercase dark:text-white mt-4">{{ student.user.get_full_name }}</h2>
+            <p>{{ student.department.name }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-graduation-cap mr-3"></i>My Courses
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800 ">
+                    <tr>
+                        <th class="p-3 text-left whitespace-nowrap">Course Name </th>
+                        <th class="p-3 text-left whitespace-nowrap">Level</th>
+                        <th class="p-3 text-left whitespace-nowrap">Year</th>
+                        <th class="p-3 text-left whitespace-nowrap">Semester</th>
+                        <th class="p-3 text-left whitespace-nowrap">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in student_courses %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="p-4 whitespace-nowrap">{{ course.course.name }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ course.course.get_level_display }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ course.year }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ course.get_semester_display }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ course.get_status_display }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-3 px-6 italic border-b text-center dark:text-white">
+                            No courses found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Files -->
+    <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-file-upload mr-3"></i>Recent Files
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800 ">
+                    <tr>
+                        <th class="p-3 text-left whitespace-nowrap">File Name </th>
+                        <th class="p-3 text-left whitespace-nowrap">Course Name</th>
+                        <th class="p-3 text-left whitespace-nowrap">Upload Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="p-4 truncate whitespace-nowrap text-ellipsis">{{ file.name }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ file.course.name }}</td>
+                        <td class="p-4 whitespace-nowrap">{{ file.upload_date|date:'M. d, Y' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="py-3 px-6 italic border-b text-center dark:text-white">
+                            No files found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

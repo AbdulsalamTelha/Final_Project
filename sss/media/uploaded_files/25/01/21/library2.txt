@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Library{% endblock title %}
+
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'instructor_dashboard' %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            <i class="fas fa-home mr-2"></i>Home
+        </a>
+    </li>
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        All Library Files
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <!-- Filters and Search -->
+    <div class="py-4">
+        <form method="get" class="mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                
+                <!-- Course Filter -->
+                <select name="course" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if course_filter == course.id|stringformat:"s" %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Category Filter -->
+                <select name="category" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- File Type Filter -->
+                <select name="type" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Types</option>
+                    {% for file_type in file_types %}
+                        <option value="{{ file_type }}" {% if type_filter == file_type %}selected{% endif %}>
+                            {{ file_type|upper }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Search -->
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search for Files..." 
+                    class="border border-gray-300 dark:bg-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400"
+                    value="{{ search_query }}">
+
+                <div class="flex gap-4">
+                    <div class="flex gap-2">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                            Filter
+                        </button>
+    
+                        <a href="{% url 'library' %}"
+                        class="bg-gray-300 px-4 py-2 rounded shadow hover:bg-gray-400 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-500">
+                            Reset
+                        </a>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="?view=card{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                            class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                            <i class="fas fa-grip-horizontal text-2xl"></i>
+                        </a>
+                        
+                        <a href="?view=list{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                            class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                            <i class="fas fa-list-ul text-2xl"></i> 
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- File Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for file in files %}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <!-- Thumbnail -->
+            <div class="w-full h-40 flex items-center justify-center bg-gray-200">
+                {% if file.is_image %}
+                    <img src="{{ file.file.url }}" alt="{{ file.name }}" class="h-full object-cover">
+                {% elif file.is_pdf or file.is_ppt %}
+                    <img src="{{ file.thumbnail }}" alt="{{ file.name }}" class="h-full object-cover">
+                {% elif file.is_docx %}
+                    <i class="fas fa-file-word text-blue-600 text-6xl"></i>
+                {% elif file.is_audio %}
+                    <i class="fas fa-file-audio text-green-600 text-6xl"></i>
+                {% elif file.is_video %}
+                    <i class="fas fa-file-video text-red-600 text-6xl"></i>
+                {% else %}
+                    <i class="fas fa-file text-gray-600 text-6xl"></i>
+                {% endif %}
+            </div>
+
+            <!-- File Details -->
+            <div class="p-4">
+                <h2 class="text-lg font-bold text-gray-800 truncate">{{ file.name }}</h2>
+                <p class="text-sm text-gray-600 truncate">{{ file.description }}</p>
+                <p class="text-sm text-gray-500 mt-2">Uploaded on {{ file.upload_date|date:"M d, Y" }}</p>
+                <p class="text-sm text-gray-500">Size: {{ file.size }}</p>
+                <p class="text-sm text-gray-500">Type: {{ file.type|upper }}</p>
+                <p class="text-sm text-gray-500">Category: {{ file.category }}</p>
+                <p class="text-sm text-gray-500">Course: {{ file.course.name }}</p>
+                <a 
+                    href="{{ file.file.url }}" 
+                    class="mt-4 inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" 
+                    download>
+                    Download
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full italic text-center">
+            <p>No files found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+

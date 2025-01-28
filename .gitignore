@@ -2,9 +2,3 @@ __pycache__/
 *.pyc
 *.pyo
 *.log
-*.py
-
-sss/__pycache__/
-*.pyc
-*.pyo
-*.log

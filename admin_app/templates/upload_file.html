@@ -1,0 +1,79 @@
+{%extends "base.html" %}
+
+{%block title%}Upload File{%endblock title%}
+
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li>
+        <a href="{% url 'library_list' %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            Library
+        </a>
+    </li>
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        Upload File
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-6">Upload File</h2>
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <!-- File Field -->
+            <div>
+                <label for="file" class="block font-medium">File</label>
+                <input type="file" name="file" id="file" 
+                        class="w-full mt-2 p-2 border dark:bg-gray-800 
+                        {% if errors.file %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-md focus:outline-none focus:ring">
+                {% if errors.file %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.file }}</p>
+                {% endif %}
+            </div>
+            <!-- Description Field -->
+            <div>
+                <label for="description" class="block font-medium">Description</label>
+                <textarea name="description" id="description" rows="4"
+                        class="w-full mt-2 p-2 border dark:bg-gray-800 
+                        {% if errors.description %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-md focus:outline-none focus:ring">{{ description }}</textarea>
+                {% if errors.description %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.description }}</p>
+                {% endif %}
+            </div>
+            <!-- Course Field -->
+            <div>
+                <label for="course" class="block font-medium">Select Course</label>
+                <select name="course" id="course" 
+                        class="w-full mt-2 mb-2 p-2 border dark:bg-gray-800 
+                        {% if errors.course %} border-red-500 dark:border-red-400 focus:ring-red-200 dark:focus:ring-red-400 
+                        {% else %} border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400 {% endif %} 
+                        rounded-md focus:outline-none focus:ring">
+                    <option value="">-- Select a course --</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if course.id|stringformat:"s" == course_id %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.course %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-0">{{ errors.course }}</p>
+                {% endif %}
+            </div>
+            <!-- Submit Button -->
+            <button type="submit"
+                    class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 dark:bg-gray-500 dark:hover:bg-gray-400 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-500">
+                Upload
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

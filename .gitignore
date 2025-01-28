@@ -1,4 +1,11 @@
 __pycache__/
-*.pyc
-*.pyo
-*.log
+# *.pyc
+# *.pyo
+# *.log
+
+# sss/__pycache__/
+# *.pyc
+# *.pyo
+# *.log
+
+migrations/

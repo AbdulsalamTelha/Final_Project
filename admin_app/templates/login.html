@@ -1,38 +1,21 @@
-{% load static %}
+{%extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSS | Login</title>
-    <!-- <script src="https://cdn.tailwindcss.com"></script> Tailwind CSS CDN -->
-    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> Font Awesome CDN -->
-    
-    <link rel="stylesheet" href="{% static 'css/user_app/fontawesome-free-6.7.2-web/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_app/cdn.tailwindcss.com.3.4.16.css' %}">
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+{%block title%}Login{%endblock title%}
 
-    <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+{% block content %}
+<div class="flex items-center justify-center min-h-screen overflow-hidden">
+    <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg max-w-sm w-full">
         <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">Login</h1>
-
-        {% if error %}
-            <div class="mb-4 text-red-500 text-center">
-                <p>{{ error }}</p>
-            </div>
-        {% endif %}
 
         <form method="post">
             {% csrf_token %}
-            
+
             <!-- Username Field -->
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 text-sm font-semibold mb-2">Username</label>
                 <div class="flex items-center border border-gray-300 rounded-lg px-4 py-2">
                     <i class="fas fa-user text-gray-400 mr-3"></i>
-                    <input type="text" id="username" name="username" class="w-full text-gray-700 focus:outline-none" required placeholder="Enter your username">
+                    <input type="text" id="username" name="username" class="w-full text-gray-700 focus:outline-none"  placeholder="Enter your username" autofocus>
                 </div>
             </div>
             
@@ -41,7 +24,9 @@
                 <label for="password" class="block text-gray-700 text-sm font-semibold mb-2">Password</label>
                 <div class="flex items-center border border-gray-300 rounded-lg px-4 py-2">
                     <i class="fas fa-lock text-gray-400 mr-3"></i>
-                    <input type="password" id="password" name="password" class="w-full text-gray-700 focus:outline-none" required placeholder="Enter your password">
+                    <input type="password" id="password" name="password" class="w-full text-gray-700 focus:outline-none"  placeholder="Enter your password">
+                    <i class="fas fa-eye text-gray-400 ml-3 cursor-pointer"
+                        onclick="toggleOneFieldPasswordVisibility('password', this)"></i>
                 </div>
             </div>
 
@@ -56,6 +41,7 @@
                 Login
             </button>
         </form>
+
         <!-- Request Account Link -->
         <div class="mt-4 text-center">
             <p class="text-sm text-gray-600">
@@ -63,6 +49,7 @@
                 <a href="{% url 'request_account' %}" class="text-blue-500 hover:underline">Request an account</a>
             </p>
         </div>
+
          <!--Reset Password-->
          <div class="mt-4 text-center">
             <a href="{% url 'request_otp' %}" class="text-blue-500 hover:text-blue-700 text-sm">
@@ -70,38 +57,5 @@
             </a>
         </div>
     </div>
-    </div>
-
-    <!-- Script to save username and password -->
-    <script>
-        // استرجاع القيم إذا كانت محفوظة
-        window.onload = function () {
-            const savedUsername = localStorage.getItem('username');
-            const savedPassword = localStorage.getItem('password');
-            const rememberChecked = localStorage.getItem('remember') === 'true';
-
-            if (savedUsername && savedPassword && rememberChecked) {
-                document.getElementById('username').value = savedUsername;
-                document.getElementById('password').value = savedPassword;
-                document.getElementById('remember').checked = true;
-            }
-        };
-
-        // حفظ القيم إذا تم تحديد "تذكرني"
-        document.querySelector('form').addEventListener('submit', function () {
-            const remember = document.getElementById('remember').checked;
-            if (remember) {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                localStorage.setItem('username', username);
-                localStorage.setItem('password', password);
-                localStorage.setItem('remember', true);
-            } else {
-                localStorage.removeItem('username');
-                localStorage.removeItem('password');
-                localStorage.setItem('remember', false);
-            }
-        });
-    </script>
-</body>
-</html>
+</div>
+{% endblock content %}

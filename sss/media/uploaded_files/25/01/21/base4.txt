@@ -1,0 +1,230 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSS | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/user_app/fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/user_app/cdn.tailwindcss.com.3.4.16.css' %}">
+    <script src="{% static 'js/user_app/profile_menu.js' %}" defer></script>
+    <style>
+        .primary-bg {
+            background-color: #1C75BC;
+        }
+
+        .secondary-bg {
+            background-color: #29ABE2;
+        }
+
+        .primary-text {
+            color: #1C75BC;
+        }
+
+        .secondary-text {
+            color: #29ABE2;
+        }
+
+        .hover-primary:hover {
+            color: #1C75BC;
+        }
+
+        .hover-secondary:hover {
+            color: #abdff5;
+        }
+
+
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .primary-bg {
+            background-color: #2d3748;
+        }
+        
+        body.dark-mode .secondary-bg {
+            background-color: #4a5568;
+        }
+        
+        body.dark-mode .text-white {
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .text-gray-700 {
+            color: #a0aec0;
+        }
+        
+
+
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+
+    <!-- شريط التنقل العلوي -->
+    <header class="primary-bg text-white shadow-md">
+        <div class="container mx-auto flex justify-between items-center py-2 px-6">
+
+            <!-- الشعار -->
+            <h1 class="text-2xl font-bold flex items-center">
+                
+                <a href="#" class="flex items-center">
+                    <img src="{% static 'img/logo_white.png' %}" alt="Logo" class="h-10 mr-2 cursor-pointer">
+                    <span>SSS</span>
+                </a>
+            </h1>
+
+            <!-- قائمة التبويبات -->
+            <nav class="flex-grow">
+                <ul class="flex justify-center space-x-6">
+
+                    <li class="tab-container relative group">
+                        <a href="{% url 'home' %}" class="hover-secondary">Home</a>
+                        <div class="absolute -bottom-1 left-0 right-0 h-2"></div>
+                        <ul
+                            class="tab-dropdown-menu group-hover:flex flex-col hidden absolute bg-white text-gray-700 shadow-lg rounded-lg mt-2 z-10 w-40 overflow-hidden">
+                            <li class="hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item 1</a>
+                            </li>
+                            <li class="hover:bg-gray-100">
+                                <a href="#" class="block px-4 py-2">Sub-item 2</a>
+                            </li>
+                            <li class="hover:bg-gray-100 last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item 3</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="tab-container relative">
+                        <a href="{% url 'home' %}" class="hover-secondary">Home</a>
+                        <div class="absolute -bottom-1 left-0 right-0 h-2"></div>
+                        <ul
+                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 shadow-lg rounded-lg mt-2 z-10 w-40 overflow-hidden">
+                            <li class="hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item 1</a>
+                            </li>
+                            <li class="hover:bg-gray-100">
+                                <a href="#" class="block px-4 py-2">Sub-item 2</a>
+                            </li>
+                            <li class="hover:bg-gray-100 last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item 3</a>
+                            </li>
+                        </ul>
+                    </li>
+            
+                    <li class="tab-container relative">
+                        <a href="{% url 'instructors_list' %}" class="hover-secondary">Instructors</a>
+                        <div class="absolute -bottom-1 left-0 right-0 h-2"></div>
+                        <ul
+                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 shadow-lg rounded-lg mt-2 z-10 w-40 overflow-hidden">
+                            <li class="hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item A</a>
+                            </li>
+                            <li class="hover:bg-gray-100 last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item B</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="tab-container relative">
+                        <a href="{% url 'library' %}" class="hover-secondary">Library</a>
+                        <div class="absolute -bottom-1 left-0 right-0 h-2"></div>
+                        <ul
+                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 shadow-lg rounded-lg mt-2 z-10 w-40 overflow-hidden">
+                            <li class="hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item A</a>
+                            </li>
+                            <li class="hover:bg-gray-100 last:rounded-b-lg">
+                                <a href="#" class="block px-4 py-2">Sub-item B</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            
+             <!-- أزرار الإشعارات ووضع الليل -->
+            <div class="flex items-center space-x-4">
+                <!-- زر الإشعارات -->
+                <div id="notificationsContainer" class="relative">
+                    <button id="notificationsButton" class="relative focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                        <!-- عدد الإشعارات -->
+                        <span id="notificationCount" class="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full items-center justify-center flex px-1 leading-none transform translate-x-2 -translate-y-1 leading-none">3</span>
+                    </button>
+                    <!-- قائمة الإشعارات -->
+                    <ul id="notificationsMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow-lg rounded-lg w-64 z-10 border border-gray-200 transition-all duration-200 ease-in-out">
+                        <!-- عناصر الإشعارات -->
+                        <li class="px-4 py-2 hover:bg-gray-100 border-b">
+                            <p class="text-sm font-semibold">New message from John</p>
+                            <span class="text-xs text-gray-500">2 minutes ago</span>
+                        </li>
+                        <li class="px-4 py-2 hover:bg-gray-100 border-b">
+                            <p class="text-sm font-semibold">Your profile has been updated</p>
+                            <span class="text-xs text-gray-500">1 hour ago</span>
+                        </li>
+                        <li class="px-4 py-2 hover:bg-gray-100">
+                            <p class="text-sm font-semibold">Assignment deadline extended</p>
+                            <span class="text-xs text-gray-500">Yesterday</span>
+                        </li>
+                        <li class="text-center px-4 py-2 hover:bg-gray-100">
+                            <a href="#" class="text-blue-500 text-sm font-semibold">View All</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- زر وضع الليل/الصباح -->
+                <button id="themeToggleButton" class="focus:outline-none">
+                    <i id="themeIcon" class="fas fa-moon text-xl"></i>
+                </button>
+
+                <!-- القائمة المنسدلة للصورة الشخصية -->
+                <div id="profileContainer" class="relative flex items-center space-x-2 group">
+                    <span class="hidden sm:block text-sm uppercase ml-2 text-gray-100 font-semibold cursor-pointer"><strong>{{ user.username }}</strong></span>
+                    <div>
+                        <img src="{{ user.get_profile_image_url }}" alt="Profile Picture" class="w-10 h-10 rounded-full cursor-pointer border-2 border-white" id="profileMenuButton">
+                        <div class="absolute -bottom-1 left-0 right-0 h-2"></div>
+                        <ul id="profileMenu" class="hidden absolute right-0 mt-2 bg-white text-gray-700 shadow rounded-lg w-56 z-10 border border-gray-200 group-hover:block overflow-hidden transition duration-500 ease-in-out">
+                            <li class="hover:bg-gray-100 cursor-pointer flex items-center px-4 py-2">
+                                <i class="fas fa-user text-gray-500 mr-3"></i>
+                                <a href="{% url 'profile' %}" class="block flex-1">View Profile</a>
+                            </li>
+                            <li class="border-t border-gray-200"></li>
+                            <li class="hover:bg-gray-100 cursor-pointer flex items-center px-4 py-2">
+                                <i class="fas fa-lock text-gray-500 mr-3"></i>
+                                <a href="{% url 'change_password' %}" class="block flex-1">Change Password</a>
+                            </li>
+                            <li class="border-t border-gray-200"></li>
+                            <li class="hover:bg-gray-100 cursor-pointer flex items-center px-4 py-2">
+                                <i class="fas fa-sign-out-alt text-gray-500 mr-3"></i>
+                                <a href="{% url 'logout' %}" class="block flex-1">Log Out</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 container mx-auto mt-6 max-w-7xl ">
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    <!-- تذييل الصفحة -->
+    <footer class="primary-bg text-white mt-8 py-2">
+        <div class="container mx-auto text-center">
+            <p class="text-sm">&copy; 2025 SSS. All Rights Reserved.</p>
+            <!-- <nav class="text-sm space-x-4">
+                <a href="{% url 'instructors_list' %}" class="hover-secondary">About</a>
+                <a href="{% url 'library' %}" class="hover-secondary">Privacy Policy</a>
+                <a href="{% url 'library' %}" class="hover-secondary">Terms & Conditions</a>
+            </nav> -->
+        </div>
+    </footer>
+</body>
+</html>

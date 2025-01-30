@@ -1,61 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Students in {{ group.name }}</title>
-</head>
-<body class="bg-gray-100">
-    <div class="max-w-7xl mx-auto p-6">
-        <!-- Header -->
-        <h1 class="text-4xl font-bold text-blue-600 mb-6">
-            Students in Department: '{{department.name}}'  Group: '{{ group.name }}'
+{%extends "base.html" %}
+
+{%block title%}Students in {{ group.name|default:"Unknown Group" }}{%endblock title%}
+
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'instructor_dashboard' %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            <i class="fas fa-home mr-2"></i>Home
+        </a>
+    </li>
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        {% if group %}
+            All Students in <span class="font-bold">{{ department.name }}</span>, <span class="font-bold">{{ group.name }}</span>
+        {% else %}
+            Unknown Group
+        {% endif %}    
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    {% if error_message %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+            <span class="font-bold">Error: </span>{{ error_message }}
+        </div>
+    {% endif %}
+
+    {% if group %}
+        <h1 class="text-2xl font-semibold mb-4">
+            Students in <span class="font-bold">{{ department.name }}</span>, <span class="font-bold">{{ group.name }}</span>
         </h1>
 
-        <!-- قائمة الطلاب -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-2xl font-semibold mb-4">Student List</h2>
-            <div class="overflow-x-auto">
-                <table class="table-auto w-full bg-white rounded-lg shadow-md overflow-hidden">
-                    <thead class="bg-blue-600 text-white">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Student</th>
-                            <th class="px-4 py-2 text-left">Email</th>
-                            <th class="px-4 py-2 text-left">Phone</th>
-                            <th class="px-4 py-2 text-left">Department</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {% for student in students %}
-                        <tr class="hover:bg-gray-100">
-                            <!-- Student Info with Image -->
-                            <td class="px-4 py-2 flex items-center">
-                                <img class="w-12 h-12 rounded-full mr-4" 
-                                    src="{{ student.user.image.url }}" 
-                                    alt="Profile Picture">
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ student.user.first_name }} {{ student.user.last_name }}</p>
-                                    {% comment %} <p class="text-sm text-gray-500">ID: {{ student.user.id }}</p> {% endcomment %}
-                                </div>
-                            </td>
-                            <!-- Email -->
-                            <td class="px-4 py-2">{{ student.user.email }}</td>
-                            <!-- Phone -->
-                            <td class="px-4 py-2">{{ student.user.phone }}</td> <!-- Assuming username is used as phone -->
-                            <!-- Department -->
-                            <td class="px-4 py-2">{{ student.department }}</td>
-                        </tr>
-                        {% endfor %}
-                        {% if not students %}
-                        <tr>
-                            <td colspan="4" class="border border-gray-300 px-4 py-2 text-center text-gray-500">
-                                No students found.
-                            </td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-[#1875BB] text-white dark:bg-gray-800">
+                    <tr>
+                        <th class="p-3 text-left">Student</th>
+                        <th class="p-3 text-left">Email</th>
+                        <th class="p-3 text-left">Phone</th>
+                        <th class="p-3 text-left">Gender</th>
+                        <th class="p-3 text-left">Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="px-4 py-2">
+                            <div class="flex items-center space-x-3">
+                                <img 
+                                    src="{{ student.user.get_profile_image_url }}" 
+                                    alt="{{ student.user.get_full_name }}" 
+                                    class="w-12 h-12 rounded-full shadow-md object-cover"
+                                >
+                                <span class="font-medium">{{ student.user.get_full_name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2">{{ student.user.email }}</td>
+                        <td class="px-4 py-2">{{ student.user.phone }}</td>
+                        <td class="px-4 py-2">
+                            {% if student.user.gender == "M" %}
+                                <span>Male</span>
+                            {% else %}
+                                <span>Female</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ student.level }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not students %}
+                    <tr>
+                        <td colspan="5" class="border-b py-3 px-6 italic text-center dark:text-white">
+                            No students found.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
-    </div>
-</body>
-</html>
+    {% else %}
+        <p class="italic text-gray-600 dark:text-gray-300">No group information available.</p>
+    {% endif %}
+</div>
+{% endblock content %}

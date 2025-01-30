@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock title %}
+
+{% block breadcrumb %}
+{% endblock breadcrumb %}
+
+{% block content %}
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Total Users -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-users mr-3"></i>Total Users
+            </h2>
+            <p class="text-3xl mt-2 font-semibold">{{ total_users }}</p>
+        </div>
+        <!-- Total Students -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-graduation-cap mr-3"></i>Total Students
+            </h2>
+            <p class="text-3xl mt-2 font-semibold">{{ total_students }}</p>
+        </div>
+        <!-- Total Instructors -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-chalkboard-teacher mr-3"></i>Total Instructors
+            </h2>
+            <p class="text-3xl mt-2 font-semibold">{{ total_instructors }}</p>
+        </div>
+        <!-- Total Account Requests -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-envelope mr-3"></i>Account Requests
+            </h2>
+            <p class="text-3xl mt-2 font-semibold">{{ total_account_requests }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Lists -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Recent Account Requests -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-user-plus mr-3"></i>Recent Account Requests
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                    <thead class="bg-background text-white dark:bg-gray-800 ">
+                        <tr>
+                            <th class="p-3 text-left whitespace-nowrap">Full Name </th>
+                            <th class="p-3 text-left whitespace-nowrap">Email</th>
+                            <th class="p-3 text-left whitespace-nowrap">Phone Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in recent_account_requests %}
+                        <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                            <td class="p-4 whitespace-nowrap">{{ request.full_name }}</td>
+                            <td class="p-4 whitespace-nowrap">{{ request.email }}</td>
+                            <td class="p-4 whitespace-nowrap">{{ request.phone_number }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="py-3 px-6 italic border-b text-center dark:text-white">
+                                No account requests found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Files -->
+        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-file-upload mr-3"></i>Recent Files
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                    <thead class="bg-background text-white dark:bg-gray-800 ">
+                        <tr>
+                            <th class="p-3 text-left whitespace-nowrap">File Name </th>
+                            <th class="p-3 text-left whitespace-nowrap">Uploader</th>
+                            <th class="p-3 text-left whitespace-nowrap">Upload Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in recent_files %}
+                        <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                            <td class="p-4 truncate whitespace-nowrap text-ellipsis">{{ file.name }}</td>
+                            <td class="p-4 whitespace-nowrap">{{ file.upload_by.get_full_name }}</td>
+                            <td class="p-4 whitespace-nowrap">{{ file.upload_date|date:'M. d, Y' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="py-3 px-6 italic border-b text-center dark:text-white">
+                                No files found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="mt-8">
+        <h2 class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 flex items-center">
+            <i class="fas fa-link mr-2"></i> Quick Links
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/admin/" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 text-center">
+                <span class="text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center">
+                    <i class="fas fa-users-cog mr-2"></i> Manage Users
+                </span>
+            </a>
+            <a href="/admin/" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 text-center">
+                <span class="text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center">
+                    <i class="fas fa-file-upload mr-2"></i> Manage Files
+                </span>
+            </a>
+            <a href="/admin/" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 text-center">
+                <span class="text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-2"></i> Account Requests
+                </span>
+            </a>
+        </div>
+    </div>
+
+{% endblock %}

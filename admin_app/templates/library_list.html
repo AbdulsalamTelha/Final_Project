@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Library{% endblock title %}
+
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        Library
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    <h1 class="text-2xl font-semibold mb-4">Library Files</h1>
+
+    <!-- Filters and Search -->
+    <div class="py-4">
+        <form method="get" class="mb-4">
+            <input type="hidden" name="view" value="{{ view_mode }}"> <!-- حقل مخفي لنقل وضع العرض -->
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                
+                <!-- Course Filter -->
+                <select name="course" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if course_filter == course.id|stringformat:"s" %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Category Filter -->
+                <select name="category" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- File Type Filter -->
+                <select name="type" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Types</option>
+                    {% for file_type in types %}
+                        <option value="{{ file_type }}" {% if type_filter == file_type %}selected{% endif %}>
+                            {{ file_type|upper }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="uploader" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Uploaders</option>
+                    {% for uploader in uploaders %}
+                        <option value="{{ uploader.id }}" {% if uploader_filter == uploader.id|stringformat:"s" %}selected{% endif %}>
+                            {{ uploader }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Search -->
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search for Files..." 
+                    class="border border-gray-300 dark:bg-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400"
+                    value="{{ search_query }}">                
+            </div>
+            <div class="flex mt-4 justify-end gap-5">
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        Filter
+                    </button>
+
+                    <a href="{% url 'library_list' %}"
+                    class="bg-gray-300 px-4 py-2 rounded shadow hover:bg-gray-400 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-500">
+                        Reset
+                    </a>
+                </div>
+
+                <div class="flex gap-3">
+                    <a href="?view=card{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-grip-horizontal text-2xl"></i>
+                    </a>
+                    
+                    <a href="?view=list{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-list-ul text-2xl"></i> 
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+
+    {% if view_mode == 'list' %}
+        <!-- عرض القائمة -->
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800">
+                    <tr>
+                        <!-- <th class="p-3 text-left"># -->
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=name{% if actual_ordering == 'name' %}&ordering=-name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                File Name
+                                {% if actual_ordering == 'name' %}
+                                    ↑
+                                {% elif actual_ordering == '-name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            Description
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=course__name{% if actual_ordering == 'course__name' %}&ordering=-course__name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Course Name
+                                {% if actual_ordering == 'course__name' %}
+                                    ↑
+                                {% elif actual_ordering == '-course__name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=category{% if actual_ordering == 'category' %}&ordering=-category{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Category
+                                {% if actual_ordering == 'category' %}
+                                    ↑
+                                {% elif actual_ordering == '-category' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=type{% if actual_ordering == 'type' %}&ordering=-type{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Type
+                                {% if actual_ordering == 'type' %}
+                                    ↑
+                                {% elif actual_ordering == '-type' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=size{% if actual_ordering == 'size' %}&ordering=-size{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Size
+                                {% if actual_ordering == 'size' %}
+                                    ↑
+                                {% elif actual_ordering == '-size' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=upload_date{% if actual_ordering == 'upload_date' %}&ordering=-upload_date{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Upload Date
+                                {% if actual_ordering == 'upload_date' %}
+                                    ↑
+                                {% elif actual_ordering == '-upload_date' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=upload_by__first_name{% if actual_ordering == 'upload_by__first_name' %}&ordering=-upload_by__first_name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Upload By
+                                {% if actual_ordering == 'upload_by__first_name' %}
+                                    ↑
+                                {% elif actual_ordering == '-upload_by__first_name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in page_obj %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <!-- <td class="p-3">
+                            {{forloop.counter}}
+                        </td> -->
+                        <td class="p-3">
+                            <div class="flex items-center space-x-3">
+                                {% if file.detect_category == "Images" %}
+                                    <!-- عرض الصورة المصغرة إذا كان الملف صورة -->
+                                    <!-- <img 
+                                        src="{{ file.file.url }}" 
+                                        alt="{{ file.name }}" 
+                                        class="w-10 h-10 rounded shadow-md object-cover"
+                                    > -->
+                                    <i class="fas fa-file-image text-indigo-500 text-2xl"></i>
+                                {% elif file.detect_category == "Video" %}
+                                    <i class="fas fa-file-video text-purple-500 text-2xl"></i>
+                                {% elif file.detect_category == "Audio" %}
+                                    <i class="fas fa-file-audio text-teal-500 text-2xl"></i>
+                                {% elif file.detect_category == "Archives" %}
+                                    <i class="fas fa-file-archive text-yellow-500 text-2xl"></i>
+                                {% elif file.detect_category == "Code and Markup" %}
+                                    <i class="fas fa-file-code text-green-500 text-2xl"></i>
+                                {% elif file.detect_category == "Documents" %}
+                                    <!-- نوع "application" يشمل ملفات مثل PDF, Word, إلخ -->
+                                    {% if file.get_file_extension == "pdf" %}
+                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                                    {% elif file.get_file_extension == "docx" or file.get_file_extension == "doc" %}
+                                        <i class="fas fa-file-word text-blue-600 text-2xl"></i>
+                                    {% elif file.get_file_extension == "ppt" or file.get_file_extension == "pptx" %}
+                                        <i class="fas fa-file-powerpoint text-orange-500 text-2xl"></i>
+                                    {% elif file.get_file_extension == "xls" or file.get_file_extension == "xlsx" %}
+                                        <i class="fas fa-file-excel text-green-500 text-2xl"></i>
+                                    {% elif file.get_file_extension == "csv" %}
+                                        <i class="fas fa-file-csv text-emerald-500 text-2xl"></i>
+                                    {% elif file.get_file_extension == "txt" %}
+                                        <i class="fas fa-file-text text-gray-500 text-2xl"></i>
+                                    {% else %}
+                                        <i class="fas fa-file text-gray-500 text-2xl"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <!-- عرض أيقونة عامة إذا كان نوع الملف غير معروف -->
+                                    <i class="fas fa-file text-gray-500 text-2xl"></i>
+                                {% endif %}
+                                <p class="font-medium truncate max-w-60 whitespace-nowrap text-ellipsis overflow-hidden" title="{{ file.name }}">{{ file.name }}</p>
+                            </div>
+                        </td>
+                        <td class="p-3 truncate max-w-60" title="{{ file.description }}">{{ file.description }}</td>
+                        <td class="p-3">{{ file.course.name }}</td>
+                        <td class="p-3">{{ file.category }}</td>
+                        <td class="p-3">
+                            .{{ file.type|upper }}
+                        </td>
+                        <td class="p-3">
+                            {{ file.get_human_readable_size }}
+                        </td>
+                        <td class="p-3">
+                            {{ file.upload_date|date:"d-m-Y"}}
+                        </td>
+                        <td class="p-3">
+                            {{ file.upload_by.get_full_name }}
+                        </td>
+                        <td class="p-3">
+                            <div class="flex space-x-2">
+                                <a href="{{ file.file.url }}" 
+                                    class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500" 
+                                    download>
+                                    <i class="fas fa-download text-blue-500 dark:text-blue-300 text-xl"></i>
+                                </a>
+                                <a href="{{ file.file.url }}" 
+                                    class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500" 
+                                    target="_blank">
+                                    <i class="fas fa-eye text-green-500 dark:text-green-400 text-xl"></i>
+                                </a>
+                                <!-- <a href="{% url 'delete_file' file.id %}" 
+                                    class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300" 
+                                    >
+                                    <i class="fas fa-trash-alt text-red-500 text-xl"></i>
+                                </a> -->
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="border-b py-3 px-6 italic text-center dark:text-white">
+                            No files found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <!-- عرض الكروت -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for file in page_obj %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer">
+                <div class="w-full h-40 flex items-center justify-center bg-gray-200 dark:bg-gray-600">
+                    {% if file.detect_category == "Images" %}
+                        <i class="fas fa-file-image text-indigo-500 text-9xl"></i>
+                    {% elif file.detect_category == "Video" %}
+                        <i class="fas fa-file-video text-purple-500 text-9xl"></i>
+                    {% elif file.detect_category == "Audio" %}
+                        <i class="fas fa-file-audio text-teal-500 text-9xl"></i>
+                    {% elif file.detect_category == "Archives" %}
+                        <i class="fas fa-file-archive text-yellow-500 text-9xl"></i>
+                    {% elif file.detect_category == "Code and Markup" %}
+                        <i class="fas fa-file-code text-green-500 text-9xl"></i>
+                    {% elif file.detect_category == "Documents" %}
+                        <!-- نوع "application" يشمل ملفات مثل PDF, Word, إلخ -->
+                        {% if file.get_file_extension == "pdf" %}
+                            <i class="fas fa-file-pdf text-red-500 text-9xl"></i>
+                        {% elif file.get_file_extension == "docx" or file.get_file_extension == "doc" %}
+                            <i class="fas fa-file-word text-blue-600 text-9xl"></i>
+                        {% elif file.get_file_extension == "ppt" or file.get_file_extension == "pptx" %}
+                            <i class="fas fa-file-powerpoint text-orange-500 text-9xl"></i>
+                        {% elif file.get_file_extension == "xls" or file.get_file_extension == "xlsx" %}
+                            <i class="fas fa-file-excel text-green-500 text-9xl"></i>
+                        {% elif file.get_file_extension == "csv" %}
+                            <i class="fas fa-file-csv text-emerald-500 text-9xl"></i>
+                        {% elif file.get_file_extension == "txt" %}
+                            <i class="fas fa-file-text text-gray-500 text-9xl"></i>
+                        {% else %}
+                            <i class="fas fa-file text-gray-500 text-9xl"></i>
+                        {% endif %}
+                    {% else %}
+                        <!-- عرض أيقونة عامة إذا كان نوع الملف غير معروف -->
+                        <i class="fas fa-file text-gray-500 text-9xl"></i>
+                    {% endif %}
+                </div>
+    
+                <!-- File Details -->
+                <div class="p-4">
+                    <h2 class="text-lg font-bold text-gray-800 truncate dark:text-white" title="{{ file.name }}">{{ file.name }}</h2>
+                    <p class="text-sm text-gray-600 truncate dark:text-gray-400" title="{{ file.description }}">{{ file.description }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Size: <span class="text-gray-600 dark:text-gray-300">{{ file.get_human_readable_size }}</span></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Type: <span class="text-gray-600 dark:text-gray-300">.{{ file.type|upper }}</span></p>
+                    
+                    <!-- <div class="flex justify-between items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span>Size: <span class="text-gray-600 dark:text-gray-300 truncate  whitespace-nowrap text-ellipsis overflow-hidden" title="{{ file.get_human_readable_size }}">{{ file.get_human_readable_size }}</span></span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate" title="{{ file.category }}">Category: <span class="text-gray-600 dark:text-gray-300">{{ file.category }}</span></p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate" title="{{ file.upload_date|date:'d-m-Y' }}">Uploaded on: <span class="text-gray-600 dark:text-gray-300">{{ file.upload_date|date:"d-m-Y" }}</span></p>
+                        <span>Type: <span class="text-gray-600 dark:text-gray-300 truncate" title=".{{ file.type|upper }}">.{{ file.type|upper }}</span></span>
+                    </div> -->
+                    
+                    <p class="text-sm text-gray-500 dark:text-gray-400 truncate" title="{{ file.category }}">Category: <span class="text-gray-600 dark:text-gray-300">{{ file.category }}</span></p>
+                    
+                    <p class="text-sm text-gray-500 dark:text-gray-400" title="{{ file.course.name }}">Course: <span class="text-gray-600 dark:text-gray-300">{{ file.course.name }}</span></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 truncate" title="{{ file.upload_date|date:'d-m-Y' }}">Uploaded on: <span class="text-gray-600 dark:text-gray-300">{{ file.upload_date|date:"d-m-Y" }}</span></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" title="{{ file.upload_by.get_full_name }}">Uploader: <span class="text-gray-600 dark:text-gray-300">{{ file.upload_by.get_full_name }}</span></p>
+                    
+                    <div class="flex justify-end space-x-2">
+                        <a href="{{ file.file.url }}" 
+                            class="p-2 shadow-sm rounded hover:bg-gray-300 dark:hover:bg-gray-500" 
+                            download>
+                            <i class="fas fa-download text-blue-500 dark:text-blue-300 text-xl"></i>
+                        </a>
+                        <a href="{{ file.file.url }}" 
+                            class="p-2 shadow-sm rounded hover:bg-gray-300 dark:hover:bg-gray-500" 
+                            target="_blank">
+                            <i class="fas fa-eye text-green-500 dark:text-green-400 text-xl"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full italic text-center py-4">No files found.</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- أزرار التنقل -->
+    <div class="flex justify-between items-center mt-4">
+         <!-- أزرار التقسيم -->
+         <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Previous</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                    class="px-4 py-2 {% if num == page_obj.number %}bg-blue-500 text-white dark:bg-gray-400{% else %}bg-gray-300 dark:bg-gray-800 hover:text-white{% endif %} rounded hover:bg-blue-600 dark:hover:bg-gray-500">
+                    {{ num }}
+                </a>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Next</a>
+            {% endif %}
+        </div>
+
+        <!-- العدد الإجمالي للسجلات مع رابط عرض جميع السجلات -->
+        <div class="flex items-center space-x-4">
+            <!-- زر عرض جميع السجلات -->
+            {% if show_all %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'show_all' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Paginate Records
+                </a>
+            {% else %}
+                <a href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}show_all=true" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Show All Records
+                </a>
+            {% endif %}
+
+            <!-- مجموع السجلات -->
+            <span class="font-semibold text-gray-700 dark:text-white">
+                Total Records: {{ total_count }}
+            </span>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
+

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}My Uploaded Files{% endblock title %}
+
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li>
+        <a href="{% url 'library_list' %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            Library
+        </a>
+    </li>
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        My Uploaded Files
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    <h1 class="text-2xl font-semibold mb-4">My Uploaded Files</h1>
+
+
+
+        <!-- عرض القائمة -->
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800">
+                    <tr>
+                        <th class="p-3 text-left">#</th>
+                        <th class="p-3 text-left">Course Name</th>
+                        <th class="p-3 text-left">File Name</th>
+                        <th class="p-3 text-left">Description</th>
+                        <th class="p-3 text-left">Upload Date</th>
+                        <th class="p-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in page_obj %}
+                    <tr class="border-b">
+                        <td class="p-3" rowspan="{{ group.files|length }}">
+                            {{ forloop.counter }}
+                        </td>
+                        <td class="p-3 font-bold" rowspan="{{ group.files|length|default:1 }}">
+                            {{ group.course.name }}
+                        </td>
+                        
+                            {% for file in group.files %}
+                                {% if not forloop.first %}
+                                <tr class="border-b">
+                                {% endif %}
+                                    <td class="p-3 truncate max-w-80" title="{{ file.name }}">{{ file.name }}</td>
+                                    <td class="p-3 truncate max-w-80" title="{{ file.description }}">{{ file.description }}</td>
+                                    <td class="p-3">{{ file.upload_date|date:"d-m-Y" }}</td>
+                                    <td class="p-3">
+                                        <div class="flex space-x-2 justify-center">
+                                            <a href="{{ file.file.url }}" 
+                                                class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500" 
+                                                download>
+                                                <i class="fas fa-download text-blue-500 dark:text-blue-300 text-xl"></i>
+                                            </a>
+                                            <a href="{{ file.file.url }}" 
+                                                class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500" 
+                                                target="_blank">
+                                                <i class="fas fa-eye text-yellow-500 text-xl"></i>
+                                            </a>
+                                            <a href="{% url 'edit_file' file.id %}" 
+                                                class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500" 
+                                                >
+                                                <i class="fas fa-edit text-green-500 text-xl"></i>
+                                            </a>
+                                            <form action="{% url 'delete_file' file.id %}" method="post" onsubmit="return confirmDeletion(event)">
+                                                {% csrf_token %}
+                                                <button type="submit" title="Delete" class="text-white px-2 py-2 shadow-sm rounded flex items-center hover:bg-gray-300 dark:hover:bg-gray-500">
+                                                    <i class="fas fa-trash-alt text-red-500 text-xl"></i>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                    {% empty %}
+                    <tr>
+                        <td class="border-b py-3 px-6 italic text-center dark:text-white" colspan="6">
+                            No files found.
+                        </td>
+                    </tr>
+                    {% endfor %} 
+                </tbody>
+            </table>
+        </div>
+
+    <!-- أزرار التنقل -->
+    <div class="flex justify-between items-center mt-4">
+         <!-- أزرار التقسيم -->
+         <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Previous</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                    class="px-4 py-2 {% if num == page_obj.number %}bg-blue-500 text-white dark:bg-gray-400{% else %}bg-gray-300 dark:bg-gray-800 hover:text-white{% endif %} rounded hover:bg-blue-600 dark:hover:bg-gray-500">
+                    {{ num }}
+                </a>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Next</a>
+            {% endif %}
+        </div>
+
+        <!-- العدد الإجمالي للسجلات مع رابط عرض جميع السجلات -->
+        <div class="flex items-center space-x-4">
+            <!-- زر عرض جميع السجلات -->
+            {% if show_all %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'show_all' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Paginate Records
+                </a>
+            {% else %}
+                <a href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}show_all=true" 
+                   class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                   Show All Records
+                </a>
+            {% endif %}
+
+            <!-- مجموع السجلات -->
+            <span class="font-semibold text-gray-700 dark:text-white">
+                Total Records: {{ total_count }}
+            </span>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

@@ -1,48 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Students in {{ group.name }}</title>
-</head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">Departments and Their Groups</h1>
-        <div class="overflow-x-auto">
-            <table class="table-auto w-full bg-white rounded-lg shadow-md overflow-hidden">
-        <thead class="bg-blue-500 text-white">
-            <tr>
-                <th class="p-4 text-left">Department</th>
-                <th class="p-4 text-left">Group</th>
-                <th class="p-4 text-left">Level</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for department in departments %}
-            <tr class="border-b">
-                <td class="p-4 font-bold" rowspan="{{ department.groups.all|length|default:1 }}">
-                    {{ department.name }}
-                </td>
-                {% if department.groups.exists %}
-                    {% for group in department.groups.all %}
-                        {% if not forloop.first %}
-                        <tr class="border-b">
-                        {% endif %}
-                            <td class="p-4">{{ group.name }}</td>
-                            <td class="p-4">{{ group.level }}</td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <td class="p-4 italic text-gray-500" colspan="2">No groups found</td>
+{%extends "base.html" %}
+
+{%block title%}Departments and Groups{%endblock title%}
+
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        Departments and Groups
+    </li>
+{% endblock breadcrumb %}
+
+{%block content%}
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    <h1 class="text-2xl font-semibold mb-4">Departments and thier Groups</h1>
+
+    <div class="overflow-x-auto">
+        <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+            <thead class="bg-background text-white dark:bg-gray-800">
+                <tr>
+                    <th class="p-3 text-left">Department</th>
+                    <th class="p-3 text-left">Group</th>
+                    <th class="p-3 text-left">Level</th>
                 </tr>
-                {% endif %}
-            {% empty %}
-            <tr>
-                <td class="p-4 text-center" colspan="3">No departments found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for department in departments %}
+                <tr class="border-b">
+                    <td class="p-2 font-bold" rowspan="{{ department.groups.all|length|default:1 }}">
+                        {{ department.name }}
+                    </td>
+                    {% if department.groups.exists %}
+                        {% for group in department.groups.all %}
+                            {% if not forloop.first %}
+                            <tr class="border-b">
+                            {% endif %}
+                                <td class="p-2">{{ group.name }}</td>
+                                <td class="p-2">{{ group.level }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <td class="p-2 italic text-gray-500" colspan="2">
+                            No groups found
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% empty %}
+                <tr>
+                    <td class="p-4 text-center" colspan="3">
+                        No departments found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-</div>
-<body>
-<html>
+{% endblock content %}

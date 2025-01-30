@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'admin_app.middleware.CustomErrorMiddleware',
 ]
 
 ROOT_URLCONF = 'sss.urls'
@@ -117,11 +118,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+# USE_TZ = True
+
+
+TIME_ZONE = 'Asia/Riyadh'  # المنطقة الزمنية للمملكة العربية السعودية
+USE_TZ = False  # تعطيل استخدام التوقيت العالمي المنسق (UTC)
 
 
 # Static files (CSS, JavaScript, Images)
@@ -152,6 +157,8 @@ EMAIL_HOST_USER = 'ytrudtrfjd@gmail.com'  # بريدك الإلكتروني
 EMAIL_HOST_PASSWORD = 'etch wino zkgx kbcv'  # كلمة مرور التطبيق
 DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # البريد الافتراضي للإرسال
 
+
+LOGIN_URL = 'login'  # اسم URL لصفحة تسجيل الدخول
 
 
 # JAZZMIN_SETTINGS = {

@@ -1,54 +1,303 @@
 {%extends "base.html" %}
 
-{%block title%} Students List {%endblock title%}
+{%block title%}Students List{%endblock title%}
 
-{%block content%}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Students List</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">Students List</h1>
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        All Students
+    </li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-700 shadow-md rounded-lg mb-8 p-6">
+    <h1 class="text-2xl font-semibold mb-4">Students List</h1>
+
+    <!-- Filters and Search  -->
+    <div class="py-4">
+        <form method="GET" class="mb-4">
+            <input type="hidden" name="view" value="{{ view_mode }}"> <!-- حقل مخفي لنقل وضع العرض -->
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <!-- قائمة الفلترة للأقسام -->
+                <select name="department" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Departments</option>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" {% if department.id|stringformat:"s" == department_filter %}selected{% endif %}>
+                            {{ department.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+        
+                <!-- قائمة الفلترة للمواد -->
+                <select name="group" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Groups</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if group.id|stringformat:"s" == group_filter %}selected{% endif %}>
+                            {{ group.display_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <select name="level" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                    <option value="">All Levels</option>
+                    {% for level in levels %}
+                        <option value="{{ level }}" {% if level|stringformat:"s" == level_filter %}selected{% endif %}>
+                            {{ level }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                {% if user.role == 'ADMIN' or user.role == 'INSTRUCTOR' %}
+                    <!-- قائمة الفلترة للجنس -->
+                    <select name="gender" class="border border-gray-300 dark:bg-gray-800 dark:text-white rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400">
+                        <option value="">All Genders</option>
+                        {% for gender in genders %}
+                            <option value="{{ gender }}" {% if gender == gender_filter %}selected{% endif %}>
+                                {% if gender == 'M' %}
+                                    Male
+                                {% else %}
+                                    Female
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                <!-- حقل البحث العام -->
+                <input type="text" name="search" value="{{ search_query }}" 
+                    placeholder="Search for Students ..." 
+                    id="search-field"
+                    class="border border-gray-300 dark:bg-gray-800 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-indigo-200 dark:focus:ring-gray-400" />
+            </div> 
+            <div class="flex mt-4 justify-end gap-5">
+                <div class="flex gap-3">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        Filter
+                    </button>
+
+                    <a href="{% url 'students_list' %}"
+                    class="bg-gray-300 px-4 py-2 rounded shadow hover:bg-gray-400 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-500">
+                        Reset
+                    </a>
+                </div>
+                <div class="flex gap-3">
+                    <a href="?view=card{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-grip-horizontal text-2xl"></i>
+                    </a>
+                    
+                    <a href="?view=list{% for key, value in request.GET.items %}{% if key != 'view' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        class="px-4 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                        <i class="fas fa-list-ul text-2xl"></i> 
+                    </a>
+                </div>
+            </div>           
+        </form>
+    </div>
+
+    {% if view_mode == 'list' %}
+        <!-- عرض القائمة -->
         <div class="overflow-x-auto">
-            <table class="table-auto w-full bg-white rounded-lg shadow-md overflow-hidden">
-                <thead class="bg-blue-600 text-white">
+            <table class="table-auto w-full bg-white dark:bg-gray-700 shadow rounded">
+                <thead class="bg-background text-white dark:bg-gray-800">
                     <tr>
-                        <th class="px-4 py-2 text-left">Student</th>
-                        <th class="px-4 py-2 text-left">Email</th>
-                        <th class="px-4 py-2 text-left">Phone</th>
-                        <th class="px-4 py-2 text-left">Department</th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__id{% if actual_ordering == 'user__id' %}&ordering=-user__id{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                ID
+                                {% if actual_ordering == 'user__id' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__id' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__first_name{% if actual_ordering == 'user__first_name' %}&ordering=-user__first_name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Student
+                                {% if actual_ordering == 'user__first_name' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__first_name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__email{% if actual_ordering == 'user__email' %}&ordering=-user__email{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Email
+                                {% if actual_ordering == 'user__email' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__email' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=user__phone{% if actual_ordering == 'user__phone' %}&ordering=-user__phone{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Phone
+                                {% if actual_ordering == 'user__phone' %}
+                                    ↑
+                                {% elif actual_ordering == '-user__phone' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        {% if user.role == 'ADMIN' or user.role == 'INSTRUCTOR' %}
+                            <th class="p-3 text-left">
+                                <a href="?ordering=user__gender{% if actual_ordering == 'user__gender' %}&ordering=-user__gender{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    Gender
+                                    {% if actual_ordering == 'user__gender' %}
+                                        ↑
+                                    {% elif actual_ordering == '-user__gender' %}
+                                        ↓
+                                    {% endif %}
+                                </a>
+                            </th>
+                        {% endif %}
+                        {% if user.role == 'ADMIN' or user.role == 'INSTRUCTOR' %}
+                            <th class="p-3 min-w-20 text-left">
+                                <a href="?ordering=user__birth_date{% if actual_ordering == 'user__birth_date' %}&ordering=-user__birth_date{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    Birth Date
+                                    {% if actual_ordering == 'user__birth_date' %}
+                                        ↑
+                                    {% elif actual_ordering == '-user__birth_date' %}
+                                        ↓
+                                    {% endif %}
+                                </a>
+                            </th>
+                        {% endif %}
+                        <th class="p-3 text-left">
+                            <a href="?ordering=level{% if actual_ordering == 'level' %}&ordering=-level{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Level
+                                {% if actual_ordering == 'level' %}
+                                    ↑
+                                {% elif actual_ordering == '-level' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=department__name{% if actual_ordering == 'department__name' %}&ordering=-department__name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Department
+                                {% if actual_ordering == 'department__name' %}
+                                    ↑
+                                {% elif actual_ordering == '-department__name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="p-3 text-left">
+                            <a href="?ordering=group__name{% if actual_ordering == 'group__name' %}&ordering=-group__name{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Group
+                                {% if actual_ordering == 'group__name' %}
+                                    ↑
+                                {% elif actual_ordering == '-group__name' %}
+                                    ↓
+                                {% endif %}
+                            </a>
+                        </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% for student in students %}
-                    <tr class="hover:bg-gray-100">
-                        <!-- Student Info with Image -->
-                        <td class="px-4 py-2 flex items-center">
-                            <img class="w-12 h-12 rounded-full mr-4" 
-                                src="{{ student.user.image.url }}" 
-                                alt="Profile Picture">
-                            <div>
-                                <p class="font-medium text-gray-900">{{ student.user.first_name }} {{ student.user.last_name }}</p>
-                                {% comment %} <p class="text-sm text-gray-500">ID: {{ student.user.id }}</p> {% endcomment %}
+                <tbody>
+                    {% for student in page_obj %}
+                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <td class="p-4">{{ student.user.id }}</td>
+                        <td class="p-4">
+                            <div class="flex items-center space-x-3 min-w-60">
+                                <img 
+                                    src="{{ student.user.get_profile_image_url }}" 
+                                    alt="{{ student.user.get_full_name }}" 
+                                    class="w-12 h-12 rounded-full shadow-md object-cover"
+                                >
+                                <span class="font-medium">{{ student.user.get_full_name }}</span>
                             </div>
                         </td>
-                        <!-- Email -->
-                        <td class="px-4 py-2">{{ student.user.email }}</td>
-                        <!-- Phone -->
-                        <td class="px-4 py-2">{{ student.user.phone }}</td> <!-- Assuming username is used as phone -->
-                        <!-- Department -->
-                        <td class="px-4 py-2">{{ student.department }}</td>
+                        <td class="p-4">{{ student.user.email }}</td>
+                        <td class="p-4">{{ student.user.phone }}</td>
+                        {% if user.role == 'ADMIN' or user.role == 'INSTRUCTOR' %}
+                            <td class="p-4">
+                                {% if student.user.gender == "M" %}
+                                    <span>Male</span>
+                                {% else %}
+                                    <span>Female</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                        {% if user.role == 'ADMIN' or user.role == 'INSTRUCTOR' %}
+                            <td class="p-4">{{ student.user.get_formatted_number_birth_date }}</td>
+                        {% endif %}
+                        <td class="p-4">{{ student.level }}</td>
+                        <td class="p-4">{{ student.department }}</td>
+                        <td class="p-4">{{ student.group.name }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="border-b py-3 px-6 italic text-center dark:text-white">
+                            No students found.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-</body>
-</html>
-{% endblock%}
+    {% else %}
+        <!-- عرض الكروت -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for student in page_obj %}
+            <div class="bg-white dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer shadow-md rounded-lg p-4 flex flex-col items-center text-center">
+                <img src="{{ student.user.get_profile_image_url }}" alt="{{ student.user.get_full_name }}" class="w-24 h-24 rounded-full shadow-md object-cover mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ student.user.get_full_name }}</h2>
+                <p class="text-gray-600 dark:text-gray-400">{{ student.user.email }}</p>
+            </div>
+            {% empty %}
+            <div class="col-span-full italic text-center py-4">No students found.</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- أزرار التنقل -->
+    <div class="flex justify-between items-center mt-4">
+        <!-- أزرار التقسيم -->
+        <div class="flex space-x-2">
+           {% if page_obj.has_previous %}
+               <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Previous</a>
+           {% endif %}
+           {% for num in page_obj.paginator.page_range %}
+               <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="px-4 py-2 {% if num == page_obj.number %}bg-blue-500 text-white dark:bg-gray-400{% else %}bg-gray-300 dark:bg-gray-800 hover:text-white{% endif %} rounded hover:bg-blue-600 dark:hover:bg-gray-500">
+                   {{ num }}
+               </a>
+           {% endfor %}
+           {% if page_obj.has_next %}
+               <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">Next</a>
+           {% endif %}
+       </div>
+
+       <!-- العدد الإجمالي للسجلات مع رابط عرض جميع السجلات -->
+       <div class="flex items-center space-x-4">
+           <!-- زر عرض جميع السجلات -->
+           {% if show_all %}
+               <a href="?{% for key, value in request.GET.items %}{% if key != 'show_all' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                  class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                  Paginate Records
+               </a>
+           {% else %}
+               <a href="?{% for key, value in request.GET.items %}{{ key }}={{ value }}&{% endfor %}show_all=true" 
+                  class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 dark:bg-gray-400 dark:hover:bg-gray-500">
+                  Show All Records
+               </a>
+           {% endif %}
+
+           <!-- مجموع السجلات -->
+           <span class="font-semibold text-gray-700 dark:text-white">
+               Total Records: {{ total_count }}
+           </span>
+       </div>
+   </div>
+
+</div>
+{% endblock content %}

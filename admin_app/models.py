@@ -12,6 +12,8 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now, timedelta
+from django.db.models import Count
+from datetime import date
 
 # Create your models here.
 
@@ -47,7 +49,7 @@ class File(models.Model):
   # Validate file extensions
     )
     name = models.CharField(max_length=255, editable=False)  # Auto-detected
-    size = models.CharField(max_length=50, editable=False)  # تحديث الحقل ليكون نصيًا
+    size = models.BigIntegerField(editable=False, default=0) # حجم الملف بالبايت فقط
     type = models.CharField(max_length=10, editable=False)  # Auto-detected
     upload_date = models.DateTimeField(auto_now_add=True,)  # Auto-detected
     upload_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='files' ,on_delete=models.CASCADE, limit_choices_to={'is_staff': True}, editable=False)
@@ -89,7 +91,7 @@ class File(models.Model):
             else:
                 self.name = original_name
 
-            self.size = self.get_human_readable_size(self.file.size)  # تحويل الحجم إلى تنسيق قابل للقراءة
+            self.size = self.file.size  # تحويل الحجم إلى تنسيق قابل للقراءة
             self.type = self.get_file_extension()  # Detect file extension/type
             self.category = self.detect_category()  # Detect and set the category
 
@@ -134,7 +136,8 @@ class File(models.Model):
         else:
             return "Unknown"
     
-    def get_human_readable_size(self, size):
+    def get_human_readable_size(self):
+        size = self.size
         #  تحويل الحجم إلى تنسيق قابل للقراءة (KB, MB, GB)
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024.0:
@@ -143,7 +146,7 @@ class File(models.Model):
         return f"{size:.2f} PB"
     
     def __str__(self):
-        return f"{self.name} ({self.get_status_display()})"
+        return f"{self.name}"
     
     class Meta:
         verbose_name = "File"
@@ -164,6 +167,24 @@ class ParentAll(models.Model):
         return self.name  # String representation of the object
 
 class Department(ParentAll):
+    # @property # لا زالت تريد إصلاح، فهي لم تحل مشكلة تكرر أوائل الأحرف من كل قسم
+    # def abbreviation(self):
+    #     # استخراج الحروف الأولى من كل كلمة
+    #     base_abbreviation = "".join([word[0].upper() for word in self.name.split()])
+        
+    #     # التحقق من وجود تكرار في قاعدة البيانات
+    #     similar_abbreviations = Department.objects.filter(
+    #         name__startswith=self.name.split()[0]
+    #     ).annotate(
+    #         abbreviation_count=Count('name')
+    #     )
+
+    #     # إضافة رقم تسلسلي إذا كان هناك تكرار
+    #     if similar_abbreviations.filter(id=self.id).exists():
+    #         count = similar_abbreviations.filter(name=self.name).count()
+    #         return f"{base_abbreviation}{count if count > 1 else ''}"
+    #     return base_abbreviation
+
     def clean(self):
         super().clean()
         if self.name:
@@ -172,7 +193,7 @@ class Department(ParentAll):
                 raise ValidationError({
                     'name': _("Name can only contain letters.")
                 })
-
+    
 class Course(ParentAll):
     class Levels(models.IntegerChoices):
         ONE = 1, _('1')
@@ -231,7 +252,7 @@ class User(AbstractUser):
         max_length=150,
         validators=[
             RegexValidator(
-                regex=r'^[a-zA-Z]+$',  # يسمح فقط بالأحرف الإنجليزية
+                regex=r'^[a-zA-Z\s]+$',  # يسمح فقط بالأحرف الإنجليزية
                 message='First name must contain letters only.'
             )
         ],)
@@ -239,7 +260,7 @@ class User(AbstractUser):
         max_length=150,
         validators=[
             RegexValidator(
-                regex=r'^[a-zA-Z]+$',  # يسمح فقط بالأحرف الإنجليزية
+                regex=r'^[a-zA-Z\s]+$',  # يسمح فقط بالأحرف الإنجليزية
                 message='Last name must contain letters only.'
             )
         ],)
@@ -260,7 +281,7 @@ class User(AbstractUser):
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')],)
     birth_date = models.DateField(null=False, blank=False)
     role = models.CharField(max_length=10, choices=Roles.choices,)
-    image = models.ImageField(upload_to='user_images/%y/%m/%d', default='logo.png')
+    image = models.ImageField(upload_to='user_images/%y/%m/%d',)
 
     class Meta:
         unique_together = ('first_name', 'last_name',)
@@ -293,7 +314,26 @@ class User(AbstractUser):
         """
         if self.image and os.path.isfile(self.image.path):  # تحقق من وجود الملف فعليًا
             return self.image.url
-        return static('img/user.svg')  # الصورة الافتراضية
+        return static('img/user_black.svg')  # الصورة الافتراضية
+    
+    def get_formatted_number_birth_date(self):
+        return self.birth_date.strftime('%d-%m-%Y')
+    
+    def get_formatted_letter_birth_date(self):
+        return self.birth_date.strftime('%b. %d, %Y')
+    
+    def get_age(self):
+        """
+        حساب عمر المستخدم بناءً على تاريخ الميلاد.
+        """
+        today = date.today()
+        age = today.year - self.birth_date.year
+
+        # التحقق من إذا كان عيد الميلاد لهذا العام قد حدث أم لا
+        if (today.month < self.birth_date.month) or (today.month == self.birth_date.month and today.day < self.birth_date.day):
+            age -= 1  # لم يحن عيد الميلاد بعد هذا العام
+
+        return f"{age} years"
                 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -308,7 +348,7 @@ class Admin(models.Model):
 class Instructor(models.Model):
     departments = models.ManyToManyField('Department', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
     courses = models.ManyToManyField('Course', related_name="instructors", limit_choices_to={'status': True}, blank=True,)
-    groups = models.ManyToManyField('Group', related_name='instructors', limit_choices_to={'status': True},)
+    groups = models.ManyToManyField('Group', related_name='instructors', limit_choices_to={'status': True}, blank=True,)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
             
     def __str__(self):

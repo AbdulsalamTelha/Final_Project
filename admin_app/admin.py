@@ -448,7 +448,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
         """
         for account_request in queryset:
             if account_request.is_approved:
-                user = User.objects.filter(email=account_request.email).first()
+                user = User.objects.filter(email=account_request.email, phone=account_request.phone_number).first()
                 if user:
                     if user.role in ['STUDENT', 'INSTRUCTOR']:  # التحقق من الدور
                         try:
@@ -482,7 +482,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
                             f"Cannot approve. User with email {account_request.email} has an invalid role: {user.role}."
                         )
                 else:
-                    messages.error(request, f"Cannot approve. User with email {account_request.email} does not exist.")
+                    messages.error(request, f"Cannot approve. User with email {account_request.email} and phone {account_request.phone_number} does not exist.")
             else:
                 messages.error(request,"Must be verified by admin and must check is_approved equal true")
 
@@ -494,7 +494,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
         for account_request in queryset:
             if not account_request.is_approved:
                 # تحقق من عدم وجود المستخدم
-                user = User.objects.filter(email=account_request.email).first()
+                user = User.objects.filter(email=account_request.email, phone=account_request.phone_number).first()
                 if not user:
                     try:
                         # إرسال رسالة الرفض عبر الإيميل
@@ -515,6 +515,6 @@ class AccountRequestAdmin(admin.ModelAdmin):
                     except Exception as e:
                         messages.error(request, f"Error while sending email to {account_request.email}: {str(e)}")
                 else:
-                    messages.error(request, f"Cannot reject. User with email {account_request.email} exists.")
+                    messages.error(request, f"Cannot reject. User with email {account_request.email} and phone {account_request.phone_number} exists.")
             else:
                 messages.error(request,"Must be verified by admin and must check is_approved equal false")

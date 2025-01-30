@@ -1,0 +1,201 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
+  <div id="message_container" class="mb-4" style="display: none;">
+    <div id="message" class="p-4 rounded-lg"></div>
+  </div>
+  <h1 class="text-3xl font-bold mb-6">Manage Groups</h1>
+
+  <!-- Group Creation Form -->
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+    <h2 class="text-2xl font-semibold mb-4">Create a New Group</h2>
+    <form method="post" id="create_group_form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_group" />
+      <div class="mb-4">
+        <label for="name" class="block text-sm font-medium mb-2">Group Name</label>
+        <input type="text" name="name" id="group_name" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required />
+        <span id="group_name_error" class="text-red-500" style="display: none;">Please enter a group name.</span>
+      </div>
+      <div class="mb-4">
+        <label class="flex items-center space-x-2">
+          <input type="radio" name="gender" id="is_male_only" value="male" class="form-radio" />
+          <span>Male Only</span>
+        </label>
+      </div>
+      <div class="mb-4">
+        <label class="flex items-center space-x-2">
+          <input type="radio" name="gender" id="is_female_only" value="female" class="form-radio" />
+          <span>Female Only</span>
+        </label>
+      </div>
+      <span id="gender_error" class="text-red-500" style="display: none;">Please select a gender type (Male Only or Female Only).</span>
+      <div id="student_selector_container" style="display: none;">
+        <div class="mb-4">
+          <label for="search_student_creation" class="block text-sm font-medium mb-2">Search Student</label>
+          <input type="text" id="search_student_creation" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="Search by name" />
+        </div>
+        <div class="mb-4">
+          <label for="student_ids" class="block text-sm font-medium mb-2">Select Students</label>
+          <select name="student_ids" id="student_ids" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" multiple>
+            {% for student in students %}
+            <option value="{{ student.id }}" data-gender="{{ student.gender }}">{{ student.first_name }} {{ student.last_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Create Group</button>
+    </form>
+  </div>
+
+  <!-- List of Groups -->
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold mb-4">Your Groups</h2>
+    {% if groups_with_excluded_students %}
+    <ul class="space-y-4">
+      {% for group, excluded_student_ids in groups_with_excluded_students %}
+      <li class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+        <h3 class="text-xl font-semibold">{{ group.name }}</h3>
+        <p class="text-gray-600 dark:text-gray-300">{{ group.description }}</p>
+        <p class="text-gray-600 dark:text-gray-300">Type: {{ group.get_type_display }}</p>
+        <p class="font-medium mt-2">Members:</p>
+        <ul class="mt-2 space-y-2">
+          {% for member in group.members.all %}
+          <li class="flex justify-between items-center">
+            <span>{{ member.first_name }} {{ member.last_name }} ({{ member.get_gender_display }})</span>
+            {% if member != group.created_by %}
+            <form method="post" class="inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_member" />
+              <input type="hidden" name="group_id" value="{{ group.id }}" />
+              <input type="hidden" name="student_id" value="{{ member.id }}" />
+              <button type="submit" class="text-red-500 hover:text-red-700">Remove</button>
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        <!-- Add Member Form -->
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_member" />
+          <input type="hidden" name="group_id" value="{{ group.id }}" />
+          <div class="mb-4">
+            <label for="search_student_{{ group.id }}" class="block text-sm font-medium mb-2">Search Student</label>
+            <input type="text" id="search_student_{{ group.id }}" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="Search by name" />
+          </div>
+          <div class="mb-4">
+            <label for="student_id_{{ group.id }}" class="block text-sm font-medium mb-2">Add Students</label>
+            <select name="student_id" id="student_id_{{ group.id }}" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" multiple>
+              {% for student in students %}
+              {% if not student.id in excluded_student_ids %}
+              <option value="{{ student.id }}" data-gender="{{ student.gender }}">{{ student.first_name }} {{ student.last_name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Add Students</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-gray-600 dark:text-gray-300">No groups created yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const messageContainer = document.getElementById('message_container');
+    const message = document.getElementById('message');
+    const groupNameInput = document.getElementById('group_name');
+    const groupNameError = document.getElementById('group_name_error');
+    const genderError = document.getElementById('gender_error');
+    const maleOnlyRadio = document.getElementById('is_male_only');
+    const femaleOnlyRadio = document.getElementById('is_female_only');
+    const studentSelect = document.getElementById('student_ids');
+    const searchStudentInputCreation = document.getElementById('search_student_creation');
+    const studentSelectorContainer = document.getElementById('student_selector_container');
+    const createGroupForm = document.getElementById('create_group_form');
+
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = `p-4 rounded-lg ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+        messageContainer.style.display = 'block';
+        setTimeout(() => {
+            messageContainer.style.display = 'none';
+        }, 3000); // Message disappears after 3 seconds
+    }
+
+    function updateStudentList(isMaleOnly, isFemaleOnly, selectElement, searchQuery = '', excludedStudentIds = []) {
+        Array.from(selectElement.options).forEach(option => {
+            const gender = option.getAttribute('data-gender');
+            const studentName = option.text.toLowerCase();
+            const studentId = option.value;
+            if ((isMaleOnly && gender === 'M' || isFemaleOnly && gender === 'F') && studentName.includes(searchQuery) && !excludedStudentIds.includes(studentId)) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    }
+
+    function handleRadioChange() {
+        const isMaleOnly = maleOnlyRadio.checked;
+        const isFemaleOnly = femaleOnlyRadio.checked;
+        if (isMaleOnly || isFemaleOnly) {
+            studentSelectorContainer.style.display = 'block';
+            updateStudentList(isMaleOnly, isFemaleOnly, studentSelect, searchStudentInputCreation.value.toLowerCase(), []);
+        } else {
+            studentSelectorContainer.style.display = 'none';
+        }
+    }
+
+    maleOnlyRadio.addEventListener('change', handleRadioChange);
+    femaleOnlyRadio.addEventListener('change', handleRadioChange);
+
+    searchStudentInputCreation.addEventListener('input', function() {
+        const isMaleOnly = maleOnlyRadio.checked;
+        const isFemaleOnly = femaleOnlyRadio.checked;
+        updateStudentList(isMaleOnly, isFemaleOnly, studentSelect, searchStudentInputCreation.value.toLowerCase(), []);
+    });
+
+    createGroupForm.addEventListener('submit', function(event) {
+        const groupName = groupNameInput.value.trim();
+        const isMaleOnly = maleOnlyRadio.checked;
+        const isFemaleOnly = femaleOnlyRadio.checked;
+
+        groupNameError.style.display = 'none';
+        genderError.style.display = 'none';
+
+        if (!groupName) {
+            groupNameError.style.display = 'block';
+            event.preventDefault(); // Prevent form submission if validation fails
+            return;
+        }
+
+        if (!isMaleOnly && !isFemaleOnly) {
+            genderError.style.display = 'block';
+            event.preventDefault(); // Prevent form submission if validation fails
+            return;
+        }
+
+        // If validation passes, allow form submission
+    });
+
+    // Filter students already in the group
+    {% for group, excluded_student_ids in groups_with_excluded_students %}
+    const studentSelect_{{ group.id }} = document.getElementById(`student_id_{{ group.id }}`);
+    const searchStudentInput_{{ group.id }} = document.getElementById(`search_student_{{ group.id }}`);
+
+    if (studentSelect_{{ group.id }}) {
+        updateStudentList({{ group.is_male_only|yesno:"true,false" }}, {{ group.is_female_only|yesno:"true,false" }}, studentSelect_{{ group.id }}, '', {{ excluded_student_ids|safe }});
+        searchStudentInput_{{ group.id }}.addEventListener('input', function() {
+            const searchQuery = searchStudentInput_{{ group.id }}.value.toLowerCase();
+            updateStudentList({{ group.is_male_only|yesno:"true,false" }}, {{ group.is_female_only|yesno:"true,false" }}, studentSelect_{{ group.id }}, searchQuery, {{ excluded_student_ids|safe }});
+        });
+    }
+    {% endfor %}
+});
+</script>
+{% endblock %}

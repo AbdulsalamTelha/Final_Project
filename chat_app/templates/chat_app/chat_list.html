@@ -1,32 +1,91 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="flex h-screen bg-gray-100 dark:bg-gray-900">
-    <!-- Sidebar -->
-    <div class="w-1/4 bg-white dark:bg-gray-800 p-4 shadow-lg">
+    <div class="w-1/4 bg-white dark:bg-gray-800 p-4 shadow-lg overflow-y-auto custom-scrollbar ">
+        <!-- زر القائمة -->
+        <button id="user-list-button" class="fixed bottom-20 left-140 bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-green-600 transition duration-300">
+            <i class="fas fa-plus"></i>
+        </button>
+        <!-- Button to open the modal -->
+        {% comment %} <a href="{% url 'create_group_page1' %}" class="btn btn-primary">Create New Group</a> {% endcomment %}
+
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">Chats</h2>
-            <!-- Dark Mode Toggle -->
-            {% comment %} <button id="dark-mode-toggle" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                <span class="dark:hidden">🌙</span>
-                <span class="hidden dark:inline">☀️</span>
-            </button> {% endcomment %}
         </div>
-        <ul>
-            {% for room in chat_rooms %}
-            <li class="mb-2">
-                <a href="{% url 'chat_room' room.name %}" class="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200">
-                    <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                        {{ room.name|slice:":1"|upper }} <!-- Display the first letter of the chat room name -->
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ room.name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Last message preview...</p> <!-- Placeholder for last message -->
-                    </div>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">10:30 AM</span> <!-- Placeholder for last message time -->
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
+
+        <!-- قائمة الغرف -->
+        <div id="rooms-container">
+            <ul class="space-y-2">
+                {% comment %} {% for room in chat_rooms %}
+                <li data-room-name="{{ room.name }}" data-timestamp="{% if room.last_message %}{{ room.last_message.timestamp|date:"U" }}{% else %}0{% endif %}" class="{% if room.name == current_room.name %}bg-gray-100 dark:bg-gray-700{% endif %}">
+                    <a href="{% url 'chat_room' room.name %}" class="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-300">
+                        <!-- صورة الغرفة أو الحرف الأول -->
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                            {{ room.name|slice:":1"|upper }}
+                        </div>
+
+                        <!-- تفاصيل الغرفة -->
+                        <div class="ml-3 flex-1 min-w-0">
+                            <!-- اسم الغرفة أو المستخدم -->
+                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                                {% if room.type == 'private' %}
+                                    {% for member in room.members.all %}
+                                        {% if member != request.user %}
+                                            {{ member.username.capitalize }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {{ room.name.upper }}
+                                {% endif %}
+                            </p>
+
+                            <!-- آخر رسالة -->
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate" id="last-message-{{ room.name }}">
+                                {% if room.last_message %}
+                                    {{ room.last_message.content }}
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <!-- وقت آخر رسالة -->
+                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0 min-w-[50px] text-right" id="last-message-time-{{ room.name }}">
+                            {% if room.last_message %}
+                                {{ room.last_message.timestamp|time:"H:i" }}
+                            {% endif %}
+                        </span>
+                    </a>
+                </li>
+                {% endfor %} {% endcomment %}
+            </ul>
+            <ul>
+                {% comment %} <ul>
+                    {% for group in group_chats %}
+                        <li><a href="{% url 'chat_room' group.name %}">{{ group.name }}</a></li>
+                    {% endfor %}
+                </ul> {% endcomment %}
+        </div>
+
+        <!-- قائمة المستخدمين -->
+        <div id="user-list" class="fixed bottom-24 left-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
+            <ul>
+                {% for user in all_users %}
+                {% if user != request.user %}
+                    <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                        <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                            <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ user.username }}</p>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -38,19 +97,194 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getDatabase, ref, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBep8eDnc67uFHrpStN9swOgMdPKgWhbag",
+      authDomain: "fir-s-s-chatapp.firebaseapp.com",
+      databaseURL: "https://fir-s-s-chatapp-default-rtdb.firebaseio.com",
+      projectId: "fir-s-s-chatapp",
+      storageBucket: "fir-s-s-chatapp.firebasestorage.app",
+      messagingSenderId: "679220975526",
+      appId: "1:679220975526:web:5603c83b8735a7254ba167",
+      measurementId: "G-Z4MBWVC3BP"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+
+
+  // Debugging: Log the list of chat rooms
+  console.log("Chat Rooms:", {{ chat_rooms|safe }});
+
+  // Debugging: Log the current user
+  console.log("Current User:", "{{ request.user }}");
+
+  // Debugging: Log dark mode preference
+  console.log("Dark Mode Preference:", localStorage.getItem('darkMode'));
+
+
+
+      // Function to fetch the last message for a room
+      const chatRooms = {}; // تخزين بيانات الغرف
+
+    
+        // إذا كانت الغرفة جماعية، أضفها مباشرة مع وقت الإنشاء
+    function fetchLastMessage(roomName, roomType, members, creationTime) {
+    const messagesRef = ref(database, `chat_rooms/${roomName}/messages`);
+    const lastMessageQuery = query(messagesRef, limitToLast(1));
+
+    // معالجة وقت الإنشاء وتحويله إلى كائن تاريخ
+    const creationDate = new Date(creationTime);
+    if (isNaN(creationDate)) {
+        console.error("Invalid creation time:", creationTime);
+        return;
+    }
+
+    if (roomType === "group") {
+        chatRooms[roomName] = {
+            roomName: roomName,
+            roomType: roomType,
+            members: members,
+            lastMessage: "No messages yet",
+            lastMessageTime: creationDate, // وقت الإنشاء كوقت افتراضي
+        };
+
+        sortAndRenderRooms(); // تحديث الواجهة
+    }
+
+    onChildAdded(lastMessageQuery, (snapshot) => {
+        const message = snapshot.val();
+
+        if (message) {
+            const senderName = message.sender === "{{ request.user.username }}" ? "(You)" : message.sender;
+
+            chatRooms[roomName] = {
+                roomName: roomName,
+                roomType: roomType,
+                members: members,
+                lastMessage: `<strong>${senderName}:</strong> ${message.content}`,
+                lastMessageTime: new Date(message.timestamp),
+            };
+        } else if (roomType === "private") {
+            delete chatRooms[roomName]; // لا تضف الغرف الفردية بلا رسائل
+        }
+
+        sortAndRenderRooms();
+    });
+}
+
+    
+
+  function sortAndRenderRooms() {
+    // تحويل الكائن إلى مصفوفة ثم الفرز
+    const sortedRooms = Object.values(chatRooms).sort((a, b) => {
+        if (!a.lastMessageTime) return 1; // إذا كانت الغرفة بلا رسائل، ضعها في الأسفل
+        if (!b.lastMessageTime) return -1;
+        return b.lastMessageTime - a.lastMessageTime; // ترتيب تنازلي
+    });
+
+    // تحديث واجهة المستخدم
+    const roomsContainer = document.getElementById("rooms-container");
+    roomsContainer.innerHTML = ""; // مسح العناصر السابقة
+
+    sortedRooms.forEach((room) => {
+        const roomElement = document.createElement("a");
+        roomElement.href = `/chat/${room.roomName}`; // رابط الغرفة
+        roomElement.className =
+            "flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200";
+        
+        // عرض اسم الغرفة أو المستخدم
+        let roomDisplayName = room.roomName.toUpperCase(); // الافتراضي: اسم الغرفة
+        if (room.roomType === 'private') {
+            room.members.forEach(member => {
+                if (member !== "{{ request.user.username }}") {
+                    roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
+                }
+            });
+        }
+
+        roomElement.innerHTML = `
+            <div class="flex items-center flex-1 min-w-0">
+                <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                    ${roomDisplayName.charAt(0).toUpperCase()}
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                        ${roomDisplayName}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate" id="last-message-${room.roomName}">
+                        ${room.lastMessage}
+                    </p>
+                </div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0 min-w-[50px] text-right" id="last-message-time-${room.roomName}">
+                ${
+                    room.lastMessageTime
+                        ? room.lastMessageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : ""
+                }
+            </span>
+        `;
+        roomsContainer.appendChild(roomElement);
+    });
+}
+
+// جلب آخر رسالة لكل غرفة
+{% for room in request.user.chat_rooms.all %}
+fetchLastMessage(
+    "{{ room.name }}",
+    "{{ room.type }}",
+    [{% for member in room.members.all %}"{{ member.username }}",{% endfor %}],
+    "{{ room.creation_time|date:'c' }}"  // وقت الإنشاء
+);
+{% endfor %}
+
+
+
+
+
   // Dark Mode Toggle
   const darkModeToggle = document.getElementById('dark-mode-toggle');
   const htmlElement = document.documentElement;
 
-  darkModeToggle.addEventListener('click', () => {
-      htmlElement.classList.toggle('dark');
-      localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
-  });
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
+        console.log("Dark Mode Toggled. New State:", htmlElement.classList.contains('dark'));
+    });
+  }
+
+
+const userListButton = document.getElementById('user-list-button');
+const userList = document.getElementById('user-list');
+
+userListButton.addEventListener('click', (event) => {
+    event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
+    userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
+});
+
+// إخفاء القائمة عند الضغط خارجها
+document.addEventListener('click', (event) => {
+    if (event.target !== userListButton && !userList.contains(event.target)) {
+        userList.style.display = 'none';
+    }
+});
 
   // Check for saved dark mode preference
   if (localStorage.getItem('darkMode') === 'true') {
       htmlElement.classList.add('dark');
+      console.log("Dark Mode Enabled on Page Load");
+  } else {
+      console.log("Dark Mode Disabled on Page Load");
   }
 </script>
 {% endblock %}

@@ -515,12 +515,30 @@
         const messageId = snapshot.key;
         const isOwnMessage = message.sender === currentUser;
     
+        // إذا كانت الرسالة محذوفة للجميع
+        if (message.isDeletedForEveryone) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `mb-4 flex relative ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
+            messageElement.dataset.messageId = messageId;
+            messageElement.innerHTML = `
+                <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}">
+                    <span class="text-gray-400 italic">This message has been deleted.</span>
+                </div>
+            `;
+            chatBox.appendChild(messageElement);
+            return;
+        }
+    
+        // إذا كانت الرسالة محذوفة من عندي فقط
+        if (message.deletedFor?.[currentUser]) return;
+    
+    
         const messageElement = document.createElement('div');
         messageElement.className = `mb-4 flex relative ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
         messageElement.dataset.messageId = messageId;
     
         const editedText = message.edited ? ' (edited)' : '';
-        const deletedText = message.isDeleted ? '<span class="text-gray-400 italic">This message has been deleted.</span>' : message.content;
+        const messageContentText = message.content;
     
         let statusIcon = '';
         if (isOwnMessage) {
@@ -557,11 +575,10 @@
                                 <i class="fas fa-download"></i>
                             </a>
                         </div>
-                    ` : deletedText}
+                    ` : messageContentText}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 message-timestamp">
                     ${new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${editedText}
-    
                     <span class="status-icon">${getStatusIcon(message.status)}</span>
                 </div>
                 ${isOwnMessage ? `
@@ -602,17 +619,41 @@ function getStatusIcon(status) {
 onChildChanged(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot) => {
     const updatedMessage = snapshot.val();
     const messageId = snapshot.key;
+    const isOwnMessage = updatedMessage.sender === currentUser;
 
     const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-    if (!messageElement) return; // إذا لم يتم العثور على العنصر، توقف
+    if (!messageElement) return;
+
+    // إذا تم حذف الرسالة للجميع
+    if (updatedMessage.isDeletedForEveryone) {
+        messageElement.innerHTML = `
+            <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}">
+                <span class="text-gray-400 italic">This message has been deleted.</span>
+            </div>
+        `;
+        return;
+    }
+
+    // إذا تم حذف الرسالة من عندي فقط
+    if (updatedMessage.deletedFor?.[currentUser]) {
+        messageElement.remove(); // إزالة الرسالة من الواجهة
+        return;
+    }
 
     // تحديث محتوى الرسالة وحالتها
     const contentDiv = messageElement.querySelector('.message-content') || messageElement.querySelector('.break-words');
     const timestampDiv = messageElement.querySelector('.message-timestamp');
     const statusIconDiv = messageElement.querySelector('.status-icon');
 
-    if (contentDiv && updatedMessage.content) {
-        contentDiv.innerHTML = updatedMessage.content;
+    if (contentDiv) {
+        if (updatedMessage.isDeletedForEveryone) {
+            contentDiv.innerHTML = '<span class="text-gray-400 italic">This message has been deleted.</span>';
+        } else if (updatedMessage.isDeletedForMe) {
+            messageElement.remove(); // إزالة الرسالة من واجهة المستخدم إذا كانت محذوفة من عندي فقط
+            return;
+        } else {
+            contentDiv.innerHTML = updatedMessage.content;
+        }
     }
 
     if (timestampDiv) {
@@ -627,11 +668,14 @@ onChildChanged(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot)
     }
 });
 
+
+
 onChildRemoved(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot) => {
-    const messageId = snapshot.key;
-    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    const messageId = snapshot.key; // Get the unique ID of the removed message
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`); // Find the message element in the DOM
+
     if (messageElement) {
-        messageElement.remove(); // إزالة الرسالة من الواجهة
+        messageElement.remove(); // Remove the message element from the DOM
     }
 });
 
@@ -737,40 +781,54 @@ onChildRemoved(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot)
     
         document.body.appendChild(confirmModal);
     
-        // حذف الرسالة من عندك فقط
-        confirmModal.querySelector('#delete-for-me').addEventListener('click', () => {
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.remove();  // إخفاء الرسالة من الواجهة فقط
-            }
-            confirmModal.remove();
-            console.log('Confirm')
-        });
-    
-        // حذف الرسالة من عند الجميع
-        confirmModal.querySelector('#delete-for-everyone').addEventListener('click', () => {
+        // حذف الرسالة مني فقط
+        document.getElementById('delete-for-me').addEventListener('click', (event) => {
+            event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأكبر
             const messageRef = ref(database, `chat_rooms/${roomName}/messages/${messageId}`);
+    
+            // تحديث حالة الحذف للمستخدم الحالي فقط
             update(messageRef, {
-                content: "This message has been deleted.",
-                isDeleted: true,  // إضافة علامة للحذف
-                timestamp: new Date().toISOString()  // تحديث الوقت
-            })
-            .then(() => {
-                console.log("Message deleted for everyone");
-            })
-            .catch(error => {
-                console.error("Failed to delete message:", error);
+                [`deletedFor/${currentUser}`]: true, // تم الحذف من قبل المستخدم الحالي
+                timestamp: new Date().toISOString()
+            }).then(() => {
+                console.log("Message deleted for me");
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    messageElement.remove(); // إزالة الرسالة من واجهة المستخدم
+                }
+            }).catch(error => {
+                console.error("Failed to delete message for me:", error);
                 showErrorModal('Failed to delete message. Please try again.');
             });
-            confirmModal.remove();
+    
+            confirmModal.remove(); // إزالة النافذة المنبثقة بعد اكتمال الإجراء
         });
     
-        // إلغاء الحذف
-        confirmModal.querySelector('#cancel-delete').addEventListener('click', () => {
-            confirmModal.remove();
+        // حذف الرسالة من الجميع
+        // حذف للجميع
+document.getElementById('delete-for-everyone').addEventListener('click', (event) => {
+    event.stopPropagation();
+    const messageRef = ref(database, `chat_rooms/${roomName}/messages/${messageId}`);
+
+    // تحديث حالة الرسالة في قاعدة البيانات
+    update(messageRef, {
+        isDeletedForEveryone: true, // تم الحذف للجميع
+        content: 'This message has been deleted.', // استبدال المحتوى بنص الحذف
+        timestamp: new Date().toISOString() // تحديث الوقت
+    }).then(() => {
+        console.log("Message deleted for everyone");
+    }).catch(error => {
+        console.error("Failed to delete message:", error);
+    });
+
+    confirmModal.remove();
+});
+
+        document.getElementById('cancel-delete').addEventListener('click', (event) => {
+            event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأكبر
+            confirmModal.remove(); // إزالة النافذة المنبثقة
         });
     }
-
 
     // Attach functions to the window object to make them globally accessible
     window.showEditMessage = showEditMessage;
@@ -913,6 +971,23 @@ fetchLastMessage(
 
 
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 // إظهار/إخفاء قائمة المستخدمين
 
 const userListButton = document.getElementById('user-list-button');
@@ -929,9 +1004,6 @@ document.addEventListener('click', (event) => {
         userList.style.display = 'none';
     }
 });
-    
-
-
 
 
   </script>

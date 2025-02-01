@@ -45,35 +45,46 @@ def chat_room(request, room_name):
 
     # Fetch all users except the current user for the user list
     all_users = User.objects.exclude(id=request.user.id)
+    
+    group = get_object_or_404(ChatRoom, name=room_name)
 
     # Pass the room, messages, and all_users to the template
     context = {
         'room': room,
         'messages': messages,
         'all_users': all_users,
+        'group': group,
         'room_name': room_name,  # Pass the room name to the template
     }
     return render(request, 'chat_app/chat_room.html', context)
 
 @login_required
 def start_private_chat(request, user_id):
-    # Get the other user
+    # جلب المستخدم الهدف
     other_user = get_object_or_404(User, id=user_id)
     
-    # Ensure consistent ordering of user IDs for the room name
-    user_ids = sorted([request.user.id, other_user.id])  # Sort the IDs
-    room_name = f"private_{user_ids[0]}_{user_ids[1]}"  # Use sorted IDs to name the room
+    # إنشاء اسم الغرفة باستخدام معرفي المستخدمين
+    user_ids = sorted([request.user.id, other_user.id])  # فرز المعرفين
+    room_name = f"private_{user_ids[0]}_{user_ids[1]}"  # إنشاء اسم الغرفة
     
-    # Check if a private chat room already exists
-    chat_room, created = ChatRoom.objects.get_or_create(
+    # البحث عن غرفة دردشة خاصة بين المستخدمين
+    chat_room = ChatRoom.objects.filter(
         name=room_name,
-        defaults={'type': 'private'}  # Ensure it's marked as a private chat
-    )
+        type='private',
+        members=request.user
+    ).filter(
+        members=other_user
+    ).first()
+
+    # إذا لم تكن الغرفة موجودة، قم بإنشائها
+    if not chat_room:
+        chat_room = ChatRoom.objects.create(
+            name=room_name,
+            type='private'
+        )
+        chat_room.members.add(request.user, other_user)
     
-    # Add both users to the chat room
-    chat_room.members.add(request.user, other_user)
-    
-    # Redirect to the chat room
+    # توجيه المستخدم إلى غرفة الدردشة
     return redirect('chat_room', room_name=room_name)
 
 @csrf_exempt
@@ -229,3 +240,53 @@ def instructor_groups(request):
         'groups_with_excluded_students': groups_with_excluded_students,
         'students': students,
     })
+    
+
+def create_group(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        gender = request.POST.get('gender')
+        student_ids = request.POST.get('student_ids', '').split(',')
+
+        print("Received Data:", {
+            'name': name,
+            'gender': gender,
+            'student_ids': student_ids,
+        })  # طباعة البيانات المستلمة
+
+        if not name:
+            return JsonResponse({'error': 'Please enter a group name.'}, status=400)
+
+        if gender not in ['male', 'female']:
+            return JsonResponse({'error': 'Please select a gender type (Male Only or Female Only).'}, status=400)
+
+        try:
+            group = ChatRoom()
+            group.create_group(
+                instructor=request.user,
+                name=name,
+                student_ids=student_ids,
+                is_male_only=(gender == 'male'),
+                is_female_only=(gender == 'female')
+            )
+            return JsonResponse({'success': 'Group created successfully!', 'room_name': group.name}, status=200)
+        except ValidationError as e:
+            print("Validation Error:", str(e))  # طباعة خطأ التحقق
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            print("Exception:", str(e))  # طباعة الاستثناء
+            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+def get_group_members(request):
+    if request.method == 'GET':
+        room_name = request.GET.get('room_name')
+        try:
+            room = ChatRoom.objects.get(name=room_name)
+            members = [{'id': member.id, 'username': member.username} for member in room.members.all()]
+            return JsonResponse({'members': members}, status=200)
+        except ChatRoom.DoesNotExist:
+            return JsonResponse({'error': 'Group not found.'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)

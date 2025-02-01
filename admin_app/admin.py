@@ -470,7 +470,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
 
                             # تحديث حالة الطلب
                             account_request.is_approved = True
-                            account_request.status = 'approved'
+                            account_request.status = 'APPROVED'
                             account_request.save()
 
                             messages.success(request, f"Approval email sent to {account_request.full_name}.")
@@ -508,7 +508,7 @@ class AccountRequestAdmin(admin.ModelAdmin):
 
                         # تحديث حالة الطلب
                         account_request.is_approved = False
-                        account_request.status = 'rejected'
+                        account_request.status = 'REJECTED'
                         account_request.save()
 
                         messages.success(request, f"Rejection email sent to {account_request.full_name}.")

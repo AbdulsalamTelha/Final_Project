@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     # 'jazzmin',
     # 'admin_app.apps.AdminAppConfig',
     'admin_app',
+    'chat_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'import_export',
-    'chat_app',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +61,11 @@ ROOT_URLCONF = 'sss.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'sss/templates')],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'sss/templates'),
+            # BASE_DIR / "chat_app/templates/chat_app",
+            # BASE_DIR / "admin_app/templates", 
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,7 +136,7 @@ USE_TZ = False  # تعطيل استخدام التوقيت العالمي الم
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'sss/static')]
 
 # Media

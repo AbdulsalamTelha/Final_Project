@@ -1,9 +1,22 @@
 {% extends "base.html" %}
+
+{% block title %} Chat:
+    {% if room.type == 'private' %}
+        {% for member in room.members.all %}
+            {% if member != request.user %}
+                {{ member.username.capitalize }}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {{ room.name.upper }}
+    {% endif %}
+{% endblock title %}
+
+{% block breadcrumb %}
+{% endblock breadcrumb %}
+
 {% block content %}
 {% load custom_filters %}
-
-<!-- Include Font Awesome -->
-{% load static %}
 
 <style>
     /*scroll تخصيص شريط التمرير */
@@ -24,28 +37,18 @@
         background-color: #9CA3AF; /* تغيير اللون عند التمرير */
     }
 </style>
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
 <div class="flex h-[80vh] w-[90vw] bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 ">
     <!-- Sidebar -->
-    <div class="w-1/4 bg-white dark:bg-gray-800 p-4 shadow-lg overflow-y-auto custom-scrollbar ">
-        <!-- زر القائمة -->
-        <button id="user-list-button" class="fixed bottom-20 left-140 bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-green-600 transition duration-300">
-            <i class="fas fa-plus"></i>
-        </button>
-        <!-- Button to open the modal -->
-        {% comment %} <a href="{% url 'create_group_page1' %}" class="btn btn-primary">Create New Group</a> {% endcomment %}
+    <div class="w-1/4 bg-white dark:bg-gray-800 p-6 shadow-lg overflow-y-auto custom-scrollbar rounded-l-lg">
 
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">Chats</h2>
+            <h2 class="text-2xl font-semibold">Chats</h2>
         </div>
 
         <!-- قائمة الغرف -->
         <div id="rooms-container">
             <ul class="space-y-2">
-                {% comment %} {% for room in chat_rooms %}
+                {% for room in chat_rooms %}
                 <li data-room-name="{{ room.name }}" data-timestamp="{% if room.last_message %}{{ room.last_message.timestamp|date:"U" }}{% else %}0{% endif %}" class="{% if room.name == current_room.name %}bg-gray-100 dark:bg-gray-700{% endif %}">
                     <a href="{% url 'chat_room' room.name %}" class="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-300">
                         <!-- صورة الغرفة أو الحرف الأول -->
@@ -86,7 +89,7 @@
                         </span>
                     </a>
                 </li>
-                {% endfor %} {% endcomment %}
+                {% endfor %}
             </ul>
             <ul>
                 <ul>
@@ -96,18 +99,34 @@
                 </ul>
         </div>
 
+        <!-- زر القائمة -->
+        <button id="user-list-button" class="fixed bottom-20 left-140 bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-blue-500 transition duration-300">
+            <i class="fas fa-plus"></i>
+        </button>
+
         <!-- قائمة المستخدمين -->
-        <div id="user-list" class="fixed bottom-24 left-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
+        <div id="user-list" class="fixed bottom-32 left-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
             <ul>
                 {% for user in all_users %}
                 {% if user != request.user %}
                     <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
                         <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                            <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                                {{ user.username|slice:":1"|upper }}
+                            
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                {% if user.get_profile_image_url %}
+                                    <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                {% else %}
+                                    <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                {% endif %}
                             </div>
+
                             <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ user.username }}</p>
+                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {{ user.username|capfirst }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ user.get_role_display }}
+                                </p>
                             </div>
                         </a>
                     </li>
@@ -118,19 +137,21 @@
     </div>
 
     <!-- Chat Area -->
-    <div class="w-3/4 flex flex-col bg-white dark:bg-gray-900 shadow-lg">
+    <div class="w-3/4 flex flex-col bg-white dark:bg-gray-900 shadow-lg rounded-r-lg">
         <!-- Chat Header -->
-        <div class="p-4 bg-white dark:bg-gray-800 shadow-md flex items-center">
+        <div class="p-4 bg-white dark:bg-gray-800 shadow-md flex items-center rounded-tr-lg">
             <!-- صورة شخصية تبدأ بأول حرف -->
-            <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+            <div class="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-200 rounded-full flex items-center justify-center text-white font-bold">
                 {% if room.type == 'private' %}
-                    {% for member in room.members.all %}
-                        {% if member != request.user %}
-                            {{ member.username|slice:":1"|upper }}
-                        {% endif %}
+                    {% for user in all_users %}
+                        {% for member in room.members.all %}
+                            {% if member != request.user and member == user %}
+                                <img src="{{ user.get_profile_image_url }}" alt="{{ member }}" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
+                            {% endif %}
+                        {% endfor %}
                     {% endfor %}
                 {% else %}
-                    {{ room.name|slice:":1"|upper }}
+                    <img src="/static/img/group.png" alt="room.name" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
                 {% endif %}
             </div>
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 ml-3">
@@ -177,7 +198,7 @@
         </div>
 
         <!-- Message Input -->
-        <div class="p-4 bg-white dark:bg-gray-800 shadow-md">
+        <div class="p-4 bg-white dark:bg-gray-800 shadow-md rounded-br-lg">
             <div class="flex">
                 <input type="text" id="chat-message-input" class="flex-1 p-2 border rounded-l-lg focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" placeholder="Type a message...">
                 <input type="file" id="file-input" class="hidden">
@@ -776,32 +797,23 @@ onChildRemoved(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot)
     window.showEditMessage = showEditMessage;
     window.confirmDeleteMessage = confirmDeleteMessage;
 
-  
-    // Dark Mode Toggle
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const htmlElement = document.documentElement;
-  
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', () => {
-          htmlElement.classList.toggle('dark');
-          localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
-          console.log("Dark Mode Toggled. New State:", htmlElement.classList.contains('dark'));
-      });
-    }
-  
-    // Check for saved dark mode preference
-    if (localStorage.getItem('darkMode') === 'true') {
-        htmlElement.classList.add('dark');
-        console.log("Dark Mode Enabled on Page Load");
-    } else {
-        console.log("Dark Mode Disabled on Page Load");
-    }
-  
-    // Function to get CSRF token
  
+
+
+
 
     // Function to fetch the last message for a room
     const chatRooms = {}; // تخزين بيانات الغرف
+
+    const allUsers = [
+        {% for user in all_users %}
+            {
+                "username": "{{ user.username }}",
+                "profile_image": "{{ user.get_profile_image_url }}"
+            }
+            {% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
 
     function fetchLastMessage(roomName, roomType, members, creationTime) {
         const messagesRef = ref(database, `chat_rooms/${roomName}/messages`);
@@ -847,92 +859,104 @@ onChildRemoved(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot)
         });
     }
 
-function sortAndRenderRooms() {
-    // تحويل الكائن إلى مصفوفة ثم الفرز
-    const sortedRooms = Object.values(chatRooms).sort((a, b) => {
-        if (!a.lastMessageTime) return 1; // إذا كانت الغرفة بلا رسائل، ضعها في الأسفل
-        if (!b.lastMessageTime) return -1;
-        return b.lastMessageTime - a.lastMessageTime; // ترتيب تنازلي
-    });
+    function sortAndRenderRooms() {
+        // تحويل الكائن إلى مصفوفة ثم الفرز
+        const sortedRooms = Object.values(chatRooms).sort((a, b) => {
+            if (!a.lastMessageTime) return 1; // إذا كانت الغرفة بلا رسائل، ضعها في الأسفل
+            if (!b.lastMessageTime) return -1;
+            return b.lastMessageTime - a.lastMessageTime; // ترتيب تنازلي
+        });
 
-    // تحديث واجهة المستخدم
-    const roomsContainer = document.getElementById("rooms-container");
-    roomsContainer.innerHTML = ""; // مسح العناصر السابقة
+        // تحديث واجهة المستخدم
+        const roomsContainer = document.getElementById("rooms-container");
+        roomsContainer.innerHTML = ""; // مسح العناصر السابقة
 
-    sortedRooms.forEach((room) => {
-        const roomElement = document.createElement("a");
-        roomElement.href = `/chat/${room.roomName}`; // رابط الغرفة
-        roomElement.className =
-            "flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200";
-        
-        // عرض اسم الغرفة أو المستخدم
-        let roomDisplayName = room.roomName.toUpperCase(); // الافتراضي: اسم الغرفة
-        if (room.roomType === 'private') {
-            room.members.forEach(member => {
-                if (member !== "{{ request.user.username }}") {
-                    roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
-                }
-            });
-        }
+        sortedRooms.forEach((room) => {
+            const roomElement = document.createElement("a");
+            roomElement.href = `/chat/${room.roomName}`; // رابط الغرفة
+            roomElement.className =
+                "flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200";
+            
+            // عرض اسم الغرفة أو المستخدم
+            let roomDisplayName = room.roomName.toUpperCase(); // الافتراضي: اسم الغرفة
+            let profileImage = ""; // صورة المستخدم الآخر
 
-        roomElement.innerHTML = `
-            <div class="flex items-center flex-1 min-w-0">
-                <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                    ${roomDisplayName.charAt(0).toUpperCase()}
+            if (room.roomType === 'private') {
+                room.members.forEach(member => {
+                    if (member !== "{{ request.user.username }}") {
+                        roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
+
+                        // 🔹 البحث عن صورة المستخدم داخل allUsers
+                        let userImage = "";
+                        for (let i = 0; i < allUsers.length; i++) {
+                            if (allUsers[i].username === member) {
+                                userImage = allUsers[i].profile_image;
+                                break;  // توقف البحث بمجرد العثور على المستخدم
+                            }
+                        }
+
+                        if (userImage) {
+                            profileImage = `<img src="${userImage}" alt="${member}" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">`;
+                        }
+                    }
+                });
+            } else {
+                profileImage = `<img src="/static/img/group.png" alt="${room.roomName}" class="w-full h-full rounded-full object-cover border border-gray-200 dark:border-gray-200">`;
+            }
+
+            roomElement.innerHTML = `
+                <div class="flex items-center flex-1 min-w-0">
+                    <div class="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-200 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
+                        ${profileImage || roomDisplayName.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                            ${roomDisplayName}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate" id="last-message-${room.roomName}">
+                            ${room.lastMessage}
+                        </p>
+                    </div>
                 </div>
-                <div class="ml-3 flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                        ${roomDisplayName}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate" id="last-message-${room.roomName}">
-                        ${room.lastMessage}
-                    </p>
-                </div>
-            </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0 min-w-[50px] text-right" id="last-message-time-${room.roomName}">
-                ${
-                    room.lastMessageTime
-                        ? room.lastMessageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : ""
-                }
-            </span>
-        `;
-        roomsContainer.appendChild(roomElement);
-    });
-}
-
-// جلب آخر رسالة لكل غرفة
-{% for room in request.user.chat_rooms.all %}
-fetchLastMessage(
-    "{{ room.name }}",
-    "{{ room.type }}",
-    [{% for member in room.members.all %}"{{ member.username }}",{% endfor %}],
-    "{{ room.creation_time|date:'c' }}"
-);
-{% endfor %}
-
-
-
-// إظهار/إخفاء قائمة المستخدمين
-
-const userListButton = document.getElementById('user-list-button');
-const userList = document.getElementById('user-list');
-
-userListButton.addEventListener('click', (event) => {
-    event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
-    userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
-});
-
-// إخفاء القائمة عند الضغط خارجها
-document.addEventListener('click', (event) => {
-    if (event.target !== userListButton && !userList.contains(event.target)) {
-        userList.style.display = 'none';
+                <span class="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0 min-w-[50px] text-right" id="last-message-time-${room.roomName}">
+                    ${
+                        room.lastMessageTime
+                            ? room.lastMessageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                            : ""
+                    }
+                </span>
+            `;
+            roomsContainer.appendChild(roomElement);
+        });
     }
-});
-    
+
+    // جلب آخر رسالة لكل غرفة
+    "{% for room in request.user.chat_rooms.all %}"
+    fetchLastMessage(
+        "{{ room.name }}",
+        "{{ room.type }}",
+        ["{% for member in room.members.all %}{{ member.username }}{% if not forloop.last %}","{% endif %}{% endfor %}"],
+        "{{ room.creation_time|date:'c' }}"
+    );
+    "{% endfor %}"
 
 
 
+    // إظهار/إخفاء قائمة المستخدمين
+    const userListButton = document.getElementById('user-list-button');
+    const userList = document.getElementById('user-list');
+
+    userListButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
+        userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // إخفاء القائمة عند الضغط خارجها
+    document.addEventListener('click', (event) => {
+        if (event.target !== userListButton && !userList.contains(event.target)) {
+            userList.style.display = 'none';
+        }
+    });
 
   </script>
 {% endblock %}

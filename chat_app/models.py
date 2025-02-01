@@ -11,7 +11,7 @@ class ChatRoom(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     type = models.CharField(max_length=10, choices=CHAT_TYPE_CHOICES, default='group')
-    members = models.ManyToManyField(User, related_name='chat_rooms')
+    members = models.ManyToManyField(User, related_name='chat_rooms', limit_choices_to={'is_active': True})
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_chat_rooms', null=True, blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     is_male_only = models.BooleanField(default=False)

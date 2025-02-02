@@ -69,30 +69,52 @@
 
             <ul>
                 {% for user in all_users %}
-                {% if user != request.user %}
-                    <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                        <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                                {% if user.get_profile_image_url %}
-                                    <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
-                                {% else %}
-                                    <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                    {{ user.username|capfirst }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ user.get_role_display }}
-                                </p>
-                            </div>
-                        </a>
-                    </li>
-                {% endif %}
-                {% endfor %}
+    {% if user != request.user %}
+        {% if request.user.role == 'STUDENT' %}
+        {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
+                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                            {% if user.get_profile_image_url %}
+                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                            {% else %}
+                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                {{ user.username|capfirst }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ user.get_role_display }}
+                            </p>
+                        </div>
+                    </a>
+                </li>
+            {% endif %}
+        {% else %}
+            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                        {% if user.get_profile_image_url %}
+                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                        {% else %}
+                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                            {{ user.username|capfirst }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ user.get_role_display }}
+                        </p>
+                    </div>
+                </a>
+            </li>
+        {% endif %}
+    {% endif %}
+{% endfor %}
             </ul>
         </div>
     </div>
@@ -1303,8 +1325,9 @@ console.log("Form Data:", {
     const groupMembersList = document.getElementById('group-members-list');
 
     // دالة لعرض أعضاء المجموعة
-// جعل الدالة متاحة في النطاق العام
+
 window.showGroupMembers = function(roomName) {
+    console.log("Clicked Group:", roomName);
     // جلب بيانات المجموعة من الخادم
     fetch(`/chat/get_group_members/?room_name=${roomName}`)
         .then(response => response.json())

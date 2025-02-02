@@ -12,7 +12,7 @@ from admin_app.models import User
 from .models import ChatRoom, Message
 from django.db.models import Q
 from django.contrib import messages
-
+from django.views.decorators.http import require_http_methods
 
 @login_required
 def chat_list(request):
@@ -163,85 +163,6 @@ def send_message(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-def instructor_groups(request):
-    if request.user.role != 'INSTRUCTOR':
-        messages.error(request, "Only instructors can access this page.")
-        return redirect('home')
-
-    groups = ChatRoom.objects.filter(created_by=request.user)
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-
-        if action == 'create_group':
-            name = request.POST.get('name')
-            gender = request.POST.get('gender')
-            student_ids = request.POST.getlist('student_ids')
-
-            if not name:
-                messages.error(request, "Please enter a group name.")
-                return redirect('instructor_groups')
-
-            if gender not in ['male', 'female']:
-                messages.error(request, "Please select a gender type (Male Only or Female Only).")
-                return redirect('instructor_groups')
-
-            try:
-                # استخدم الدالة create_group بدلاً من الإنشاء اليدوي
-                group = ChatRoom()
-                group.create_group(
-                    instructor=request.user,
-                    name=name,
-                    student_ids=student_ids,
-                    is_male_only=(gender == 'male'),
-                    is_female_only=(gender == 'female')
-                )
-                messages.success(request, f"Group '{name}' created successfully!")
-            except ValidationError as e:
-                messages.error(request, str(e))
-            except Exception as e:
-                messages.error(request, f"An error occurred: {str(e)}")
-
-        elif action == 'add_member':
-                    group_id = request.POST.get('group_id')
-                    student_id = request.POST.get('student_id')
-
-                    group = get_object_or_404(ChatRoom, id=group_id, created_by=request.user)
-                    student = get_object_or_404(User, id=student_id, role='STUDENT')
-
-                    try:
-                        group.add_member(student)
-                        messages.success(request, f"Student '{student.first_name} {student.last_name}' added to the group.")
-                    except Exception as e:
-                        messages.error(request, str(e))
-
-        elif action == 'delete_member':
-            group_id = request.POST.get('group_id')
-            student_id = request.POST.get('student_id')
-
-            group = get_object_or_404(ChatRoom, id=group_id, created_by=request.user)
-            student = get_object_or_404(User, id=student_id)
-
-            try:
-                group.delete_member(student, request.user)
-                messages.success(request, f"Student '{student.first_name} {student.last_name}' removed from the group.")
-            except Exception as e:
-                messages.error(request, str(e))
-
-    # Prepare the list of excluded student IDs for each group
-    groups_with_excluded_students = []
-    for group in groups:
-        excluded_student_ids = list(group.members.values_list('id', flat=True))
-        groups_with_excluded_students.append((group, excluded_student_ids))
-
-    students = User.objects.filter(role='STUDENT')
-
-    return render(request, 'chat_app/instructor_groups.html', {
-        'groups_with_excluded_students': groups_with_excluded_students,
-        'students': students,
-    })
-    
-
 def create_group(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -290,3 +211,96 @@ def get_group_members(request):
             return JsonResponse({'error': 'Group not found.'}, status=404)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
+    
+
+
+    
+@login_required
+def manage_group(request, group_id):
+    group = get_object_or_404(ChatRoom, id=group_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'update_name':
+            new_name = request.POST.get('new_name', '').strip()
+            if len(new_name) < 2:
+                messages.error(request, 'Must be name greater than or equal 2 characters')
+            else:
+                group.name = new_name
+                group.save()
+                messages.success(request, 'Update name successfully')
+            
+        elif action == 'add_member':
+            student_ids = request.POST.getlist('student_ids')
+            
+            if not student_ids:
+                messages.error(request, 'Must be select one student or more')
+            else:
+                added_count = 0
+                for student_id in student_ids:
+                    try:
+                        student = User.objects.get(
+                            id=student_id,
+                            role='STUDENT',
+                            is_active=True
+                        )
+                        
+                        # التحقق من التوافق الجنسي
+                        if (group.is_male_only and student.gender != 'M') or \
+                           (group.is_female_only and student.gender != 'F'):
+                            messages.warning(request, f' Cann\'t add this {student.first_name} {student.last_name} student')
+                            continue
+                            
+                        # التحقق من عدم وجود العضو مسبقًا
+                        if group.members.filter(id=student.id).exists():
+                            messages.warning(request, f'Student {student.first_name} {student.last_name} alredy exist')
+                            continue
+                            
+                        group.members.add(student)
+                        added_count += 1
+                        
+                    except User.DoesNotExist:
+                        messages.error(request, 'This data is not true')
+                
+                if added_count > 0:
+                    messages.success(request, f'Added successfully  {added_count} members ')
+            
+        elif action == 'remove_member':
+            student_id = request.POST.get('student_id')
+            if student_id:
+                try:
+                    student = User.objects.get(id=student_id)
+                    if group.members.filter(id=student.id).exists():
+                        group.members.remove(student)
+                        messages.success(request, f'student {student.first_name} {student.last_name} successful removed')
+                    else:
+                        messages.error(request, 'member does not exist in group')
+                except User.DoesNotExist:
+                    messages.error(request, ' member does not exist ')
+            
+        elif action == 'delete_group':
+            group_name = group.name
+            group.delete()
+            messages.success(request, f' group {group_name} successfully deleted')
+            return redirect('chat_list')
+    
+    # تصفية الطلاب حسب نوع المجموعة
+    students = User.objects.filter(role='STUDENT').exclude(id__in=group.members.values_list('id', flat=True))
+    
+    if group.is_male_only:
+        students = students.filter(gender='M')
+    elif group.is_female_only:
+        students = students.filter(gender='F')
+    
+    # إذا كان الطلب عبر AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'chat_app/manage_group_content.html', {
+            'group': group,
+            'students': students,
+        })
+    
+    return render(request, 'chat_app/manage_group.html', {
+        'group': group,
+        'students': students,
+    })

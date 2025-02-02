@@ -45,15 +45,26 @@
             <h2 class="text-2xl font-semibold">Chats</h2>
         </div>
 
+        
+
     <!-- قائمة الغرف -->
     <div id="rooms-container">
       <ul class="space-y-2"></ul>
     </div>
 
                         
+        <!-- زر القائمة -->
+        <button id="user-list-button" class="fixed bottom-20 left-140 bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-blue-500 transition duration-300">
+            <i class="fas fa-plus"></i>
+        </button>
 
         <!-- قائمة المستخدمين -->
         <div id="user-list" class="fixed bottom-24 left-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
+            
+            <button id="create-group-button" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">
+                Create Group
+            </button>
+
             <ul>
                 {% for user in all_users %}
                 {% if user != request.user %}
@@ -72,52 +83,62 @@
             </ul>
         </div>
     </div>
-
     <!-- Chat Area -->
     <div class="w-3/4 flex flex-col bg-white dark:bg-gray-900 shadow-lg rounded-r-lg">
         <!-- Chat Header -->
-        <div class="p-4 bg-white dark:bg-gray-800 shadow-md flex items-center  rounded-tr-lg
-                    {% if room.type == 'group' %}cursor-pointer{% endif %}"
-                    {% if room.type == 'group' %}onclick="showGroupMembers('{{ room.name }}')"{% endif %}>
-            <!-- صورة شخصية تبدأ بأول حرف -->
-            <div class="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-200 rounded-full flex items-center justify-center text-white font-bold">
-                {% if room.type == 'private' %}
-                    {% for user in all_users %}
-                        {% for member in room.members.all %}
-                            {% if member != request.user and member == user %}
-                                <img src="{{ user.get_profile_image_url }}" alt="{{ member }}" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                {% else %}
-                    <img src="/static/img/group.png" alt="room.name" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
-                {% endif %}
-            </div>
-            <!-- اسم المجموعة -->
-            <div class="ml-3">
-                <h1 class="{% if room.type == 'group' %}text-xl{% else %}text-2xl{% endif %} font-bold text-gray-800 dark:text-gray-200 ml-3">
+
+        <div class="p-4 bg-white dark:bg-gray-800 shadow-md flex items-center justify-between rounded-tr-lg">
+            <!-- الجزء الأيسر: عرض معلومات المجموعة -->
+            <div class="flex items-center flex-1 cursor-pointer" {% if room.type == 'group' %}onclick="showGroupMembers('{{ room.name }}')"{% endif %}>
+                <!-- صورة شخصية تبدأ بأول حرف -->
+                <div class="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-200 rounded-full flex items-center justify-center text-white font-bold">
                     {% if room.type == 'private' %}
-                        {% for member in room.members.all %}
-                            {% if member != request.user %}
-                                {{ member.username.capitalize }}
-                            {% endif %}
+                        {% for user in all_users %}
+                            {% for member in room.members.all %}
+                                {% if member != request.user and member == user %}
+                                    <img src="{{ user.get_profile_image_url }}" alt="{{ member }}" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     {% else %}
-                        {{ room.name.upper }}
+                        <img src="/static/img/group.png" alt="room.name" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-200">
                     {% endif %}
-                </h1>
-                <!-- عرض أعضاء المجموعة (فقط في المجموعات) -->
-                {% if room.type == 'group' %}
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        Members: 
-                        {% for member in room.members.all %}
-                            {% if member != request.user %}
-                                {{ member.username }}{% if not forloop.last %}, {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                </div>
+                <!-- اسم المجموعة -->
+                <div class="ml-3">
+                    <h1 class="{% if room.type == 'group' %}text-xl{% else %}text-2xl{% endif %} font-bold text-gray-800 dark:text-gray-200 ml-3">
+                        {% if room.type == 'private' %}
+                            {% for member in room.members.all %}
+                                {% if member != request.user %}
+                                    {{ member.username.capitalize }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {{ room.name.upper }}
+                        {% endif %}
+                    </h1>
+                    <!-- عرض أعضاء المجموعة (فقط في المجموعات) -->
+                    {% if room.type == 'group' %}
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            Members: 
+                            {% for member in room.members.all %}
+                                {% if member != request.user %}
+                                    {{ member.username }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
+        
+            <!-- الجزء الأيمن: زر إدارة المجموعة -->
+            {% if room.type == 'group' and room.created_by == request.user %}
+                <div class="flex-shrink-0">
+                    <a href="{% url 'manage_group' room.id %}" class="p-2 bg-gray-400 text-white rounded-lg hover:bg-blue-400 transition duration-300">
+                        <i class="fas fa-cog"></i>  Manage Group
+                    </a>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Chat Messages -->
@@ -316,6 +337,7 @@
       </button>
     </div>
   </div>
+
 
   <script type="module">
             // Debugging: Log the room name and current user
@@ -1058,19 +1080,19 @@
         // إظهار/إخفاء قائمة المستخدمين
 
         const userListButton = document.getElementById('user-list-button');
-        const userList = document.getElementById('user-list');
+    const userList = document.getElementById('user-list');
 
-        userListButton.addEventListener('click', (event) => {
-            event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
-            userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
-        });
+    userListButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
+        userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
+    });
 
-        // إخفاء القائمة عند الضغط خارجها
-        document.addEventListener('click', (event) => {
-            if (event.target !== userListButton && !userList.contains(event.target)) {
-                userList.style.display = 'none';
-            }
-        });
+    // إخفاء القائمة عند الضغط خارجها
+    document.addEventListener('click', (event) => {
+        if (event.target !== userListButton && !userList.contains(event.target)) {
+            userList.style.display = 'none';
+        }
+    });
 
 
 
@@ -1297,6 +1319,7 @@ window.startPrivateChat = function(userId) {
             groupMembersModal.classList.add('hidden');
         }
     });
+    
   </script>
   {% endblock %}
 </div>

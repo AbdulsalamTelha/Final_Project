@@ -50,8 +50,6 @@ class ChatRoom(models.Model):
         return self.members.filter(id=user.id).exists()
 
     def create_group(self, instructor, name, student_ids=None, is_male_only=False, is_female_only=False):
-        if instructor.role != 'INSTRUCTOR':
-            raise ValidationError("Only instructors can create groups.")
         
         self.name = name
         self.created_by = instructor

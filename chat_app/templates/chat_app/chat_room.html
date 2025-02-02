@@ -61,20 +61,33 @@
         <!-- قائمة المستخدمين -->
         <div id="user-list" class="fixed bottom-24 left-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
             
-            <button id="create-group-button" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">
-                Create Group
-            </button>
+            {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
+                <button id="create-group-button" class="bg-[#1875BB] text-white px-4 py-2 rounded-lg hover:bg-[#1560A0] transition duration-300">
+                    Create Group
+                </button>
+            {% endif %}
 
             <ul>
                 {% for user in all_users %}
                 {% if user != request.user %}
                     <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
                         <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                            <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                                {{ user.username|slice:":1"|upper }}
+
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                {% if user.get_profile_image_url %}
+                                    <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                {% else %}
+                                    <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                {% endif %}
                             </div>
+
                             <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ user.username }}</p>
+                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {{ user.username|capfirst }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ user.get_role_display }}
+                                </p>
                             </div>
                         </a>
                     </li>
@@ -276,11 +289,15 @@
         <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Create New Group</h2>
         <form id="create-group-form" method="post" action="{% url 'create_group' %}">
             {% csrf_token %}
+            
+            <!-- Group Name -->
             <div class="mb-4">
                 <label for="group-name" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Group Name</label>
-                <input type="text" name="name" id="group-name" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required />
-                <span id="group-name-error" class="text-red-500 text-sm hidden">Please enter a group name.</span>
+                <input type="text" name="name" id="group-name" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" />
+                <span id="group-name-error" class="text-red-500 text-sm hidden"></span>
             </div>
+
+            <!-- Group Type -->
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Group Type</label>
                 <div class="flex space-x-4">
@@ -293,22 +310,39 @@
                         <span class="text-gray-700 dark:text-gray-300">Female Only</span>
                     </label>
                 </div>
-                <span id="gender-error" class="text-red-500 text-sm hidden">Please select a gender type (Male Only or Female Only).</span>
+                <span id="gender-error" class="text-red-500 text-sm hidden"></span>
             </div>
+
+            <!-- Search Students -->
             <div class="mb-4">
                 <label for="search-student" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Search Student</label>
-                <input type="text" id="search-student" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="Search by name" />
+                <input 
+                    type="text" 
+                    id="search-student" 
+                    class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
+                    placeholder="Search by name"
+                >
             </div>
+
+            <!-- Students List -->
             <div class="mb-4">
                 <label for="student-ids" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Select Students</label>
                 <select name="student_ids" id="student-ids" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" multiple>
                     {% for student in all_users %}
                         {% if student != request.user and student.role == 'STUDENT' %}
-                            <option value="{{ student.id }}" data-gender="{{ student.gender }}">{{ student.username }}</option>
+                            <option 
+                                value="{{ student.id }}" 
+                                data-gender="{{ student.gender }}"
+                            >
+                                {{ student.username }}
+                            </option>
                         {% endif %}
                     {% endfor %}
                 </select>
+                <span id="students-error" class="text-red-500 text-sm hidden"></span>
             </div>
+
+            <!-- Buttons -->
             <div class="flex justify-end space-x-2">
                 <button type="button" id="close-modal-button" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-300">Cancel</button>
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Create</button>
@@ -1079,7 +1113,7 @@
 
         // إظهار/إخفاء قائمة المستخدمين
 
-        const userListButton = document.getElementById('user-list-button');
+    const userListButton = document.getElementById('user-list-button');
     const userList = document.getElementById('user-list');
 
     userListButton.addEventListener('click', (event) => {
@@ -1099,122 +1133,164 @@
 
 
         // فتح وإغلاق مودال إنشاء مجموعة جديدة
-        const createGroupButton = document.getElementById('create-group-button');
-                const createGroupModal = document.getElementById('create-group-modal');
-                const closeModalButton = document.getElementById('close-modal-button');
+const createGroupButton = document.getElementById('create-group-button');
+const createGroupModal = document.getElementById('create-group-modal');
+const closeModalButton = document.getElementById('close-modal-button');
 
-                createGroupButton.addEventListener('click', () => {
-                    createGroupModal.classList.remove('hidden');
-                });
+createGroupButton.addEventListener('click', () => {
+    createGroupModal.classList.remove('hidden');
+});
 
-                closeModalButton.addEventListener('click', () => {
-                    createGroupModal.classList.add('hidden');
-                });
+closeModalButton.addEventListener('click', () => {
+    createGroupModal.classList.add('hidden');
+});
 
-                // إغلاق Modal عند الضغط خارجها
-                window.addEventListener('click', (event) => {
-                    if (event.target === createGroupModal) {
-                        createGroupModal.classList.add('hidden');
+// إغلاق Modal عند الضغط خارجها
+window.addEventListener('click', (event) => {
+    if (event.target === createGroupModal) {
+        createGroupModal.classList.add('hidden');
+    }
+});
+
+// التحقق من الحقول المطلوبة
+const createGroupForm = document.getElementById('create-group-form');
+const groupNameInput = document.getElementById('group-name');
+const groupNameError = document.getElementById('group-name-error');
+const genderError = document.getElementById('gender-error');
+const isMaleOnlyRadio = document.getElementById('is-male-only');
+const isFemaleOnlyRadio = document.getElementById('is-female-only');
+const studentsError = document.getElementById('students-error'); // إضافة عنصر لعرض أخطاء الطلاب
+
+createGroupForm.addEventListener('submit', async (event) => {
+    event.preventDefault(); // منع الإرسال الافتراضي للنموذج
+
+    const groupName = groupNameInput.value.trim();
+    const isMaleOnly = isMaleOnlyRadio.checked;
+    const isFemaleOnly = isFemaleOnlyRadio.checked;
+    const studentIds = Array.from(studentSelect.selectedOptions).map(option => option.value);
+    
+    // إخفاء جميع رسائل الخطأ
+    groupNameError.classList.add('hidden');
+    genderError.classList.add('hidden');
+    studentsError.classList.add('hidden');
+
+    let hasErrors = false;
+
+    // تحقق من الاسم
+    if (!groupName) {
+        groupNameError.textContent = 'Please enter a group name.';
+        groupNameError.classList.remove('hidden');
+        hasErrors = true;
+    } else if (groupName.length < 2 || groupName.length > 50) {
+        groupNameError.textContent = 'Name must be between 3-50 characters.';
+        groupNameError.classList.remove('hidden');
+        hasErrors = true;
+    } else if (!/^[A-Za-z0-9\s\-_]+$/.test(groupName)) {
+        groupNameError.textContent = 'Only English letters, numbers, spaces, hyphens, and underscores are allowed.';
+        groupNameError.classList.remove('hidden');
+        hasErrors = true;
+    }
+
+    // تحقق من الجنس
+    if (!isMaleOnly && !isFemaleOnly) {
+        genderError.textContent = 'Please select a group type (Male Only or Female Only).';
+        genderError.classList.remove('hidden');
+        hasErrors = true;
+    }
+
+    // تحقق من الطلاب
+    if (studentIds.length === 0) {
+        studentsError.textContent = 'Please select at least one student.';
+        studentsError.classList.remove('hidden');
+        hasErrors = true;
+    }
+
+    // إذا كان هناك أخطاء، توقف عن الإرسال
+    if (hasErrors) {
+        return;
+    }
+
+    // إعداد البيانات لإرسالها
+    const formData = new FormData(createGroupForm);
+    
+
+    formData.append('student_ids', studentIds.join(',')); // إضافة الطلاب المحددين
+
+    try {
+        const response = await fetch("/chat/create_group/", { 
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // إضافة CSRF token
+            },
+        });
+
+        const responseData = await response.json();
+        console.log("Server Response:", responseData); // طباعة استجابة الخادم
+
+        if (response.ok) {
+            // إذا تم إنشاء المجموعة بنجاح، يتم توجيه المستخدم إلى صفحة الدردشة
+            window.location.href = `/chat/${responseData.room_name}/`;
+        } else {
+            // عرض أخطاء الخادم
+            if (responseData.errors) {
+                for (const [field, message] of Object.entries(responseData.errors)) {
+                    const errorElement = document.getElementById(`${field}-error`);
+                    if (errorElement) {
+                        errorElement.textContent = message;
+                        errorElement.classList.remove('hidden');
+                    } else {
+                        alert(message); // عرض الأخطاء العامة
                     }
-                });
-
-                // التحقق من الحقول المطلوبة
-                const createGroupForm = document.getElementById('create-group-form');
-                const groupNameInput = document.getElementById('group-name');
-                const groupNameError = document.getElementById('group-name-error');
-                const genderError = document.getElementById('gender-error');
-                const isMaleOnlyRadio = document.getElementById('is-male-only');
-                const isFemaleOnlyRadio = document.getElementById('is-female-only');
-
-                createGroupForm.addEventListener('submit', async (event) => {
-                    event.preventDefault(); // منع الإرسال الافتراضي للنموذج
-
-                    const groupName = groupNameInput.value.trim();
-                    const isMaleOnly = isMaleOnlyRadio.checked;
-                    const isFemaleOnly = isFemaleOnlyRadio.checked;
-
-                    groupNameError.classList.add('hidden');
-                    genderError.classList.add('hidden');
-
-                    if (!groupName) {
-                        groupNameError.classList.remove('hidden');
-                        return; // منع الإرسال إذا كان الاسم فارغًا
-                    }
-
-                    if (!isMaleOnly && !isFemaleOnly) {
-                        genderError.classList.remove('hidden');
-                        return; // منع الإرسال إذا لم يتم اختيار النوع
-                    }
-
-                    // إعداد البيانات لإرسالها
-                    const formData = new FormData(createGroupForm);
-                    const studentIds = Array.from(studentSelect.selectedOptions).map(option => option.value);
-
-                    formData.append('student_ids', studentIds.join(',')); // إضافة الطلاب المحددين
-
-                    try {
-                        const response = await fetch("/chat/create_group/", {  // تأكد من أن المسار صحيح
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}', // إضافة CSRF token
-                            },
-                        });
-
-                        const responseData = await response.json();
-                        console.log("Server Response:", responseData); // طباعة استجابة الخادم
-
-                        if (response.ok) {
-                            // إذا تم إنشاء المجموعة بنجاح، يتم توجيه المستخدم إلى صفحة الدردشة
-                            window.location.href = `/chat/${responseData.room_name}/`;
-                        } else {
-                            alert(`Failed to create group: ${responseData.error}`);
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('An error occurred while creating the group.');
-                    }
-                });
-
-                // وظيفة البحث عن الطلاب
-                const searchStudentInput = document.getElementById('search-student');
-                const studentSelect = document.getElementById('student-ids');
-
-                searchStudentInput.addEventListener('input', () => {
-                    const searchQuery = searchStudentInput.value.toLowerCase();
-                    Array.from(studentSelect.options).forEach(option => {
-                        const studentName = option.text.toLowerCase();
-                        if (studentName.includes(searchQuery)) {
-                            option.style.display = 'block';
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
-                });
-
-                // تحديث قائمة الطلاب عند تغيير نوع المجموعة
-                isMaleOnlyRadio.addEventListener('change', updateStudentList);
-                isFemaleOnlyRadio.addEventListener('change', updateStudentList);
-
-                function updateStudentList() {
-                    const isMaleOnly = isMaleOnlyRadio.checked;
-                    const isFemaleOnly = isFemaleOnlyRadio.checked;
-                    Array.from(studentSelect.options).forEach(option => {
-                        const gender = option.getAttribute('data-gender');
-                        if ((isMaleOnly && gender === 'M') || (isFemaleOnly && gender === 'F')) {
-                            option.style.display = 'block';
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
                 }
+            } else {
+                alert(`Failed to create group: ${responseData.error}`);
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while creating the group.');
+    }
+});
 
+// وظيفة البحث عن الطلاب
+const searchStudentInput = document.getElementById('search-student');
+const studentSelect = document.getElementById('student-ids');
 
-                console.log("Form Data:", {
-                    name: groupNameInput.value.trim(),
-                    gender: isMaleOnlyRadio.checked ? 'male' : 'female',
-                    student_ids: Array.from(studentSelect.selectedOptions).map(option => option.value),
-                });
+searchStudentInput.addEventListener('input', () => {
+    const searchQuery = searchStudentInput.value.toLowerCase();
+    Array.from(studentSelect.options).forEach(option => {
+        const studentName = option.text.toLowerCase();
+        if (studentName.includes(searchQuery)) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+});
+
+// تحديث قائمة الطلاب عند تغيير نوع المجموعة
+isMaleOnlyRadio.addEventListener('change', updateStudentList);
+isFemaleOnlyRadio.addEventListener('change', updateStudentList);
+
+function updateStudentList() {
+    const isMaleOnly = isMaleOnlyRadio.checked;
+    const isFemaleOnly = isFemaleOnlyRadio.checked;
+    Array.from(studentSelect.options).forEach(option => {
+        const gender = option.getAttribute('data-gender');
+        if ((isMaleOnly && gender === 'M') || (isFemaleOnly && gender === 'F')) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+}
+
+console.log("Form Data:", {
+    name: groupNameInput.value.trim(),
+    gender: isMaleOnlyRadio.checked ? 'male' : 'female',
+    student_ids: Array.from(studentSelect.selectedOptions).map(option => option.value),
+});
 
 
 

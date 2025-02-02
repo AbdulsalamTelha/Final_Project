@@ -1246,6 +1246,112 @@
 
 
 
+
+
+                // فتح وإغلاق مودال أعضاء المجموعة
+                const groupMembersModal = document.getElementById('group-members-modal');
+                const closeGroupMembersModal = document.getElementById('close-group-members-modal');
+                const groupMembersList = document.getElementById('group-members-list');
+            
+                // دالة لعرض أعضاء المجموعة
+            
+            window.showGroupMembers = function(roomName) {
+                // جلب بيانات المجموعة من الخادم
+                fetch(`/chat/get_group_members/?room_name=${roomName}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.members) {
+                            // مسح القائمة الحالية
+                            groupMembersList.innerHTML = '';
+            
+                            // إضافة الأعضاء إلى القائمة
+                            data.members.forEach(member => {
+                                // تجاهل المستخدم الحالي
+                                if (member.id === {{ request.user.id }}) return;
+            
+                                const memberItem = document.createElement('li');
+                                memberItem.className = 'p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 cursor-pointer';
+                                
+                                // إنشاء رابط المحادثة الخاصة
+                                memberItem.innerHTML = `
+                                    <div class="flex items-center text-gray-700 dark:text-gray-300" onclick="startPrivateChat(${member.id})">
+                                        <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                            ${member.username.slice(0, 1).toUpperCase()}
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">${member.username}</p>
+                                        </div>
+                                    </div>
+                                `;
+                                groupMembersList.appendChild(memberItem);
+                            });
+            
+                            // إضافة المستخدم الحالي للقراءة فقط
+                            const currentUserItem = document.createElement('li');
+                            currentUserItem.className = 'p-2';
+                            currentUserItem.innerHTML = `
+                                <div class="flex items-center text-gray-700 dark:text-gray-300">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold">
+                                        {{ request.user.username|slice:":1"|upper }}
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ request.user.username }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">(You)</p>
+                                    </div>
+                                </div>
+                            `;
+                            groupMembersList.appendChild(currentUserItem);
+            
+                            // عرض المودال
+                            groupMembersModal.classList.remove('hidden');
+                        } else {
+                            alert('Failed to fetch group members.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching group members:', error);
+                        alert('An error occurred while fetching group members.');
+                    });
+            };
+            
+            // دالة لبدء دردشة خاصة
+            window.startPrivateChat = function(userId) {
+                fetch(`/chat/start_private_chat/${userId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = response.url; // توجيه المستخدم إلى غرفة الدردشة
+                    } else {
+                        alert('Failed to start private chat.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting private chat:', error);
+                    alert('An error occurred while starting private chat.');
+                });
+            };
+            
+                // إغلاق المودال عند الضغط على زر الإغلاق
+                closeGroupMembersModal.addEventListener('click', () => {
+                    groupMembersModal.classList.add('hidden');
+                });
+            
+                // إغلاق المودال عند الضغط خارجها
+                window.addEventListener('click', (event) => {
+                    if (event.target === groupMembersModal) {
+                        groupMembersModal.classList.add('hidden');
+                    }
+                });
+            
+
+
+
+
+
         // فتح وإغلاق مودال إنشاء مجموعة جديدة
 const createGroupButton = document.getElementById('create-group-button');
 const createGroupModal = document.getElementById('create-group-modal');
@@ -1411,106 +1517,6 @@ console.log("Form Data:", {
 
 
 
-                // فتح وإغلاق مودال أعضاء المجموعة
-    const groupMembersModal = document.getElementById('group-members-modal');
-    const closeGroupMembersModal = document.getElementById('close-group-members-modal');
-    const groupMembersList = document.getElementById('group-members-list');
-
-    // دالة لعرض أعضاء المجموعة
-
-window.showGroupMembers = function(roomName) {
-    console.log("Clicked Group:", roomName);
-    // جلب بيانات المجموعة من الخادم
-    fetch(`/chat/get_group_members/?room_name=${roomName}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.members) {
-                // مسح القائمة الحالية
-                groupMembersList.innerHTML = '';
-
-                // إضافة الأعضاء إلى القائمة
-                data.members.forEach(member => {
-                    // تجاهل المستخدم الحالي
-                    if (member.id === {{ request.user.id }}) return;
-
-                    const memberItem = document.createElement('li');
-                    memberItem.className = 'p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 cursor-pointer';
-                    
-                    // إنشاء رابط المحادثة الخاصة
-                    memberItem.innerHTML = `
-                        <div class="flex items-center text-gray-700 dark:text-gray-300" onclick="startPrivateChat(${member.id})">
-                            <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                                ${member.username.slice(0, 1).toUpperCase()}
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">${member.username}</p>
-                            </div>
-                        </div>
-                    `;
-                    groupMembersList.appendChild(memberItem);
-                });
-
-                // إضافة المستخدم الحالي للقراءة فقط
-                const currentUserItem = document.createElement('li');
-                currentUserItem.className = 'p-2';
-                currentUserItem.innerHTML = `
-                    <div class="flex items-center text-gray-700 dark:text-gray-300">
-                        <div class="flex-shrink-0 w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold">
-                            {{ request.user.username|slice:":1"|upper }}
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ request.user.username }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">(You)</p>
-                        </div>
-                    </div>
-                `;
-                groupMembersList.appendChild(currentUserItem);
-
-                // عرض المودال
-                groupMembersModal.classList.remove('hidden');
-            } else {
-                alert('Failed to fetch group members.');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching group members:', error);
-            alert('An error occurred while fetching group members.');
-        });
-};
-
-// دالة لبدء دردشة خاصة
-window.startPrivateChat = function(userId) {
-    fetch(`/chat/start_private_chat/${userId}/`, {
-        method: 'GET',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-        },
-    })
-    .then(response => {
-        if (response.ok) {
-            window.location.href = response.url; // توجيه المستخدم إلى غرفة الدردشة
-        } else {
-            alert('Failed to start private chat.');
-        }
-    })
-    .catch(error => {
-        console.error('Error starting private chat:', error);
-        alert('An error occurred while starting private chat.');
-    });
-};
-
-    // إغلاق المودال عند الضغط على زر الإغلاق
-    closeGroupMembersModal.addEventListener('click', () => {
-        groupMembersModal.classList.add('hidden');
-    });
-
-    // إغلاق المودال عند الضغط خارجها
-    window.addEventListener('click', (event) => {
-        if (event.target === groupMembersModal) {
-            groupMembersModal.classList.add('hidden');
-        }
-    });
-    
   </script>
   {% endblock %}
 </div>

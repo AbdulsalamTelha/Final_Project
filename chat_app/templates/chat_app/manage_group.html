@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-4">
+    <!-- العنوان الرئيسي -->
+    <h1 class="text-3xl font-bold mb-6 text-center text-[#1875BB]">
+        Group Management: <span class="text-gray-800">{{ group.name }}</span>
+    </h1>
+
+    <!-- تعديل اسم المجموعة -->
+    <div class="bg-[#F5F5F5] p-6 rounded-lg shadow-md mb-6 border border-[#1875BB]">
+        <h2 class="text-2xl font-semibold mb-4 text-[#1875BB]">
+            <i class="fas fa-edit mr-2"></i>Edit Group Name
+        </h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_name">
+            <div class="mb-4">
+                <input type="text" name="new_name" value="{{ group.name }}" 
+                       class="w-full p-2 border rounded-lg bg-white border-[#1875BB]"
+                       pattern="[A-Za-z0-9\s]+" title="Name must contain only English letters and numbers."
+                       required>
+            </div>
+            <button type="submit" class="bg-[#1875BB] text-white px-4 py-2 rounded-lg hover:bg-[#1560A0] transition duration-300">
+                <i class="fas fa-save mr-2"></i>Update Name
+            </button>
+        </form>
+    </div>
+
+    <!-- قائمة الأعضاء الحاليين -->
+    <div class="bg-[#F5F5F5] p-6 rounded-lg shadow-md mb-6 border border-[#1875BB]">
+        <h2 class="text-2xl font-semibold mb-4 text-[#1875BB]">
+            <i class="fas fa-users mr-2"></i>Current Members
+        </h2>
+        <ul class="space-y-2">
+            {% for member in group.members.all %}
+            <li class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-[#1875BB]">
+                <span class="text-gray-800">
+                    {{ member.get_full_name }} ({{ member.get_gender_display }})
+                </span>
+                {% if member != group.created_by %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="remove_member">
+                    <input type="hidden" name="student_id" value="{{ member.id }}">
+                    <button type="submit" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- إضافة أعضاء جدد -->
+    <div class="bg-[#F5F5F5] p-6 rounded-lg shadow-md mb-6 border border-[#1875BB]">
+        <h2 class="text-2xl font-semibold mb-4 text-[#1875BB]">
+            <i class="fas fa-user-plus mr-2"></i>Add New Members
+        </h2>
+        <form method="post" id="addMembersForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_member">
+            <div class="mb-4">
+                <input type="text" id="search_student" 
+                       class="w-full p-2 border rounded-lg bg-white border-[#1875BB]"
+                       placeholder="Search for students..."
+                       autocomplete="off">
+            </div>
+            <div class="mb-4 relative">
+                <select name="student_ids" id="student_select" 
+                        class="w-full p-2 border rounded-lg bg-white border-[#1875BB] h-48"
+                        multiple>
+                    {% for student in students %}
+                        <option value="{{ student.id }}" 
+                                data-gender="{{ student.gender }}"
+                                data-fullname="{{ student.get_full_name }}">
+                            {{ student.get_full_name }} ({{ student.get_gender_display }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <div id="selected-counter" class="absolute right-3 top-2 text-sm text-gray-500">
+                    0 selected
+                </div>
+            </div>
+            <button type="submit" class="bg-[#1875BB] text-white px-4 py-2 rounded-lg hover:bg-[#1560A0] transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Add Selected Members
+            </button>
+        </form>
+    </div>
+
+    <!-- حذف المجموعة -->
+    <div class="bg-[#F5F5F5] p-6 rounded-lg shadow-md border border-[#1875BB]">
+        <h2 class="text-2xl font-semibold mb-4 text-[#1875BB]">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone
+        </h2>
+        <form method="post" onsubmit="return confirm('Are you sure you want to delete this group permanently?')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_group">
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300">
+                <i class="fas fa-trash mr-2"></i>Delete Group Permanently
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search_student');
+    const studentSelect = document.getElementById('student_select');
+    const groupType = "{{ group.get_type_display }}";
+    const form = document.getElementById('addMembersForm');
+    const selectedCounter = document.getElementById('selected-counter');
+
+    // تحديث العداد
+    function updateCounter() {
+        const selected = studentSelect.selectedOptions;
+        selectedCounter.textContent = `${selected.length} selected`;
+    }
+
+    // تصفية الخيارات
+    function filterStudents() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const genderFilter = groupType.includes('Male') ? 'M' : 
+                           groupType.includes('Female') ? 'F' : 'all';
+
+        Array.from(studentSelect.options).forEach(option => {
+            const fullName = option.getAttribute('data-fullname').toLowerCase();
+            const gender = option.getAttribute('data-gender');
+            
+            const matchSearch = fullName.includes(searchTerm);
+            const matchGender = genderFilter === 'all' || gender === genderFilter;
+            
+            option.hidden = !(matchSearch && matchGender);
+        });
+        updateCounter();
+    }
+
+    // أحداث البحث
+    searchInput.addEventListener('input', filterStudents);
+    
+    // تحقق قبل الإرسال
+    form.addEventListener('submit', function(e) {
+        const selected = studentSelect.selectedOptions;
+        if (selected.length === 0) {
+            e.preventDefault();
+            alert('You must select at least one member.');
+            studentSelect.focus();
+        }
+    });
+
+    // تحديث العداد عند التحديد
+    studentSelect.addEventListener('change', updateCounter);
+    
+    // التصفية الأولية
+    filterStudents();
+});
+</script>
+{% endblock %}

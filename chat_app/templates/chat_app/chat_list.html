@@ -41,14 +41,14 @@
                     <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
                         <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
                             {% if user.get_profile_image_url %}
-                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                             {% else %}
-                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
                             {% endif %}
                         </div>
                         <div class="ml-3 flex-1">
                             <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                {{ user.username|capfirst }}
+                                {{ user.get_full_name|capfirst }}
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ user.get_role_display }}
@@ -62,14 +62,14 @@
                 <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
                     <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
                         {% if user.get_profile_image_url %}
-                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                         {% else %}
-                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                            <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
                         {% endif %}
                     </div>
                     <div class="ml-3 flex-1">
                         <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {{ user.username|capfirst }}
+                            {{ user.get_full_name|capfirst }}
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
                             {{ user.get_role_display }}
@@ -147,7 +147,7 @@
                                 value="{{ student.id }}" 
                                 data-gender="{{ student.gender }}"
                             >
-                                {{ student.username }}
+                                {{ student.get_full_name }}
                             </option>
                         {% endif %}
                     {% endfor %}
@@ -198,7 +198,7 @@
     const allUsers = [
         {% for user in all_users %}
             {
-                "username": "{{ user.username }}",
+                "username": "{{ user.get_full_name }}",
                 "profile_image": "{{ user.get_profile_image_url }}"
             }
             {% if not forloop.last %},{% endif %}
@@ -234,7 +234,7 @@
             const message = snapshot.val();
 
             if (message) {
-                const senderName = message.sender === "{{ request.user.username }}" ? "(You)" : message.sender;
+                const senderName = message.sender === "{{ request.user.get_full_name }}" ? "(You)" : message.sender;
 
                 chatRooms[roomName] = {
                     roomName: roomName,
@@ -276,7 +276,7 @@
 
             if (room.roomType === 'private') {
                 room.members.forEach(member => {
-                    if (member !== "{{ request.user.username }}") {
+                    if (member !== "{{ request.user.get_full_name }}") {
                         roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
 
                         // 🔹 البحث عن صورة المستخدم داخل allUsers
@@ -328,7 +328,7 @@
     fetchLastMessage(
         "{{ room.name }}",
         "{{ room.type }}",
-        ["{% for member in room.members.all %}{{ member.username }}{% if not forloop.last %}","{% endif %}{% endfor %}"],
+        ["{% for member in room.members.all %}{{ member.get_full_name }}{% if not forloop.last %}","{% endif %}{% endfor %}"],
         "{{ room.creation_time|date:'c' }}"  // وقت الإنشاء
     );
     "{% endfor %}"

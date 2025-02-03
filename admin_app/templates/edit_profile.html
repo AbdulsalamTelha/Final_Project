@@ -42,9 +42,13 @@
                         class="w-full mt-2 p-2 border dark:bg-gray-800 
                         border-gray-300 dark:border-gray-500 focus:ring-indigo-200 dark:focus:ring-gray-400
                         rounded-md focus:outline-none focus:ring">
-                <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 mb-5">Current Image: 
-                    <a href="{{ user.image.url }}" target="_blank" class="text-blue-500 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-500">{{ user.image }}</a>
-                </p>
+                                        {% if user.image %}
+                        <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 mb-5">Current Image: 
+                            <a href="{{ user.image.url }}" target="_blank" class="text-blue-500 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-500">{{ user.image }}</a>
+                        </p>
+                    {% else %}
+                        <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 mb-5">No image uploaded.</p>
+                    {% endif %}
             </div>
 
             <button type="submit" 

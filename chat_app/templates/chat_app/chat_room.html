@@ -156,11 +156,13 @@
                     {% if room.type == 'group' %}
                         <div class="text-sm text-gray-600 dark:text-gray-400">
                             Members: 
+                            <span class="font-bold">
                             {% for member in room.members.all %}
                                 {% if member != request.user %}
                                     {{ member.username }}{% if not forloop.last %}, {% endif %}
                                 {% endif %}
                             {% endfor %}
+                            </span>
                         </div>
                     {% endif %}
                 </div>
@@ -227,13 +229,13 @@
                 id="file-upload-button"
                 class="p-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition duration-300"
             >
-                📎
+                <i class="fas fa-paperclip"></i>
             </button>
             <button
                 id="chat-message-submit"
-                class="p-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition duration-300"
+                class="p-2 bg-background text-white px-3 rounded-r-lg hover:bg-blue-600 transition duration-300"
             >
-                Send
+                <i class="fas fa-paper-plane text-xl"></i>
             </button>
             </div>
             <!-- File Preview -->
@@ -592,9 +594,9 @@
                 });
             }
 
-            // Message submit button click handler
-            submitButton.addEventListener('click', () => {
-                const message = messageInput.value;
+            // وظيفة الإرسال
+            function sendMessage() {
+                const message = messageInput.value.trim();
                 const file = fileInput.files[0];
 
                 if (message.trim() === "" && !file) {
@@ -648,9 +650,21 @@
                 messageInput.disabled = false;
                 messageInput.value = '';
                 fileInput.value = '';
+                messageInput.focus(); // إبقاء المؤشر داخل الحقل
                 filePreview.classList.add('hidden');
                 messageStatus.textContent = "Sent";
                 messageStatus.style.color = "green";
+            }
+
+            // Message submit button click handler
+            submitButton.addEventListener('click', sendMessage);
+
+            // عند الضغط على "Enter" داخل حقل الإدخال
+            messageInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault(); // منع النزول لسطر جديد
+                    sendMessage(); // استدعاء وظيفة الإرسال
+                }
             });
 
             // تعريف متغير لتخزين آخر تاريخ تم إضافته
@@ -725,7 +739,7 @@
                     messageElement.className = `mb-4 flex relative ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
                     messageElement.dataset.messageId = messageId;
                     messageElement.innerHTML = `
-                        <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-background' : 'bg-gray-200 dark:bg-gray-700'}">
+                        <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-background text-gray-200 dark:text-gray-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}">
                             <span class="italic">This message has been deleted.</span>
                         </div>
                     `;
@@ -773,10 +787,10 @@
                                         <i class="${getFileIcon(message.file_name)}"></i>
                                     </span>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">${message.file_name || 'Unnamed File'}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">${message.file_size || '0'} KB</p>
+                                        <p class="text-sm font-medium">${message.file_name || 'Unnamed File'}</p>
+                                        <p class="text-xs ${isOwnMessage ? 'text-gray-300 dark:text-gray-400' : 'text-gray-500 dark:text-gray-400' } ">${message.file_size || '0'} KB</p>
                                     </div>
-                                    <a href="${message.content.trim()}" download class="ml-2 p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+                                    <a href="${message.content.trim()}"download class="ml-2 p-1 ${isOwnMessage ? 'bg-white text-background hover:bg-gray-200' : 'bg-background text-white hover:bg-blue-500'} rounded-full ">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 </div>
@@ -787,11 +801,11 @@
                             <span class="status-icon">${getStatusIcon(message.status)}</span>
                         </div>
                         ${isOwnMessage ? `
-                            <div class="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <button class="p-1 bg-gray-100 dark:bg-gray-600 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500" onclick="showEditMessage('${messageId}')">
+                            <div class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <button class="p-1 bg-gray-100 dark:bg-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-200" onclick="showEditMessage('${messageId}')">
                                     <i class="fas fa-edit text-blue-500"></i>
                                 </button>
-                                <button class="p-1 bg-gray-100 dark:bg-gray-600 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 ml-1" onclick="confirmDeleteMessage('${messageId}')">
+                                <button class="p-1 bg-gray-100 dark:bg-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-200 ml-1" onclick="confirmDeleteMessage('${messageId}')">
                                     <i class="fas fa-trash text-red-500"></i>
                                 </button>
                             </div>
@@ -856,9 +870,9 @@
             // إذا تم حذف الرسالة للجميع
             if (updatedMessage.isDeletedForEveryone) {
                 messageElement.innerHTML = `
-                    <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}">
-                        <span class="text-gray-400 italic">This message has been deleted.</span>
-                    </div>
+                    <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-background text-gray-200 dark:text-gray-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}">
+                            <span class="italic">This message has been deleted.</span>
+                        </div>
                 `;
                 return;
             }
@@ -876,7 +890,7 @@
 
             if (contentDiv) {
                 if (updatedMessage.isDeletedForEveryone) {
-                    contentDiv.innerHTML = '<span class="text-gray-400 italic">This message has been deleted.</span>';
+                    contentDiv.innerHTML = '<span class="italic">This message has been deleted.</span>';
                 } else if (updatedMessage.isDeletedForMe) {
                     messageElement.remove(); // إزالة الرسالة من واجهة المستخدم إذا كانت محذوفة من عندي فقط
                     return;

@@ -4,290 +4,410 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSS | {% block title %}{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSS | {% block title %}{% endblock %}</title>
 
-    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon" />
 
-    <link rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_app/cdn.tailwindcss.com.3.4.16.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_app/fontawesome-free-6.7.2-web/css/all.min.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="{% static 'js/user_app/header_base.js' %}" defer></script>
-    <script src="{% static 'js/user_app/message_disappears_automatically.js' %}" defer></script>
-    <script src="{% static 'js/user_app/collapsible_profile_page.js' %}" defer></script>
-    <script src="{% static 'js/user_app/show_and_hide_password.js' %}" defer></script>
-    <script src="{% static 'js/user_app/confirm_deletion.js' %}" defer></script>
-    <script src="{% static 'js/user_app/remember_me.js' %}" defer></script>
-    <script src="{% static 'js/user_app/timer.js' %}" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="{% static 'css/user_app/tailwind.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/user_app/cdn.tailwindcss.com.3.4.16.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/user_app/fontawesome-free-6.7.2-web/css/all.min.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="{% static 'js/user_app/header_base.js' %}" defer></script>
+  <script src="{% static 'js/user_app/message_disappears_automatically.js' %}" defer></script>
+  <script src="{% static 'js/user_app/collapsible_profile_page.js' %}" defer></script>
+  <script src="{% static 'js/user_app/show_and_hide_password.js' %}" defer></script>
+  <script src="{% static 'js/user_app/confirm_deletion.js' %}" defer></script>
+  <script src="{% static 'js/user_app/remember_me.js' %}" defer></script>
+  <script src="{% static 'js/user_app/timer.js' %}" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        tailwind.config = {
-          darkMode: 'class', // تفعيل الوضع الليلي باستخدام الكلاس
-        };
-      </script>
-      <style>
-        .bg-background { background-color: #1875BB;}
-        .bg-message { background-color: #24abe0;}
-      </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class', // تفعيل الوضع الليلي باستخدام الكلاس
+    };
+  </script>
+  <style>
+    .bg-background {
+      background-color: #1875BB;
+    }
+    .bg-message {
+      background-color: #24abe0;
+    }
+    /* نستخدم هذا الصنف للقائمة المنبثقة في الوضع العادي */
+    .bg-accent {
+      background-color: #1e5c8a;
+    }
+
+    /* عرض زر القائمة والقائمة المنبثقة يظهر عند عرض الشاشة 850px وما دون */
+    @media (min-width: 851px) {
+      #mobile-menu-button,
+      #mobile-menu {
+        display: none !important;
+      }
+    }
+    @media (max-width: 850px) {
+      #mobile-menu-button {
+        display: block !important;
+      }
+    }
+  </style>
 </head>
 
 <body class="transition-colors duration-500 flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-gray-300 text-gray-900">
 
-    {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
-    <!-- شريط التنقل العلوي -->
-    <!-- bg-[#1875BB] : هذا نفس اللون ولكن عبر الإنترنت-->
-    <header class="bg-background text-white shadow-md dark:bg-gray-800 dark:text-gray-300 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center py-2 px-6">
+  {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
+  <!-- شريط التنقل العلوي -->
+  <header class="bg-background text-white shadow-md dark:bg-gray-800 dark:text-gray-300 sticky top-0 z-50">
+    <div class="container mx-auto flex justify-between items-center py-2 px-6">
+      <!-- الشعار -->
+      <h1 class="text-2xl font-bold flex items-center hover:text-gray-300 dark:hover:text-gray-100">
+        <a href="{% if user.role == 'INSTRUCTOR' %}{% url 'instructor_dashboard' %}{% elif user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif user.role == 'STUDENT' %}{% url 'student_dashboard' %}{% endif %}" class="flex items-center">
+          <img src="{% static 'img/logo_white.png' %}" alt="Logo" class="h-10 mr-2 cursor-pointer" />
+          <span>SSS</span>
+        </a>
+      </h1>
 
-            <!-- الشعار -->
-            <h1 class="text-2xl font-bold flex items-center hover:text-gray-300 dark:hover:text-gray-100">
-                <a href="{%if user.role == 'INSTRUCTOR' %} {% url 'instructor_dashboard' %}
-                        {% elif user.role == 'ADMIN' %} {% url 'admin_dashboard' %}
-                        {% elif user.role == 'STUDENT' %} {% url 'student_dashboard' %} {% endif %}" 
-                        class="flex items-center">
-                    <img src="{% static 'img/logo_white.png' %}" alt="Logo" class="h-10 mr-2 cursor-pointer">
-                    <span>SSS</span>
+      <!-- قائمة التبويبات (سطح المكتب) -->
+      <nav class="flex-grow hidden md:flex justify-center">
+        <ul class="flex space-x-6">
+          <li class="tab-container relative group">
+            <a href="{% url 'students_list' %}" class="hover:text-gray-300 dark:hover:text-gray-100">Students</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="{% url 'students_list' %}" class="block flex-1">
+                  <i class="fas fa-user-graduate mr-3"></i>All Students
                 </a>
-            </h1>
-
-            <!-- قائمة التبويبات -->
-            <nav class="flex-grow">
-                <ul class="flex justify-center space-x-6">
-
-                    <li class="tab-container relative group"> 
-                        <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Students</a>
-                        <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'students_list' %}" class="block flex-1">
-                                    <i class="fas fa-user-graduate mr-3"></i>All Students
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="tab-container relative">
-                        <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Departments</a>
-                        <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-64 overflow-hidden">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'departments_list' %}" class="block flex-1">
-                                    <i class="fas fa-building mr-3"></i>All Departments
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'departments_with_groups' %}" class="block flex-1">
-                                    <i class="fas fa-layer-group mr-3"></i>Departments and Groups
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-            
-                    <li class="tab-container relative">
-                        <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Instructors</a>
-                        <ul
-                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'instructors_list' %}" class="block flex-1">
-                                    <i class="fas fa-chalkboard-teacher mr-3"></i>All Instructors
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="tab-container relative">
-                        <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Library</a>
-                        <ul
-                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 first:rounded-t-lg last:rounded-b-lg flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'library_list' %}" class="block flex-1">
-                                    <i class="fas fa-book mr-3"></i>All Files
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b ">
-                                <a href="{% url 'upload_file' %}" class="block flex-1">
-                                    <i class="fas fa-upload mr-3"></i>Upload File
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 last:rounded-b-lg flex items-center px-4 py-2">
-                                <a href="{% url 'library_my_uploaded_files' %}" class="block flex-1">
-                                    <i class="fas fa-folder-open mr-3"></i>My Uploaded Files
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                                
-                    <li class="tab-container relative">
-                        <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Chats</a>
-                        <ul
-                            class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="/chat/" class="block flex-1">
-                                    <i class="fas fa-comments mr-3"></i>Chats
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                <a href="#" class="block flex-1">
-                                    <i class="fas fa-users mr-3"></i>Group Message
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2">
-                                <a href="#" class="block flex-1">
-                                    <i class="fas fa-bell mr-3"></i>Notifications
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    {% if user.role == 'ADMIN' %}
-                        <li class="tab-container relative">
-                            <a class="hover:text-gray-300 dark:hover:text-gray-100 cursor-pointer">Administration</a>
-                            <ul
-                                class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
-                                <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                                    <a href="/admin/" class="block flex-1">
-                                        <i class="fas fa-users-cog mr-3"></i>Admin Panel
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    {% endif %}
-
-                </ul>
-            </nav>
-            
-             <!-- أزرار الإشعارات ووضع الليل -->
-            <div class="flex items-center space-x-4">
-                <!-- زر الإشعارات -->
-                <div id="notificationsContainer" class="relative">
-                    <button id="notificationsButton" class="relative focus:outline-none hover:text-gray-300 dark:hover:text-gray-100">
-                        <i class="fas fa-bell text-xl"></i>
-                        <!-- عدد الإشعارات -->
-                        <span id="notificationCount" class="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full items-center justify-center flex px-1 leading-none transform translate-x-2 -translate-y-1 leading-none">3</span>
-                    </button>
-                    <!-- قائمة الإشعارات -->
-                    <ul id="notificationsMenu" class="hidden absolute right-0 mt-2 bg-white dark:bg-gray-100 text-gray-700 shadow-lg rounded-lg w-64 z-10 border border-gray-200 transition-all duration-200 ease-in-out overflow-hidden">
-                        <!-- عناصر الإشعارات -->
-                        <li class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-white dark:hover:text-gray-900 border-b">
-                            <p class="text-sm font-semibold">New message from John</p>
-                            <span class="text-xs text-gray-500">2 minutes ago</span>
-                        </li>
-                        <li class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-white dark:hover:text-gray-900 border-b">
-                            <p class="text-sm font-semibold">Your profile has been updated</p>
-                            <span class="text-xs text-gray-500">1 hour ago</span>
-                        </li>
-                        <li class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-white dark:hover:text-gray-900 border-b">
-                            <p class="text-sm font-semibold">Assignment deadline extended</p>
-                            <span class="text-xs text-gray-500">Yesterday</span>
-                        </li>
-                        <li class="text-center px-4 py-2">
-                            <a href="#" class="text-blue-500 text-sm font-semibold">View All</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- زر وضع الليل/الصباح -->
-                <button id="themeToggleButton" class="focus:outline-none px-1 rounded-md hover:text-gray-300 dark:hover:text-gray-100">
-                    <i id="themeIcon" class="fas fa-moon text-xl"></i>
-                </button>
-
-                <!-- القائمة المنسدلة للصورة الشخصية -->
-                <div id="profileContainer" class="relative flex items-center space-x-2 group">
-                    <span class="hidden sm:block text-sm uppercase ml-2 font-semibold cursor-pointer hover:text-gray-300 dark:hover:text-gray-100"><strong>{{ user.username }}</strong></span>
-                    <div>
-                        <img src="{{ user.get_profile_image_url }}" alt="Profile Picture" class="w-10 h-10 rounded-full cursor-pointer border-2 border-white" id="profileMenuButton">
-                        <ul id="profileMenu" class="hidden absolute right-0 mt-0 bg-white dark:bg-gray-100 text-gray-700 shadow rounded-lg w-56 z-10 border border-gray-200 group-hover:block overflow-hidden transition duration-500 ease-in-out">
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'profile' %}" class="block flex-1">
-                                    <i class="fas fa-user text-gray-500 mr-3"></i>View Profile
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2 border-b">
-                                <a href="{% url 'change_password' %}" class="block flex-1">
-                                    <i class="fas fa-lock text-gray-500 mr-3"></i>Change Password
-                                </a>
-                            </li>
-                            <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2">
-                                <a href="{% url 'logout' %}" class="block flex-1">
-                                    <i class="fas fa-sign-out-alt text-gray-500 mr-3"></i>Log Out
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-    {% endif %}
-
-
-    <!-- عرض الرسائل (messages) -->
-    {% if messages %}
-    <div class="fixed top-16 left-0 right-0 z-40 flex justify-center">
-        <div class="w-full max-w-3xl">
-            
-                {% for message in messages %}
-                    <div class="p-4 rounded-lg text-center text-white shadow-md relative
-                                {% if message.tags == 'success' %} bg-green-500 dark:bg-green-600
-                                {% elif message.tags == 'error' %} bg-red-500 dark:bg-red-600
-                                {% elif message.tags == 'warning' %} bg-yellow-500 dark:bg-yellow-600
-                                {% elif message.tags == 'info' %} bg-blue-500 dark:bg-blue-600
-                                {% else %} bg-gray-500 dark:bg-gray-600 {% endif %}">
-                        {{ message }}
-
-                        <!-- زر الإغلاق -->
-                        <button class="absolute top-3 right-3 text-white text-xl hover:text-gray-300" 
-                                onclick="this.parentElement.style.opacity = '0'; setTimeout(() => this.parentElement.remove(), 500);">
-                            &times;
-                        </button>
-                    </div>
-                {% endfor %}
-            
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- شريط التنقل (Breadcrumb) -->
-    {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
-    <nav class="bg-gray-100 dark:bg-gray-900 py-3 px-7">
-        <ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 text-sm">
-            <li>
-                <a href="{% if user.role == 'ADMIN' %} {% url 'admin_dashboard' %}
-                        {% elif user.role == 'INSTRUCTOR' %} {% url 'instructor_dashboard' %}
-                        {% elif user.role == 'STUDENT' %} {% url 'student_dashboard' %} {% endif %}" 
-                    class="hover:text-blue-600 dark:hover:text-blue-400">
-                    <i class="fas fa-home mr-2"></i>Home
+              </li>
+            </ul>
+          </li>
+          <li class="tab-container relative">
+            <a href="{% url 'departments_list' %}" class="hover:text-gray-300 dark:hover:text-gray-100">Departments</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-64 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="{% url 'departments_list' %}" class="block flex-1">
+                  <i class="fas fa-building mr-3"></i>All Departments
                 </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="{% url 'departments_with_groups' %}" class="block flex-1">
+                  <i class="fas fa-layer-group mr-3"></i>Departments and Groups
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="tab-container relative">
+            <a href="{% url 'instructors_list' %}" class="hover:text-gray-300 dark:hover:text-gray-100">Instructors</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="{% url 'instructors_list' %}" class="block flex-1">
+                  <i class="fas fa-chalkboard-teacher mr-3"></i>All Instructors
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="tab-container relative">
+            <a href="{% url 'library_list' %}" class="hover:text-gray-300 dark:hover:text-gray-100">Library</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 first:rounded-t-lg last:rounded-b-lg flex items-center px-4 py-2 border-b">
+                <a href="{% url 'library_list' %}" class="block flex-1">
+                  <i class="fas fa-book mr-3"></i>All Files
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="{% url 'upload_file' %}" class="block flex-1">
+                  <i class="fas fa-upload mr-3"></i>Upload File
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 last:rounded-b-lg flex items-center px-4 py-2">
+                <a href="{% url 'library_my_uploaded_files' %}" class="block flex-1">
+                  <i class="fas fa-folder-open mr-3"></i>My Uploaded Files
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="tab-container relative">
+            <a href="/chat/" class="hover:text-gray-300 dark:hover:text-gray-100">Chats</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="/chat/" class="block flex-1">
+                  <i class="fas fa-comments mr-3"></i>Chats
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="#" class="block flex-1">
+                  <i class="fas fa-users mr-3"></i>Group Message
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2">
+                <a href="#" class="block flex-1">
+                  <i class="fas fa-bell mr-3"></i>Notifications
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% if user.role == 'ADMIN' %}
+          <li class="tab-container relative">
+            <a href="/admin/" class="hover:text-gray-300 dark:hover:text-gray-100">Administration</a>
+            <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
+                <a href="/admin/" class="block flex-1">
+                  <i class="fas fa-users-cog mr-3"></i>Admin Panel
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <!-- زر القائمة للهاتف (يظهر عند عرض الشاشة 850px وما دون) -->
+      <button id="mobile-menu-button" class="text-white focus:outline-none">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+
+      <!-- أيقونات الجهة اليمنى: الإشعارات، تبديل الوضع، والصورة الشخصية -->
+      <div class="flex items-center space-x-4">
+        <div id="notificationsContainer" class="relative">
+          <button id="notificationsButton" class="relative focus:outline-none hover:text-gray-300 dark:hover:text-gray-100">
+            <i class="fas fa-bell text-xl"></i>
+            <span id="notificationCount" class="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full flex items-center justify-center px-1 transform translate-x-2 -translate-y-1">
+              3
+            </span>
+          </button>
+          <ul id="notificationsMenu" class="hidden absolute right-0 mt-2 bg-white dark:bg-gray-100 text-gray-700 shadow-lg rounded-lg w-64 z-10 border border-gray-200 transition-all duration-200 ease-in-out overflow-hidden">
+            <li class="px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 border-b">
+              <p class="text-sm font-semibold">New message from John</p>
+              <span class="text-xs text-gray-500">2 minutes ago</span>
             </li>
-            {% block breadcrumb %}
-            {% endblock breadcrumb %}
-        </ol>
-    </nav>
-    {% endif %}
-
-    <!-- المحتوى الرئيسي -->
-    <main class="flex-1 container mx-auto max-w-full w-full px-7
-                {% if is_login_page or is_request_account_page or is_request_otp or is_verify_otp or is_reset_password %}mt-0{% else %}mt-6{% endif %} ">
-        {% block content %}
-        {% endblock content %}
-    </main>
-
-    <!-- تذييل الصفحة -->
-    {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
-    <footer class="bg-background text-white mt-8 py-2 dark:bg-gray-800 dark:text-gray-300">
-        <div class="container mx-auto text-center">
-            <p class="text-sm">&copy; 2025 - <span class="font-bold">Student Services System</span>. All Rights Reserved.</p>
-            <!-- <p class="text-sm mt-1">Current Time: <span id="current-time">{% now "Y-m-d H:i:s" %}</span></p>             -->
-            <!-- <nav class="text-sm space-x-4">
-                <a href="{% url 'instructors_list' %}" class="hover:text-blue-300">About</a>
-                <a href="{% url 'library_list' %}" class="hover:text-blue-300">Privacy Policy</a>
-                <a href="{% url 'library_list' %}" class="hover:text-blue-300">Terms & Conditions</a>
-            </nav> -->
+            <li class="px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 border-b">
+              <p class="text-sm font-semibold">Your profile has been updated</p>
+              <span class="text-xs text-gray-500">1 hour ago</span>
+            </li>
+            <li class="px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 border-b">
+              <p class="text-sm font-semibold">Assignment deadline extended</p>
+              <span class="text-xs text-gray-500">Yesterday</span>
+            </li>
+            <li class="text-center px-4 py-2">
+              <a href="#" class="text-blue-500 text-sm font-semibold">View All</a>
+            </li>
+          </ul>
         </div>
-    </footer>
-    {% endif %}
+
+        <button id="themeToggleButton" class="focus:outline-none px-1 rounded-md hover:text-gray-300 dark:hover:text-gray-100">
+          <i id="themeIcon" class="fas fa-moon text-xl"></i>
+        </button>
+
+        <div id="profileContainer" class="relative flex items-center space-x-2 group">
+          <span class="hidden sm:block text-sm uppercase ml-2 font-semibold cursor-pointer hover:text-gray-300 dark:hover:text-gray-100">
+            <strong>{{ user.username }}</strong>
+          </span>
+          <div>
+            <img src="{{ user.get_profile_image_url }}" alt="Profile Picture" class="w-10 h-10 rounded-full cursor-pointer border-2 border-white" id="profileMenuButton" />
+            <ul id="profileMenu" class="hidden absolute right-0 mt-0 bg-white dark:bg-gray-100 text-gray-700 shadow rounded-lg w-56 z-10 border border-gray-200 group-hover:block overflow-hidden transition duration-500 ease-in-out">
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2 border-b">
+                <a href="{% url 'profile' %}" class="block flex-1">
+                  <i class="fas fa-user text-gray-500 mr-3"></i>View Profile
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2 border-b">
+                <a href="{% url 'change_password' %}" class="block flex-1">
+                  <i class="fas fa-lock text-gray-500 mr-3"></i>Change Password
+                </a>
+              </li>
+              <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer flex items-center px-4 py-2">
+                <a href="{% url 'logout' %}" class="block flex-1">
+                  <i class="fas fa-sign-out-alt text-gray-500 mr-3"></i>Log Out
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <!-- باقي المحتوى (Breadcrumb، main، footer، الخ) كما هو دون تغيير... -->
+
+  {% if messages %}
+  <div class="fixed top-16 left-0 right-0 z-40 flex justify-center">
+    <div class="w-full max-w-3xl">
+      {% for message in messages %}
+      <div class="p-4 rounded-lg text-center text-white shadow-md relative
+           {% if message.tags == 'success' %} bg-green-500 dark:bg-green-600
+           {% elif message.tags == 'error' %} bg-red-500 dark:bg-red-600
+           {% elif message.tags == 'warning' %} bg-yellow-500 dark:bg-yellow-600
+           {% elif message.tags == 'info' %} bg-blue-500 dark:bg-blue-600
+           {% else %} bg-gray-500 dark:bg-gray-600 {% endif %}">
+        {{ message }}
+        <button class="absolute top-3 right-3 text-white text-xl hover:text-gray-300" 
+                onclick="this.parentElement.style.opacity = '0'; setTimeout(() => this.parentElement.remove(), 500);">
+          &times;
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
+  <nav class="bg-gray-100 dark:bg-gray-900 py-3 px-7">
+    <ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 text-sm">
+      <li>
+        <a href="{% if user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif user.role == 'INSTRUCTOR' %}{% url 'instructor_dashboard' %}{% elif user.role == 'STUDENT' %}{% url 'student_dashboard' %}{% endif %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+          <i class="fas fa-home mr-2"></i>Home
+        </a>
+      </li>
+      {% block breadcrumb %}{% endblock breadcrumb %}
+    </ol>
+  </nav>
+  {% endif %}
+
+  <main class="flex-1 container mx-auto max-w-full w-full px-7 {% if is_login_page or is_request_account_page or is_request_otp or is_verify_otp or is_reset_password %}mt-0{% else %}mt-6{% endif %}">
+    {% block content %}{% endblock content %}
+  </main>
+
+  {% if not is_login_page and not is_request_account_page and not is_request_otp and not is_verify_otp and not is_reset_password %}
+  <footer class="bg-background text-white mt-8 py-2 dark:bg-gray-800 dark:text-gray-300">
+    <div class="container mx-auto text-center">
+      <p class="text-sm">&copy; 2025 - <span class="font-bold">Student Services System</span>. All Rights Reserved.</p>
+    </div>
+  </footer>
+  {% endif %}
+
+  <!-- القائمة الخاصة بالجوال (Mobile Menu Overlay) -->
+  <!-- تظهر عند عرض الشاشة 850 بكسل وما دون -->
+  <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="bg-accent dark:bg-accent-dark w-2/3 max-w-xs h-full p-4">
+      <button id="mobile-menu-close" class="text-white mb-4 focus:outline-none">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+      <ul class="flex flex-col space-y-4">
+        <!-- لكل عنصر من عناصر القائمة، نجعل العنصر بأكمله (الاسم والسهم) قابل للنقر لتوسيع القائمة الفرعية -->
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Students</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="{% url 'students_list' %}" class="block text-white hover:text-gray-100">All Students</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Departments</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="{% url 'departments_list' %}" class="block text-white hover:text-gray-100">All Departments</a>
+            </li>
+            <li>
+              <a href="{% url 'departments_with_groups' %}" class="block text-white hover:text-gray-100">Departments and Groups</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Instructors</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="{% url 'instructors_list' %}" class="block text-white hover:text-gray-100">All Instructors</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Library</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="{% url 'library_list' %}" class="block text-white hover:text-gray-100">All Files</a>
+            </li>
+            <li>
+              <a href="{% url 'upload_file' %}" class="block text-white hover:text-gray-100">Upload File</a>
+            </li>
+            <li>
+              <a href="{% url 'library_my_uploaded_files' %}" class="block text-white hover:text-gray-100">My Uploaded Files</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Chats</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="/chat/" class="block text-white hover:text-gray-100">Chats</a>
+            </li>
+            <li>
+              <a href="#" class="block text-white hover:text-gray-100">Group Message</a>
+            </li>
+          </ul>
+        </li>
+        {% if user.role == 'ADMIN' %}
+        <li>
+          <button class="mobile-dropdown-toggle w-full text-left flex justify-between items-center text-white font-semibold focus:outline-none">
+            <span>Administration</span>
+            <i class="fas fa-chevron-down transition-transform duration-200"></i>
+          </button>
+          <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
+            <li>
+              <a href="/admin/" class="block text-white hover:text-gray-100">Admin Panel</a>
+            </li>
+          </ul>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- JavaScript لتفعيل القائمة الخاصة بالجوال وتبديل القوائم الفرعية -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // تفعيل زر القائمة للجوال
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuClose = document.getElementById('mobile-menu-close');
+
+      mobileMenuButton.addEventListener('click', function () {
+        mobileMenu.classList.remove('hidden');
+      });
+
+      mobileMenuClose.addEventListener('click', function () {
+        mobileMenu.classList.add('hidden');
+      });
+
+      mobileMenu.addEventListener('click', function (e) {
+        if (e.target === mobileMenu) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+
+      // تفعيل القوائم الفرعية داخل القائمة الخاصة بالجوال
+      const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
+      mobileDropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function () {
+          const dropdown = this.nextElementSibling;
+          if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            this.querySelector('i').classList.add('rotate-180');
+          } else {
+            dropdown.classList.add('hidden');
+            this.querySelector('i').classList.remove('rotate-180');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

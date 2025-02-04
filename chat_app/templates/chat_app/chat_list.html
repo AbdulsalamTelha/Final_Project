@@ -2,10 +2,18 @@
 
 {% block title %}Chats{% endblock title %}
 
+{% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        Chats
+    </li>
+{% endblock breadcrumb %}
 
 {% block content %}
-<div class="flex min-h-screen overflow-hidden">
-    <div class="w-1/4 bg-white dark:bg-gray-800 p-6 shadow-lg overflow-y-auto custom-scrollbar rounded-l-lg">
+<div class="flex h-[74vh]">
+    <div class="w-1/4 bg-white dark:bg-gray-800 p-6 shadow-lg overflow-y-auto rounded-l-lg custom-scrollbar">
 
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-semibold">Chats</h2>
@@ -20,12 +28,12 @@
         </div>
 
         <!-- زر القائمة -->
-        <button id="user-list-button" class="fixed bottom-20 left-140 bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-blue-500 transition duration-300">
+        <button id="user-list-button" class="fixed bottom-20 left-12 bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-blue-500 transition duration-300">
             <i class="fas fa-plus"></i>
         </button>
 
         <!-- قائمة المستخدمين -->
-        <div id="user-list" class="fixed bottom-24 left-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
+        <div id="user-list" class="fixed bottom-32 left-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
             {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
                 <button id="create-group-button" class="bg-[#1875BB] text-white px-4 py-2 rounded-lg hover:bg-[#1560A0] transition duration-300">
                     Create Group
@@ -34,54 +42,52 @@
 
             <ul>
                 {% for user in all_users %}
-    {% if user != request.user %}
-        {% if request.user.role == 'STUDENT' %}
-        {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
-                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                            {% if user.get_profile_image_url %}
-                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
-                            {% else %}
-                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                    {% if user != request.user %}
+                        {% if request.user.role == 'STUDENT' %}
+                            {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
+                                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                            {% if user.get_profile_image_url %}
+                                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                            {% else %}
+                                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                {{ user.username|capfirst }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ user.get_role_display }}
+                                            </p>
+                                        </div>
+                                    </a>
+                                </li>
                             {% endif %}
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                {{ user.username|capfirst }}
-                            </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ user.get_role_display }}
-                            </p>
-                        </div>
-                    </a>
-                </li>
-            {% endif %}
-        {% else %}
-            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                        {% if user.get_profile_image_url %}
-                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                         {% else %}
-                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                        {% if user.get_profile_image_url %}
+                                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                        {% else %}
+                                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                            {{ user.username|capfirst }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ user.get_role_display }}
+                                        </p>
+                                    </div>
+                                </a>
+                            </li>
                         {% endif %}
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {{ user.username|capfirst }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ user.get_role_display }}
-                        </p>
-                    </div>
-                </a>
-            </li>
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-
+                    {% endif %}
+                {% endfor %}
             </ul>
         </div>
     </div>

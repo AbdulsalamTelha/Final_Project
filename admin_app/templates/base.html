@@ -37,22 +37,40 @@
             color: rgba(24, 116, 186, var(--tw-text-opacity))
         }
         /* نستخدم هذا الصنف للقائمة المنبثقة في الوضع العادي */
-    .bg-accent {
-        background-color: #1e5c8a;
-      }
+        .bg-accent {
+            background-color: #1e5c8a;
+          }
   
-      /* عرض زر القائمة والقائمة المنبثقة يظهر عند عرض الشاشة 850px وما دون */
-      @media (min-width: 851px) {
-        #mobile-menu-button,
-        #mobile-menu {
-          display: none !important;
+        /* عرض زر القائمة والقائمة المنبثقة يظهر عند عرض الشاشة 850px وما دون */
+        @media (min-width: 851px) {
+          #mobile-menu-button,
+          #mobile-menu {
+            display: none !important;
+          }
         }
-      }
-      @media (max-width: 850px) {
-        #mobile-menu-button {
-          display: block !important;
+        @media (max-width: 850px) {
+          #mobile-menu-button {
+            display: block !important;
+          }
         }
-      }
+
+        /*scroll  تخصيص شريط التمرير الموجود في الدردشة*/
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px; /* عرض الشريط */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e0; /* اللون الافتراضي */
+          border-radius: 4px; /* الحواف المستديرة */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background-color: transparent; /* الخلفية الشفافة */
+        }
+
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+          background-color: #9ca3af; /* تغيير اللون عند التمرير */
+        }
       </style>
 </head>
 
@@ -129,10 +147,10 @@
             </ul>
           </li>
           <li class="tab-container relative">
-            <a href="/chat/" class="hover:text-gray-300 dark:hover:text-gray-100">Chats</a>
+            <a href="{% url 'chat_list' %}" class="hover:text-gray-300 dark:hover:text-gray-100">Chats</a>
             <ul class="tab-dropdown-menu hidden absolute bg-white text-gray-700 dark:bg-gray-100 shadow-lg rounded-lg mt-0 z-10 w-56 overflow-hidden">
               <li class="hover:bg-gray-100 hover:text-black dark:hover:bg-white dark:hover:text-gray-900 flex items-center px-4 py-2 border-b">
-                <a href="/chat/" class="block flex-1">
+                <a href="{% url 'chat_list' %}" class="block flex-1">
                   <i class="fas fa-comments mr-3"></i>Chats
                 </a>
               </li>
@@ -347,7 +365,7 @@
           </button>
           <ul class="mobile-dropdown hidden pl-4 mt-2 space-y-2">
             <li>
-              <a href="/chat/" class="block text-white hover:text-gray-100">Chats</a>
+              <a href="{% url 'chat_list' %}" class="block text-white hover:text-gray-100">Chats</a>
             </li>
             <li>
               <a href="#" class="block text-white hover:text-gray-100">Group Message</a>

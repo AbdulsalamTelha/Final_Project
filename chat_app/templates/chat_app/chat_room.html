@@ -4,7 +4,7 @@
     {% if room.type == 'private' %}
         {% for member in room.members.all %}
             {% if member != request.user %}
-                {{ member.username.capitalize }}
+                {{ member.get_full_name.upper }}
             {% endif %}
         {% endfor %}
     {% else %}
@@ -68,52 +68,52 @@
 
             <ul>
                 {% for user in all_users %}
-                    {% if user != request.user %}
-                        {% if request.user.role == 'STUDENT' %}
-                            {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
-                                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                                            {% if user.get_profile_image_url %}
-                                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
-                                            {% else %}
-                                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="ml-3 flex-1">
-                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                {{ user.username|capfirst }}
-                                            </p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ user.get_role_display }}
-                                            </p>
-                                        </div>
-                                    </a>
-                                </li>
+    {% if user != request.user %}
+        {% if request.user.role == 'STUDENT' %}
+        {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
+                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                            {% if user.get_profile_image_url %}
+                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                            {% else %}
+                                <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
                             {% endif %}
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                {{ user.username|capfirst }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ user.get_role_display }}
+                            </p>
+                        </div>
+                    </a>
+                </li>
+            {% endif %}
+        {% else %}
+            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                        {% if user.get_profile_image_url %}
+                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                         {% else %}
-                            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                                        {% if user.get_profile_image_url %}
-                                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
-                                        {% else %}
-                                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                            {{ user.username|capfirst }}
-                                        </p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                                            {{ user.get_role_display }}
-                                        </p>
-                                    </div>
-                                </a>
-                            </li>
+                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
                         {% endif %}
-                    {% endif %}
-                {% endfor %}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                            {{ user.username|capfirst }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ user.get_role_display }}
+                        </p>
+                    </div>
+                </a>
+            </li>
+        {% endif %}
+    {% endif %}
+{% endfor %}
             </ul>
         </div>
     </div>
@@ -144,7 +144,7 @@
                         {% if room.type == 'private' %}
                             {% for member in room.members.all %}
                                 {% if member != request.user %}
-                                    {{ member.username.capitalize }}
+                                    {{ member.get_full_name.upper }}
                                 {% endif %}
                             {% endfor %}
                         {% else %}
@@ -158,7 +158,7 @@
                             <span class="font-bold">
                             {% for member in room.members.all %}
                                 {% if member != request.user %}
-                                    {{ member.username }}{% if not forloop.last %}, {% endif %}
+                                    {{ member.get_full_name }}{% if not forloop.last %}, {% endif %}
                                 {% endif %}
                             {% endfor %}
                             </span>
@@ -364,7 +364,7 @@
                                 value="{{ student.id }}" 
                                 data-gender="{{ student.gender }}"
                             >
-                                {{ student.username }}
+                                {{ student.get_full_name }}
                             </option>
                         {% endif %}
                     {% endfor %}
@@ -429,7 +429,7 @@
             const database = getDatabase(app);
 
             const roomName = "{{ room.name }}";
-            const currentUser = "{{ request.user.username }}";
+            const currentUser = "{{ request.user.get_full_name }}";
             const chatBox = document.getElementById('chat-box');
             const messageInput = document.getElementById('chat-message-input');
             const submitButton = document.getElementById('chat-message-submit');
@@ -757,24 +757,6 @@
                 const editedText = message.edited ? ' (edited)' : '';
                 const messageContentText = message.content;
 
-                let statusIcon = '';
-                if (isOwnMessage) {
-                    switch (message.status) {
-                        case 'sending':
-                            statusIcon = '<i class="fas fa-clock text-gray-400 ml-2"></i>';
-                            break;
-                        case 'sent':
-                            statusIcon = '<i class="fas fa-check text-gray-400 ml-2"></i>';
-                            break;
-                        case 'delivered':
-                            statusIcon = '<i class="fas fa-check-double text-gray-400 ml-2"></i>';
-                            break;
-                        case 'read':
-                            statusIcon = '<i class="fas fa-check-double text-green-500 ml-2"></i>';
-                            break;
-                    }
-                }
-
                 // هيكل الرسالة
                 const messageContent = `
                     <div class="max-w-xs p-3 rounded-lg ${isOwnMessage ? 'bg-background text-white dark:text-gray-200' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'} relative group">
@@ -797,7 +779,6 @@
                         </div>
                         <div class="text-xs ${isOwnMessage ? 'text-gray-300' : 'text-gray-500'} dark:text-gray-400 mt-1 message-timestamp">
                             ${new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${editedText}
-                            <span class="status-icon">${getStatusIcon(message.status)}</span>
                         </div>
                         ${isOwnMessage ? `
                             <div class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -841,23 +822,6 @@
             });
 
 
-
-        function getStatusIcon(status) {
-            switch (status) {
-                case 'sending':
-                    return '<i class="fas fa-clock text-gray-400 ml-2"></i>';
-                case 'sent':
-                    return '<i class="fas fa-check text-gray-400 ml-2"></i>';
-                case 'delivered':
-                    return '<i class="fas fa-check-double text-gray-400 ml-2"></i>';
-                case 'read':
-                    return '<i class="fas fa-check-double text-green-500 ml-2"></i>';
-                default:
-                    return '';
-            }
-        }
-
-
         onChildChanged(ref(database, 'chat_rooms/' + roomName + '/messages'), (snapshot) => {
             const updatedMessage = snapshot.val();
             const messageId = snapshot.key;
@@ -885,7 +849,6 @@
             // تحديث محتوى الرسالة وحالتها
             const contentDiv = messageElement.querySelector('.message-content') || messageElement.querySelector('.break-words');
             const timestampDiv = messageElement.querySelector('.message-timestamp');
-            const statusIconDiv = messageElement.querySelector('.status-icon');
 
             if (contentDiv) {
                 if (updatedMessage.isDeletedForEveryone) {
@@ -905,9 +868,6 @@
                 `;
             }
 
-            if (statusIconDiv) {
-                statusIconDiv.innerHTML = getStatusIcon(updatedMessage.status);
-            }
         });
 
 
@@ -1087,7 +1047,7 @@
     const allUsers = [
         {% for user in all_users %}
             {
-                "username": "{{ user.username }}",
+                "username": "{{ user.get_full_name }}",
                 "profile_image": "{{ user.get_profile_image_url }}"
             }
             {% if not forloop.last %},{% endif %}
@@ -1142,7 +1102,7 @@
                     const message = snapshot.val();
 
                     if (message) {
-                        const senderName = message.sender === "{{ request.user.username }}" ? "(You)" : message.sender;
+                        const senderName = message.sender === "{{ request.user.get_full_name }}" ? "(You)" : message.sender;
 
                         chatRooms[roomName] = {
                             roomName: roomName,
@@ -1182,10 +1142,10 @@
                 let roomDisplayName = room.roomName.toUpperCase(); // الافتراضي: اسم الغرفة
                 let profileImage = ""; // صورة المستخدم الآخر
 
-                if (room.roomType === 'private') {
-                    room.members.forEach(member => {
-                        if (member !== "{{ request.user.username }}") {
-                            roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
+            if (room.roomType === 'private') {
+                room.members.forEach(member => {
+                    if (member !== "{{ request.user.get_full_name }}") {
+                        roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
 
                             // 🔹 البحث عن صورة المستخدم داخل allUsers
                             let userImage = "";
@@ -1241,7 +1201,7 @@
         fetchLastMessage(
             "{{ room.name }}",
             "{{ room.type }}",
-            [{% for member in room.members.all %}"{{ member.username }}",{% endfor %}],
+            [{% for member in room.members.all %}"{{ member.get_full_name }}",{% endfor %}],
             "{{ room.creation_time|date:'c' }}"
         );
         {% endfor %}
@@ -1391,10 +1351,10 @@
                             currentUserItem.innerHTML = `
                                 <div class="flex items-center text-gray-700 dark:text-gray-300">
                                     <div class="flex-shrink-0 w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold">
-                                        {{ request.user.username|slice:":1"|upper }}
+                                        {{ request.user.get_full_name|slice:":1"|upper }}
                                     </div>
                                     <div class="ml-3 flex-1">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ request.user.username }}</p>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ request.user.get_full_name }}</p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">(You)</p>
                                     </div>
                                 </div>

@@ -28,7 +28,7 @@
         {% if room.type == 'private' %}
             {% for member in room.members.all %}
                 {% if member != request.user %}
-                    {{ member.username.capitalize }}
+                    {{ member.get_full_name.capitalize }}
                 {% endif %}
             {% endfor %}
         {% else %}
@@ -46,6 +46,15 @@
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-semibold">Chats</h2>
         </div>
+
+        <div class="mb-4">
+            <input 
+              type="text" 
+              id="search-room" 
+              class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
+              placeholder="Enter chat name "
+            >
+          </div>
 
         <!-- قائمة الغرف -->
         <div id="rooms-container">
@@ -66,6 +75,17 @@
                 </button>
             {% endif %}
 
+            <div class="mb-4 m-3">
+
+                <input 
+                    type="text" 
+                    id="search-user" 
+                    class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
+                    placeholder="Search for user"
+                >
+            </div>
+            
+
             <ul>
                 {% for user in all_users %}
     {% if user != request.user %}
@@ -75,14 +95,14 @@
                     <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
                         <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
                             {% if user.get_profile_image_url %}
-                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                             {% else %}
-                                <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
+                                <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
                             {% endif %}
                         </div>
                         <div class="ml-3 flex-1">
                             <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                {{ user.username|capfirst }}
+                                {{ user.get_full_name|capfirst }}
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ user.get_role_display }}
@@ -103,7 +123,7 @@
                     </div>
                     <div class="ml-3 flex-1">
                         <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {{ user.username|capfirst }}
+                            {{ user.get_full_name|capfirst }}
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
                             {{ user.get_role_display }}
@@ -1047,7 +1067,7 @@
     const allUsers = [
         {% for user in all_users %}
             {
-                "username": "{{ user.get_full_name }}",
+                "username": "{{ user.username }}",
                 "profile_image": "{{ user.get_profile_image_url }}"
             }
             {% if not forloop.last %},{% endif %}
@@ -1068,7 +1088,7 @@
                     return;
                 }
 
-                //if (roomType === "group") {
+                if (roomType === "group") {
                     chatRooms[roomName] = {
                         roomName: roomName,
                         roomType: roomType,
@@ -1078,8 +1098,8 @@
                         unreadCount: 0, // عدد الرسائل غير المقروءة
                     };
 
-                    //sortAndRenderRooms(); // تحديث الواجهة
-                //}
+                    sortAndRenderRooms(); // تحديث الواجهة
+                }
 
                 // 🔥 تحديث عدد الرسائل غير المقروءة عند التغيير
                 onValue(unreadMessagesQuery, (snapshot) => {
@@ -1102,7 +1122,7 @@
                     const message = snapshot.val();
 
                     if (message) {
-                        const senderName = message.sender === "{{ request.user.get_full_name }}" ? "(You)" : message.sender;
+                        const senderName = message.sender === "{{ request.user.username }}" ? "(You)" : message.sender;
 
                         chatRooms[roomName] = {
                             roomName: roomName,
@@ -1144,7 +1164,7 @@
 
             if (room.roomType === 'private') {
                 room.members.forEach(member => {
-                    if (member !== "{{ request.user.get_full_name }}") {
+                    if (member !== "{{ request.user.username }}") {
                         roomDisplayName = member.charAt(0).toUpperCase() + member.slice(1); // اسم المستخدم في الدردشة الخاصة
 
                             // 🔹 البحث عن صورة المستخدم داخل allUsers
@@ -1201,7 +1221,7 @@
         fetchLastMessage(
             "{{ room.name }}",
             "{{ room.type }}",
-            [{% for member in room.members.all %}"{{ member.get_full_name }}",{% endfor %}],
+            [{% for member in room.members.all %}"{{ member.username }}",{% endfor %}],
             "{{ room.creation_time|date:'c' }}"
         );
         {% endfor %}
@@ -1338,7 +1358,7 @@
                                             ${profileImage}
                                         </div>
                                         <div class="ml-3 flex-1">
-                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">${member.username}</p>
+                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">${member.get_full_name}</p>
                                         </div>
                                     </div>
                                 `;
@@ -1351,7 +1371,7 @@
                             currentUserItem.innerHTML = `
                                 <div class="flex items-center text-gray-700 dark:text-gray-300">
                                     <div class="flex-shrink-0 w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold">
-                                        {{ request.user.get_full_name|slice:":1"|upper }}
+                                        {{ request.user.username|slice:":1"|upper }}
                                     </div>
                                     <div class="ml-3 flex-1">
                                         <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ request.user.get_full_name }}</p>
@@ -1574,6 +1594,53 @@ console.log("Form Data:", {
 
 
 
+
+// استهداف مربع البحث وقائمة المستخدمين
+const searchUserInput = document.getElementById('search-user');
+const userListContainer = document.getElementById('user-list');
+// استهداف جميع عناصر li داخل قائمة المستخدمين
+const userListItems = userListContainer.querySelectorAll('ul li');
+
+searchUserInput.addEventListener('input', () => {
+    const searchQuery = searchUserInput.value.toLowerCase();
+
+    userListItems.forEach(item => {
+        // الحصول على النص الكامل داخل العنصر (يمكنك تخصيصه إذا أردت البحث داخل جزء محدد)
+        const itemText = item.textContent.toLowerCase();
+
+        // إذا تضمن نص العنصر نص البحث يتم عرضه، وإلا يتم إخفاؤه
+        if (itemText.includes(searchQuery)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+
+
+
+// استهداف حقل البحث وحاوية الغرف
+const searchRoomInput = document.getElementById("search-room");
+const roomsContainer = document.getElementById("rooms-container");
+
+// تنفيذ البحث عند الكتابة في حقل البحث
+searchRoomInput.addEventListener("input", function () {
+    const searchQuery = this.value.trim().toLowerCase();
+
+    // جلب جميع عناصر الغرف
+    const roomElements = roomsContainer.children;
+
+    // فلترة الغرف وعرض/إخفاء المطابقة
+    for (let roomElement of roomElements) {
+        const roomName = roomElement.querySelector("p.text-sm").textContent.toLowerCase();
+        if (roomName.includes(searchQuery)) {
+            roomElement.style.display = "flex"; // إظهار العنصر
+        } else {
+            roomElement.style.display = "none"; // إخفاء العنصر
+        }
+    }
+});
 
 
   </script>

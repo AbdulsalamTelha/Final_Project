@@ -205,7 +205,7 @@ def get_group_members(request):
         room_name = request.GET.get('room_name')
         try:
             room = ChatRoom.objects.get(name=room_name)
-            members = [{'id': member.id, 'username': member.username} for member in room.members.all()]
+            members = [{'id': member.id, 'username': member.username, 'get_full_name': member.first_name+' '+ member.last_name} for member in room.members.all()]
             return JsonResponse({'members': members}, status=200)
         except ChatRoom.DoesNotExist:
             return JsonResponse({'error': 'Group not found.'}, status=404)

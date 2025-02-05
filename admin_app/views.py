@@ -54,7 +54,7 @@ def home_view(request):
         elif request.user.role == User.Roles.INSTRUCTOR:
             return redirect('instructor_dashboard')  # Instructor dashboard view
         elif request.user.role == User.Roles.STUDENT:
-            return redirect('library_list')  # Student dashboard view
+            return redirect('student_dashboard')  # Student dashboard view
         else:
             messages.error(request, "Your role is not recognized.")
             return redirect('access_denied')
@@ -325,10 +325,14 @@ def request_account(request):
 
 @login_required
 def students_list(request):
+
+    if request.user.role == User.Roles.STUDENT:
+        return redirect('403')
+
     if request.user.role == User.Roles.ADMIN or request.user.role == User.Roles.INSTRUCTOR:
         students = Student.objects.filter(user__is_active=True).select_related('user').prefetch_related('department', 'group')
-    elif request.user.role == User.Roles.STUDENT:
-        students = Student.objects.filter(user__is_active=True, user__gender=request.user.gender).select_related('user').prefetch_related('department', 'group')
+    # elif request.user.role == User.Roles.STUDENT:
+    #     students = Student.objects.filter(user__is_active=True, user__gender=request.user.gender).select_related('user').prefetch_related('department', 'group')
 
     # الحصول على معايير الفلترة من الطلب
     department_filter = request.GET.get('department', '').strip().lower()
@@ -890,6 +894,8 @@ def instructors_list(request):
 
 @login_required
 def departments_with_groups(request):
+    if request.user.role == User.Roles.STUDENT:
+        return redirect('403')
     departments = Department.objects.prefetch_related('groups')
     context = {'departments': departments}
     return render(request, 'departments_with_groups.html', context)
@@ -1056,6 +1062,9 @@ def delete_file(request, file_id):
 
 @login_required
 def departments_list(request):
+    if request.user.role == User.Roles.STUDENT:
+        return redirect('403')
+    
     departments = Department.objects.filter(status=True)
 
     # الحصول على معايير الفلترة من الطلب

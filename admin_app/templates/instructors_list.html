@@ -126,16 +126,18 @@
                                 {% endif %}
                             </a>
                         </th>
-                        <th class="p-3 text-left">
-                            <a href="?ordering=user__phone{% if actual_ordering == 'user__phone' %}&ordering=-user__phone{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                Phone
-                                {% if actual_ordering == 'user__phone' %}
-                                    ↑
-                                {% elif actual_ordering == '-user__phone' %}
-                                    ↓
-                                {% endif %}
-                            </a>
-                        </th>
+                        {% if user.role != 'STUDENT' %}
+                            <th class="p-3 text-left">
+                                <a href="?ordering=user__phone{% if actual_ordering == 'user__phone' %}&ordering=-user__phone{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    Phone
+                                    {% if actual_ordering == 'user__phone' %}
+                                        ↑
+                                    {% elif actual_ordering == '-user__phone' %}
+                                        ↓
+                                    {% endif %}
+                                </a>
+                            </th>
+                        {% endif %}
                         <th class="p-3 text-left">
                             <a href="?ordering=user__gender{% if actual_ordering == 'user__gender' %}&ordering=-user__gender{% endif %}{% for key, value in request.GET.items %}{% if key != 'ordering' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
                                 Gender
@@ -165,7 +167,9 @@
                             </div>
                         </td>
                         <td class="p-4">{{ instructor.user.email }}</td>
-                        <td class="p-4">{{ instructor.user.phone }}</td>
+                        {% if user.role != 'STUDENT' %}
+                            <td class="p-4">{{ instructor.user.phone }}</td>
+                        {% endif %}
                         <td class="p-4">
                             {% if instructor.user.gender == "M" %}
                                 <span>Male</span>

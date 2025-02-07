@@ -14,8 +14,12 @@ from django.dispatch import receiver
 from django.utils.timezone import now, timedelta
 from django.db.models import Count
 from datetime import date
+import logging
 
 # Create your models here.
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class File(models.Model):
@@ -72,14 +76,17 @@ class File(models.Model):
         self.description = self.description.strip().capitalize()
         # Validate file size (max 80MB)
         if self.file and self.file.size > 80 * 1024 * 1024:
+            logger.error("File size exceeds limit for file: %s", self.file.name)
             raise ValidationError(_("File size must be less than 80MB."))
                 # تحقق من وصف الملف
         if self.description:
             valid_pattern = re.compile(r'^[a-zA-Z0-9(),."\'\s]*$')
             if not valid_pattern.match(self.description):
+                logger.error("Invalid description detected for file: %s", self.file.name if self.file else "No file")
                 raise ValidationError({
                     'description': _("Description can only contain letters, numbers, and parentheses.")
                 })
+        
 
     def save(self, *args, **kwargs):
         # Auto-detect file name, size, and type on save
@@ -96,12 +103,18 @@ class File(models.Model):
             self.category = self.detect_category()  # Detect and set the category
 
         super().save(*args, **kwargs)
+        if hasattr(self, 'upload_by') and self.upload_by:
+            logger.info("File '%s' saved by user '%s'.", self.name, self.upload_by)
+        else:
+            logger.info("File '%s' saved.", self.name)
 
     def delete(self, *args, **kwargs):
         # حذف الملف المخزن عند حذف الكائن
+        logger.warning("Initiating delete process for File: %s", self.file.name if self.file else "No file")
         if self.file and os.path.isfile(self.file.path):
             os.remove(self.file.path)  # حذف الملف الفعلي من نظام الملفات
         super().delete(*args, **kwargs)
+        logger.info("File deleted from database: %s", self.file.name if self.file else "No file")
 
     def get_file_extension(self):
         _, ext = os.path.splitext(self.file.name)
@@ -162,7 +175,7 @@ class ParentAll(models.Model):
     def clean(self):
         super().clean()
         self.name = self.name.strip().title()
-
+        
     def __str__(self):
         return self.name  # String representation of the object
 
@@ -190,10 +203,11 @@ class Department(ParentAll):
         if self.name:
             valid_pattern = re.compile(r'^[a-zA-Z\s]*$')
             if not valid_pattern.match(self.name):
+                logger.error("Invalid Department name: %s", self.name)
                 raise ValidationError({
                     'name': _("Name can only contain letters.")
                 })
-    
+        
 class Course(ParentAll):
     class Levels(models.IntegerChoices):
         ONE = 1, _('1')
@@ -209,9 +223,11 @@ class Course(ParentAll):
         if self.name:
             valid_pattern = re.compile(r'^[a-zA-Z0-9\s]*$')
             if not valid_pattern.match(self.name):
+                logger.error("Invalid Course name: %s", self.name)
                 raise ValidationError({
                     'name': _("Name can only contain letters and numbers.")
                 })
+        logger.info("Clean completed for Course: %s", self.name)
             
     def __str__(self):
         return f"{self.name} ({self.get_level_display()})"
@@ -238,7 +254,7 @@ class Group(ParentAll):
                 raise ValidationError({
                     'name': _("Name can only contain letters, numbers and - .")
                 })
-            
+        
     def __str__(self):
         return f"{self.name} - {self.level} - {self.department}"
 
@@ -290,6 +306,13 @@ class User(AbstractUser):
         super().clean()  # استدعاء التحقق الأساسي للنموذج
         self.first_name = self.first_name.strip().title()
         self.last_name = self.last_name.strip().title()
+        
+        less_age = date.today().year - 18
+        if self.birth_date.year >= less_age:
+            raise ValidationError({
+                'birth_date':_('Your age must be greater than 18 years')
+            })
+        
         if self.phone:
             valid_range = (
                 (770000000 <= self.phone <= 789999999) or
@@ -300,6 +323,7 @@ class User(AbstractUser):
             excluded_numbers = {777777777}
             
             if not valid_range or self.phone in excluded_numbers:
+                logger.error("Invalid phone number for User: %s", self.phone)
                 raise ValidationError({
                     'phone': _(
                         'Phone number must be in the allowed ranges: '
@@ -307,6 +331,8 @@ class User(AbstractUser):
                         'and must not include restricted numbers like 777777777.'
                     )
                 })
+        logger.info("Clean completed for User: %s %s", self.first_name, self.last_name)
+    
     
     def get_profile_image_url(self):
         """
@@ -326,13 +352,14 @@ class User(AbstractUser):
         """
         حساب عمر المستخدم بناءً على تاريخ الميلاد.
         """
+        logger.info("Calculating age for User: %s", self.username)
         today = date.today()
         age = today.year - self.birth_date.year
 
         # التحقق من إذا كان عيد الميلاد لهذا العام قد حدث أم لا
         if (today.month < self.birth_date.month) or (today.month == self.birth_date.month and today.day < self.birth_date.day):
             age -= 1  # لم يحن عيد الميلاد بعد هذا العام
-
+        
         return f"{age} years"
                 
     def __str__(self):
@@ -352,6 +379,7 @@ class Instructor(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructors")
             
     def __str__(self):
+        logger.info("Returning string representation for Instructor: %s", self.user.get_full_name())
         return f"{self.user.get_full_name()}"
 
 class  Student(models.Model):
@@ -372,15 +400,20 @@ class  Student(models.Model):
         try:
             if self.group:
                 if self.group.level != self.level:
+                    logger.error("Student level and Group level mismatch for user: %s", self.user.get_full_name() if self.user else "No user")
                     raise ValidationError({
                         'group': _("Student's level should match the group's level.")
                     })
                 if self.group.department != self.department:
+                    logger.error("Student department and Group department mismatch for user: %s", self.user.get_full_name() if self.user else "No user")
                     raise ValidationError({
                         'group': _("Student's department should match the group's department.")
                     })
         except self.__class__.group.RelatedObjectDoesNotExist:
+            logger.warning("Group not set for Student: %s", self.user.get_full_name() if self.user else "No user")
             pass  # Ignore if the group is not set
+        logger.info("Clean completed for Student: %s", self.user.get_full_name() if self.user else "No user")
+
 
     def __str__(self):
         return f"{self.user.get_full_name()}"
@@ -404,12 +437,14 @@ class StudentCourse(models.Model):
         try:
             # التحقق من مستوى الطالب ومادة الكورس
             if self.student.level != self.course.level:
+                logger.error("Student level and Course level mismatch for student: %s", self.student.user.get_full_name() if self.student and self.student.user else "No student")
                 raise ValidationError({
                     'course': _("The student's level must match the course's level.")
                 })
 
             # التحقق من تخصص الطالب ومادة الكورس
             if not self.course.departments.filter(id=self.student.department.id).exists():
+                logger.error("Student department and Course department mismatch for student: %s", self.student.user.get_full_name() if self.student and self.student.user else "No student")
                 raise ValidationError({
                     'course': _("The student's department must match the course's department.")
                 })
@@ -417,11 +452,14 @@ class StudentCourse(models.Model):
             # التحقق من السنة
             current_year = date.today().year
             if self.year < current_year or self.year > current_year:
+                logger.error("Invalid year for StudentCourse for student: %s", self.student.user.get_full_name() if self.student and self.student.user else "No student")
                 raise ValidationError({
                     'year': _("The year must be equal to the current year.")
                 })
         except self.__class__.student.RelatedObjectDoesNotExist:
+            logger.warning("Student not set for StudentCourse")
             pass
+        
 
     def __str__(self):
         return f"{self.student.user.first_name} - {self.course.name}"

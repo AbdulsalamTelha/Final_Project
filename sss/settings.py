@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'sss.logging_middleware.AppLoggingMiddleware',
     # 'admin_app.middleware.CustomErrorMiddleware',
 ]
 
@@ -163,6 +164,65 @@ DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # البريد الافتراضي �
 
 
 LOGIN_URL = 'login'  # اسم URL لصفحة تسجيل الدخول
+
+
+
+#loggers
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # نحتفظ بالـ loggers الافتراضية أيضاً
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)d] %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+        },
+    },
+    'handlers': {
+        # معالج لتطبيق admin_app يُسجل في ملف admin_app.log
+        'admin_app_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'sss/logs', 'admin_app.log'),
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+        # معالج لتطبيق chat_app يُسجل في ملف admin_app.log
+        'chat_app_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'sss/logs', 'admin_app.log'),
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+        # معالج افتراضي لأي طلب لا ينتمي لتطبيق محدد
+        'default_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'sss/logs', 'default.log'),
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+    },
+    'loggers': {
+        # logger خاص بتطبيق admin_app
+        'admin_app': {
+            'handlers': ['admin_app_file'],
+            'level': 'DEBUG',
+            'propagate': False,  # عدم تمرير الرسائل إلى loggers الأب
+        },
+        # logger خاص بتطبيق chat_app
+        'chat_app': {
+            'handlers': ['chat_app_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # logger افتراضي للمطالب التي لا تتبع لتطبيق محدد
+        'default': {
+            'handlers': ['default_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
 
 
 # JAZZMIN_SETTINGS = {

@@ -1,0 +1,62 @@
+[07/Feb/2025 21:36:54] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=f
+[07/Feb/2025 21:37:59] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=f
+[07/Feb/2025 21:38:14] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=f
+[07/Feb/2025 21:38:53] INFO [admin_app:30] Request received: method=GET, path=/library_list/upload_file/, user=f
+[07/Feb/2025 21:39:26] INFO [admin_app:30] Request received: method=POST, path=/library_list/upload_file/, user=f
+[07/Feb/2025 21:39:26] INFO [admin_app.models:107] File 'wp11566347-city-night-desktop-wallpapers.jpg' saved by user 'F F'.
+[07/Feb/2025 21:39:26] INFO [admin_app.views:999] File 'wp11566347-city-night-desktop-wallpapers.jpg' uploaded by user f.
+[07/Feb/2025 21:39:26] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=f
+[07/Feb/2025 21:40:39] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[07/Feb/2025 21:40:39] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[07/Feb/2025 21:42:02] INFO [admin_app.models:327] Clean completed for User: Ahmed 
+[07/Feb/2025 21:42:22] INFO [admin_app.models:327] Clean completed for User: Ahmed Ali
+[07/Feb/2025 21:45:16] INFO [admin_app.models:107] File 'wp4470127-2048x1536-wallpapers.jpg' saved by user 'Akram Othman'.
+[07/Feb/2025 22:03:22] INFO [admin_app:30] Request received: method=GET, path=/, user=f
+[07/Feb/2025 22:03:22] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=f
+[07/Feb/2025 22:04:03] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[07/Feb/2025 22:04:03] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[07/Feb/2025 22:17:00] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[07/Feb/2025 22:17:00] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[07/Feb/2025 22:17:27] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[07/Feb/2025 22:17:28] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=c
+[07/Feb/2025 22:20:12] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[07/Feb/2025 22:20:12] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[07/Feb/2025 22:20:17] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[07/Feb/2025 22:20:21] INFO [chat_app:30] Request received: method=GET, path=/chat/is/, user=akram
+[07/Feb/2025 22:22:27] INFO [chat_app:30] Request received: method=GET, path=/chat/private_5_19/, user=akram
+[07/Feb/2025 23:35:14] INFO [admin_app.models:334] Clean completed for User:  
+[07/Feb/2025 23:35:27] INFO [admin_app.models:334] Clean completed for User:  
+[07/Feb/2025 23:37:08] INFO [admin_app.models:334] Clean completed for User:  
+[07/Feb/2025 23:38:25] INFO [admin_app.models:334] Clean completed for User:  
+[07/Feb/2025 23:38:58] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=c
+[07/Feb/2025 23:38:58] INFO [admin_app.models:355] Calculating age for User: c
+[07/Feb/2025 23:39:02] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:39:16] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:56:34] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:56:46] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:56:46] ERROR [admin_app.views:239] Edit profile failed for user c: Username already exists
+[07/Feb/2025 23:56:46] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:57:01] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:57:01] ERROR [admin_app.views:239] Edit profile failed for user c: Username already exists
+[07/Feb/2025 23:57:01] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:57:09] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[07/Feb/2025 23:57:09] INFO [admin_app.views:250] User qq updated profile successfully.
+[07/Feb/2025 23:57:10] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=qq
+[07/Feb/2025 23:57:10] INFO [admin_app.models:355] Calculating age for User: qq
+[07/Feb/2025 23:57:19] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=qq
+[07/Feb/2025 23:57:25] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=qq
+[07/Feb/2025 23:57:25] INFO [admin_app.views:250] User c updated profile successfully.
+[07/Feb/2025 23:57:25] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=c
+[07/Feb/2025 23:57:25] INFO [admin_app.models:355] Calculating age for User: c
+[08/Feb/2025 00:00:40] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:00:47] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:00:47] ERROR [admin_app.views:239] Edit profile failed for user c: Username already exists
+[08/Feb/2025 00:00:47] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:00:55] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:00:55] ERROR [admin_app.views:239] Edit profile failed for user c: Username already exists
+[08/Feb/2025 00:00:55] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:01:01] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:01:08] INFO [admin_app:30] Request received: method=POST, path=/profile/edit_profile/, user=c
+[08/Feb/2025 00:01:08] INFO [admin_app.views:250] User c updated profile successfully.
+[08/Feb/2025 00:01:08] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=c
+[08/Feb/2025 00:01:08] INFO [admin_app.models:355] Calculating age for User: c

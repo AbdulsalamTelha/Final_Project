@@ -28,6 +28,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 import socket
 from django.db.models import Count
 
+logger = logging.getLogger(__name__)
 
 def get_groups_view(request):
     department_id = request.GET.get('department')
@@ -214,7 +215,10 @@ def change_password_view(request):
             user = form.save()
             update_session_auth_hash(request, user)  # الحفاظ على تسجيل الدخول بعد تغيير كلمة المرور
             messages.success(request, "Password changed successfully ...")
+            logger.info("User %s changed password successfully.", request.user.username)
             return redirect('profile')
+        else:
+            logger.error("Password change failed for user %s: %s", request.user.username, form.errors)
     else:
         form = PasswordChangeForm(user=request.user)
     return render(request, 'change_password.html', {'form': form})
@@ -226,6 +230,13 @@ def edit_profile_view(request):
 
         if not username:
             messages.error(request, "Username can't be empty.")
+            logger.error("Edit profile failed for user %s: Username empty", request.user.username)
+            return redirect('edit_profile')
+        
+        # التحقق من أن اسم المستخدم فريد وغير مستخدم من قبل مستخدم آخر
+        if User.objects.filter(username=username).exclude(pk=request.user.pk).exists():
+            messages.error(request, "Username already exists. Please choose another one.")
+            logger.error("Edit profile failed for user %s: Username already exists", request.user.username)
             return redirect('edit_profile')
         
         user = request.user
@@ -236,6 +247,7 @@ def edit_profile_view(request):
 
         user.save()
         messages.success(request, "Profile updated successfully!")
+        logger.info("User %s updated profile successfully.", request.user.username)
         return redirect('profile')
     
     return render(request, 'edit_profile.html')
@@ -312,7 +324,11 @@ def request_account(request):
             )
 
             messages.success(request,"Your request has been sent successfully. We will respond to you soon ...")
+            logger.info("Account request created with email %s.", email)
             return redirect('login')
+        else:
+            logger.error("Account request creation failed with errors: %s", errors)
+
 
     return render(request, "request_account.html", {
         'is_request_account_page': True, 
@@ -397,13 +413,13 @@ def students_list(request):
             )
 
         # إضافة البحث في بقية الحقول
-        search_filter |= Q(user__id__icontains=search_query) | \
-                         Q(user__email__icontains=search_query) | \
-                         Q(user__phone__icontains=search_query) | \
-                         Q(level__icontains=search_query) | \
-                         Q(department__name__icontains=search_query) | \
-                         Q(user__birth_date__icontains=search_query) | \
-                         Q(group__name__icontains=search_query)
+        search_filter |=Q(user__id__icontains=search_query) | \
+                        Q(user__email__icontains=search_query) | \
+                        Q(user__phone__icontains=search_query) | \
+                        Q(level__icontains=search_query) | \
+                        Q(department__name__icontains=search_query) | \
+                        Q(user__birth_date__icontains=search_query) | \
+                        Q(group__name__icontains=search_query)
 
         # تطبيق الفلتر على قائمة المدرسين
         students = students.filter(search_filter).distinct()
@@ -476,12 +492,14 @@ def request_otp(request):
     if request.method == "POST":
         if not username:
             errors["username"] = "Username is required."
+            logger.error("OTP request failed: Username missing.")
 
         if not errors:
             user = User.objects.filter(username=username).first()
 
             if not user:
                 messages.error(request, "Username not found.")
+                logger.error("OTP request failed: Username %s not found.", username)
                 return render(request, "request_otp.html", {
                     'is_request_otp': True,
                 })
@@ -497,9 +515,11 @@ def request_otp(request):
                 if send_otp_email(user.email, otp):
                     request.session['username'] = username
                     messages.success(request, "OTP sent successfully!")
+                    logger.info("OTP sent successfully for user %s.", username)
                     return redirect(reverse('verify_otp'))
                 else:
                     messages.error(request, "Failed to send OTP. Please try again.")
+                    logger.error("Failed to send OTP email for user %s.", username)
                 
             except socket.gaierror:
                 # في حالة عدم وجود اتصال بالإنترنت
@@ -511,6 +531,7 @@ def request_otp(request):
             except Exception as e:
                 # معالجة أي استثناء آخر قد يحدث أثناء الإرسال
                 messages.error(request, "An error occurred while sending the OTP. Please try again later.")
+                logger.exception("Error sending OTP for user %s: %s", username, e)
                 return render(request, "request_otp.html", {
                     'is_request_otp': True,
                 })
@@ -528,6 +549,7 @@ def verify_otp(request):
     username = request.session.get('username', '').strip()
     if not username:
         messages.warning(request, "No username provided. Please request OTP again.")
+        logger.error("OTP verification failed: No username in session.")
         return redirect("request_otp")
     
     # جلب سجل OTP الخاص بالمستخدم وحساب الوقت المتبقي
@@ -540,6 +562,7 @@ def verify_otp(request):
         # التحقق من أن القيم ليست فارغة
         if not otp:
             errors['otp'] = "OTP is required."
+            logger.error("OTP verification failed for user %s: OTP missing.", username)
             return render(request, "verify_otp.html", {
                 "username": username,
                 "is_verify_otp": True,
@@ -560,12 +583,14 @@ def verify_otp(request):
         # التحقق من الرمز OTP
         if not otp_record or otp_record.otp != otp:
             messages.error(request, "Invalid OTP. Please try again.")
+            logger.error("OTP verification failed for user %s: Invalid OTP.", username)
             # return redirect(f"{reverse('verify_otp')}?username={username}")
             return redirect(reverse('verify_otp'))
 
         # Check if the OTP is expired
         if otp_record.expires_at and timezone.now() > otp_record.expires_at:
             messages.error(request, "OTP has expired. Please request a new one.")
+            logger.error("OTP verification failed for user %s: OTP expired.", username)
             return redirect("request_otp")
 
         # حذف سجل OTP وحفظ حالة التحقق
@@ -573,6 +598,7 @@ def verify_otp(request):
 
         # حذف اسم المستخدم من الجلسة
         # del request.session['username']
+        logger.info("OTP verified successfully for user %s.", username)
 
         request.session['otp_verified'] = True
         request.session['username_verified'] = username
@@ -591,6 +617,7 @@ def reset_password(request):
     username_verified = request.session.get('username_verified')
     if not username_verified or not request.session.get('otp_verified', False):
         messages.warning(request, "You must verify OTP before resetting your password.")
+        logger.error("Password reset failed: OTP not verified for user %s.", username_verified)
         return redirect("request_otp")
 
     errors = {}
@@ -599,6 +626,7 @@ def reset_password(request):
 
         if not new_password:
             errors["new_password"] = "Password is required."
+            logger.error("Password reset failed for user %s: New password missing.", username_verified)
             return render(request, "reset_password.html", {
                 "username": username_verified, 
                 "errors": errors,
@@ -611,6 +639,7 @@ def reset_password(request):
             user.save()
 
             # إزالة بيانات الجلسة بعد نجاح العملية
+            logger.info("Password reset successfully for user %s.", username_verified)
             del request.session['otp_verified']
             del request.session['username_verified']
             del request.session['username']
@@ -619,6 +648,7 @@ def reset_password(request):
             return redirect("login")
         else:
             messages.error(request, "User not found.")
+            logger.error("Password reset failed: User %s not found.", username_verified)
             return redirect("request_otp")
 
     return render(request, "reset_password.html", {
@@ -640,18 +670,21 @@ def resend_otp(request):
 
             if send_otp_email(user.email, otp):
                 messages.success(request, 'A new OTP has been sent to your email.')
+                logger.info("Resent OTP successfully for user %s.", username)
                 return render(request, "verify_otp.html", {
                     "username": username,
                     "is_verify_otp" : True,
                 })
             else:
                 messages.error(request, 'Failed to resend OTP. Please try again.')
+                logger.error("Resend OTP failed for user %s: Email sending failed.", username)
                 return render(request, "verify_otp.html", {
                     "username": username,
                     "is_verify_otp" : True,
                 })
         else:
             messages.error(request, "Username not found. Please try again.")
+            logger.error("Resend OTP failed: Username %s not found.", username)
             return render(request, "verify_otp.html", {
                 "is_verify_otp" : True,
             })
@@ -969,8 +1002,11 @@ def upload_file(request):
 
                 if request.user.role == User.Roles.ADMIN or request.user.role == User.Roles.INSTRUCTOR:
                     messages.success(request, 'File uploaded successfully!')
+                    logger.info("File '%s' uploaded by user %s.", file_instance.name, request.user.username)
                 elif request.user.role == User.Roles.STUDENT:
                     messages.success(request, 'Your file has been sent for approval or rejected by the administrator!')
+                    logger.info("File '%s' uploaded by user %s.", file_instance.name, request.user.username)
+            
                 
                 return redirect('library_my_uploaded_files')
 
@@ -1008,6 +1044,7 @@ def edit_file(request, file_id):
         # التحقق مما إذا كان file_id رقمًا
     if not file_id.isdigit():
         messages.error(request, "Invalid file ID. Please provide a valid file identifier.")
+        logger.error("Edit file failed: Invalid file ID %s by user %s.", file_id, request.user.username)
         return render(request, 'edit_file.html', {'file': None, 'courses': courses})
     
     try:
@@ -1016,6 +1053,7 @@ def edit_file(request, file_id):
     except File.DoesNotExist:
         # إذا لم يتم العثور على الملف
         messages.error(request, "The requested file does not exist.")
+        logger.error("Edit file failed: File with ID %s not found for user %s.", file_id, request.user.username)
         return render(request, 'edit_file.html', {'file': None, 'courses': courses})
 
 
@@ -1028,11 +1066,13 @@ def edit_file(request, file_id):
         # التحقق من الحقول
         if not description:
             errors['description'] = "Description is required."
+            logger.error("Edit file failed for file ID %s: Description missing by user %s.", file_id, request.user.username)
             messages.error(request, "Description is required.")
             return render(request, 'edit_file.html', {'file': file_instance, 'courses': courses})
         if not course_id:
             errors['course'] = "You must select a course."
             messages.error(request, "You must select a course.")
+            logger.error("Edit file failed for file ID %s: Course not selected by user %s.", file_id, request.user.username)
             return render(request, 'edit_file.html', {'file': file_instance, 'courses': courses})
 
         # إذا لم تكن هناك أخطاء
@@ -1044,6 +1084,7 @@ def edit_file(request, file_id):
             file_instance.save()
 
             messages.success(request, "File updated successfully!")
+            logger.info("File '%s' updated by user %s.", file_instance.name, request.user.username)
             return redirect('library_my_uploaded_files')
 
     return render(request, 'edit_file.html', {
@@ -1058,6 +1099,7 @@ def delete_file(request, file_id):
     file.file.delete()  # حذف الملف المرفوع من السيرفر
     file.delete()       # حذف السجل من قاعدة البيانات
     messages.success(request, "File deleted successfully.")
+    logger.info("File '%s' deleted by user %s.", file.name, request.user.username)
     return redirect('library_my_uploaded_files')  
 
 @login_required

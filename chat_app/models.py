@@ -1,7 +1,9 @@
 from django.db import models
 from admin_app.models import User
 from django.core.exceptions import ValidationError
+import logging
 
+logger = logging.getLogger(__name__)
 
 class ChatRoom(models.Model):
     CHAT_TYPE_CHOICES = [
@@ -31,20 +33,29 @@ class ChatRoom(models.Model):
 
     def add_member(self, user):
         if self.is_male_only and user.gender != 'M':
+            logger.error("Failed to add user '%s' to chat room '%s': group is male-only.", user.username, self.name)
             raise ValidationError("This group is for males only.")
         if self.is_female_only and user.gender != 'F':
+            logger.error("Failed to add user '%s' to chat room '%s': group is female-only.", user.username, self.name)
             raise ValidationError("This group is for females only.")
         self.members.add(user)
+        logger.info("User '%s' added to chat room '%s'.", user.username, self.name)
 
     def remove_member(self, user):
         if user == self.created_by:
+            logger.error("Attempt to remove creator '%s' from chat room '%s' blocked.", user.username, self.name)
             raise ValidationError("The creator of the group cannot be removed.")
         self.members.remove(user)
+        logger.info("User '%s' removed from chat room '%s'.", user.username, self.name)
+
 
     def delete_member(self, user, instructor):
         if instructor != self.created_by:
+            logger.error("User '%s' (not creator) attempted to delete member '%s' from chat room '%s'.", instructor.username, user.username, self.name)
             raise ValidationError("Only the creator of the group can delete members.")
         self.remove_member(user)
+        logger.info("User '%s' deleted from chat room '%s' by creator '%s'.", user.username, self.name, instructor.username)
+
 
     def is_member(self, user):
         return self.members.filter(id=user.id).exists()
@@ -56,15 +67,22 @@ class ChatRoom(models.Model):
         self.is_male_only = is_male_only
         self.is_female_only = is_female_only
         self.save()
+        logger.info("Chat room '%s' created by user '%s'.", self.name, instructor.username)
+
 
         # Add the instructor (creator) to the group
         self.members.add(instructor)
+        logger.info("Creator '%s' added as member to chat room '%s'.", instructor.username, self.name)
+
 
         # Add students if provided
         if student_ids:
             students = User.objects.filter(id__in=student_ids)
             for student in students:
-                self.add_member(student)
+                try:
+                    self.add_member(student)
+                except ValidationError as e:
+                    logger.error("Failed to add student '%s' to chat room '%s': %s", student.username, self.name, e)
 
         return self
 

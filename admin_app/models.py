@@ -167,24 +167,6 @@ class ParentAll(models.Model):
         return self.name  # String representation of the object
 
 class Department(ParentAll):
-    # @property # لا زالت تريد إصلاح، فهي لم تحل مشكلة تكرر أوائل الأحرف من كل قسم
-    # def abbreviation(self):
-    #     # استخراج الحروف الأولى من كل كلمة
-    #     base_abbreviation = "".join([word[0].upper() for word in self.name.split()])
-        
-    #     # التحقق من وجود تكرار في قاعدة البيانات
-    #     similar_abbreviations = Department.objects.filter(
-    #         name__startswith=self.name.split()[0]
-    #     ).annotate(
-    #         abbreviation_count=Count('name')
-    #     )
-
-    #     # إضافة رقم تسلسلي إذا كان هناك تكرار
-    #     if similar_abbreviations.filter(id=self.id).exists():
-    #         count = similar_abbreviations.filter(name=self.name).count()
-    #         return f"{base_abbreviation}{count if count > 1 else ''}"
-    #     return base_abbreviation
-
     def clean(self):
         super().clean()
         if self.name:

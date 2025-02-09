@@ -163,6 +163,7 @@ def send_message(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
+
 def create_group(request):
     if request.method == 'POST':
         name = request.POST.get('name')

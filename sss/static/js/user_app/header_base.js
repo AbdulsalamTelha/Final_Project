@@ -31,27 +31,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // إدارة القوائم المنسدلة للتبويبات
     toggleDropdown('.tab-container', '.tab-dropdown-menu');
 
-
-    // زر الإشعارات وعناصر القائمة
-    const notificationsButton = document.getElementById('notificationsButton');
-    const notificationsMenu = document.getElementById('notificationsMenu');
-    const notificationCount = document.getElementById('notificationCount');
-    // إظهار وإخفاء القائمة عند الضغط على زر الإشعارات
-    notificationsButton.addEventListener('click', function (event) {
-        event.stopPropagation(); // منع إغلاق القائمة إذا تم النقر على الزر
-        notificationsMenu.classList.toggle('hidden');
-    });
-    // إخفاء القائمة عند النقر خارجها
-    document.addEventListener('click', function () {
-        notificationsMenu.classList.add('hidden');
-    });
-    // مثال لإزالة العدد عند فتح القائمة
-    notificationsButton.addEventListener('click', function () {
-        notificationCount.textContent = '';
-        notificationCount.classList.add('hidden');
-    });
-
-
     // زر وضع الليل/الصباح
     const themeToggleButton = document.getElementById('themeToggleButton');
     const themeIcon = document.getElementById('themeIcon');

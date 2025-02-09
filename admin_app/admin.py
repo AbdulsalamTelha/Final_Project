@@ -368,9 +368,7 @@ class UserAdmin(ImportExportMixin, admin.ModelAdmin):
         return fieldsets
     
     def user_image(self, obj):
-        if obj.image:  # التحقق إذا كان للمستخدم صورة
-            return format_html('<img src="{}" style="width: 40px; height: 40px; border-radius: 50%;" />', obj.image.url)
-        return "No Image"
+        return format_html('<img src="{}" style="width: 40px; height: 40px; border-radius: 50%;" />', obj.get_profile_image_url())
     user_image.short_description = 'Image'  # تغيير عنوان العمود
 
     def save_model(self, request, obj, form, change):

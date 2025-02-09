@@ -128,17 +128,17 @@ def library_view(request):
     type_filter = request.GET.get('type', '').strip()
     uploader_filter = request.GET.get('uploader', '').strip()
     search_query = request.GET.get('search', '').strip()
-    ordering = request.GET.get('ordering', 'name').strip().lower()
+    ordering = request.GET.get('ordering', '-upload_date').strip().lower()
 
     # Base query
     files = File.objects.filter(status="APPROVED").select_related('upload_by')
 
     # Fetch distinct data for filters
-    categories = File.objects.values_list('category', flat=True).distinct()
+    categories = files.values_list('category', flat=True).distinct()
     courses = Course.objects.filter(
         id__in=files.values_list('course__id', flat=True)
     ).distinct()
-    types = File.objects.values_list('type', flat=True).distinct()
+    types = files.values_list('type', flat=True).distinct()
     uploaders = User.objects.filter(
         id__in=files.values_list('upload_by__id', flat=True)
     ).distinct()
@@ -174,7 +174,7 @@ def library_view(request):
 
     show_all = request.GET.get('show_all', 'false').lower() == 'true'
 
-    view_mode = request.GET.get('view', 'list').strip().lower()
+    view_mode = request.GET.get('view', 'card').strip().lower()
 
     if show_all:
         page_obj = files  # عرض جميع السجلات

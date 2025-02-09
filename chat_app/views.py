@@ -325,7 +325,7 @@ def manage_group(request, group_id):
             return redirect('chat_list')
     
     # تصفية الطلاب حسب نوع المجموعة
-    students = User.objects.filter(role='STUDENT').exclude(id__in=group.members.values_list('id', flat=True))
+    students = User.objects.filter(role='STUDENT', is_active=True).exclude(id__in=group.members.values_list('id', flat=True))
     
     if group.is_male_only:
         students = students.filter(gender='M')

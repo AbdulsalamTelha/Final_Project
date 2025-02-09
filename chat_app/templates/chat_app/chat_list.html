@@ -19,6 +19,15 @@
             <h2 class="text-2xl font-semibold">Chats</h2>
         </div>
 
+        <div class="mb-4">
+            <input 
+              type="text" 
+              id="search-room" 
+              class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
+              placeholder="Enter chat name "
+            >
+          </div>
+
         <!-- قائمة الغرف -->
         <div id="rooms-container">
             <ul class="space-y-2">
@@ -39,6 +48,16 @@
                     Create Group
                 </button>
             {% endif %}
+
+            <div class="mb-4 m-3">
+
+                <input 
+                    type="text" 
+                    id="search-user" 
+                    class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
+                    placeholder="Search for user"
+                >
+            </div>
 
             <ul>
                 {% for user in all_users %}
@@ -150,7 +169,7 @@
                 <label for="student-ids" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Select Students</label>
                 <select name="student_ids" id="student-ids" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" multiple>
                     {% for student in all_users %}
-                        {% if student != request.user and student.role == 'STUDENT' %}
+                        {% if student != request.user and student.role == 'STUDENT' and student.is_active == True %}
                             <option 
                                 value="{{ student.id }}" 
                                 data-gender="{{ student.gender }}"
@@ -525,6 +544,57 @@ console.log("Form Data:", {
 });
 
 
+
+
+
+
+
+// استهداف مربع البحث وقائمة المستخدمين
+const searchUserInput = document.getElementById('search-user');
+const userListContainer = document.getElementById('user-list');
+// استهداف جميع عناصر li داخل قائمة المستخدمين
+const userListItems = userListContainer.querySelectorAll('ul li');
+
+searchUserInput.addEventListener('input', () => {
+    const searchQuery = searchUserInput.value.toLowerCase();
+
+    userListItems.forEach(item => {
+        // الحصول على النص الكامل داخل العنصر (يمكنك تخصيصه إذا أردت البحث داخل جزء محدد)
+        const itemText = item.textContent.toLowerCase();
+
+        // إذا تضمن نص العنصر نص البحث يتم عرضه، وإلا يتم إخفاؤه
+        if (itemText.includes(searchQuery)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+
+
+
+// استهداف حقل البحث وحاوية الغرف
+const searchRoomInput = document.getElementById("search-room");
+const roomsContainer = document.getElementById("rooms-container");
+
+// تنفيذ البحث عند الكتابة في حقل البحث
+searchRoomInput.addEventListener("input", function () {
+    const searchQuery = this.value.trim().toLowerCase();
+
+    // جلب جميع عناصر الغرف
+    const roomElements = roomsContainer.children;
+
+    // فلترة الغرف وعرض/إخفاء المطابقة
+    for (let roomElement of roomElements) {
+        const roomName = roomElement.querySelector("p.text-sm").textContent.toLowerCase();
+        if (roomName.includes(searchQuery)) {
+            roomElement.style.display = "flex"; // إظهار العنصر
+        } else {
+            roomElement.style.display = "none"; // إخفاء العنصر
+        }
+    }
+});
 
 
 </script>

@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
-from admin_app.models import User
+from admin_app.models import User, Department
 from .models import ChatRoom, Message
 from django.db.models import Q
 from django.contrib import messages

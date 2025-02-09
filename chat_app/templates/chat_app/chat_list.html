@@ -19,38 +19,40 @@
             <h2 class="text-2xl font-semibold">Chats</h2>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-4 sticky top-0">
             <input 
               type="text" 
               id="search-room" 
               class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" 
               placeholder="Enter chat name "
             >
-          </div>
+        </div>
 
         <!-- قائمة الغرف -->
         <div id="rooms-container">
             <ul class="space-y-2">
-                
+                <!-- سيتم تعبئة هذه القائمة عبر جافا سكربت -->
             </ul>
-           
         </div>
 
-        <!-- زر القائمة -->
-        <button id="user-list-button" class="fixed bottom-20 left-12 bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50 hover:bg-blue-500 transition duration-300">
-            <i class="fas fa-plus"></i>
-        </button>
+        <!-- حاوية الأزرار العائمة -->
+        <div class="fixed bottom-20 left-12 flex items-center z-50 ">
+            <!-- زر عرض القائمة -->
+            <button id="user-list-button" class="bg-background text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-500 transition duration-300">
+                <i class="fas fa-plus"></i>
+            </button>
+            <!-- زر إنشاء المجموعة للمستخدمين الذين لهم صلاحيات (INSTRUCTOR أو ADMIN) -->
+            {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
+            <button id="floating-create-group-button" class="hidden ml-2 bg-[#1875BB] text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-[#1560A0] transition duration-300">
+                <i class="fas fa-users"></i>
+            </button>
+            {% endif %}
+        </div>
 
         <!-- قائمة المستخدمين -->
         <div id="user-list" class="fixed bottom-32 left-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg w-64 max-h-80 overflow-y-auto hidden z-40">
-            {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
-                <button id="create-group-button" class="bg-[#1875BB] text-white px-4 py-2 rounded-lg hover:bg-[#1560A0] transition duration-300">
-                    Create Group
-                </button>
-            {% endif %}
-
-            <div class="mb-4 m-3">
-
+        
+            <div class="mb-4 m-3 sticky top-0">
                 <input 
                     type="text" 
                     id="search-user" 
@@ -61,54 +63,52 @@
 
             <ul>
                 {% for user in all_users %}
-    {% if user != request.user %}
-        {% if request.user.role == 'STUDENT' %}
-        {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
-                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                            {% if user.get_profile_image_url %}
-                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
-                            {% else %}
-                                <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
+                    {% if user != request.user %}
+                        {% if request.user.role == 'STUDENT' %}
+                            {% if user.role == 'INSTRUCTOR' or user.role == 'ADMIN' or request.user.gender == user.gender and user.role == 'STUDENT' %}
+                                <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                                    <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                            {% if user.get_profile_image_url %}
+                                                <img src="{{ user.get_profile_image_url }}" alt="{{ user.get_full_name }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                            {% else %}
+                                                <span class="text-black">{{ user.get_full_name|slice:":1"|upper }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                {{ user.get_full_name|capfirst }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ user.get_role_display }}
+                                            </p>
+                                        </div>
+                                    </a>
+                                </li>
                             {% endif %}
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                {{ user.username|capfirst }}
-                            </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ user.get_role_display }}
-                            </p>
-                        </div>
-                    </a>
-                </li>
-            {% endif %}
-        {% else %}
-            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
-                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
-                        {% if user.get_profile_image_url %}
-                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
                         {% else %}
-                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                            <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                                <a href="{% url 'start_private_chat' user.id %}" class="flex items-center text-gray-700 dark:text-gray-300">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                        {% if user.get_profile_image_url %}
+                                            <img src="{{ user.get_profile_image_url }}" alt="{{ user.username }}" class="w-full h-full border-2 border-gray-500 rounded-full object-cover">
+                                        {% else %}
+                                            <span class="text-black">{{ user.username|slice:":1"|upper }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                            {{ user.get_full_name|capfirst }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ user.get_role_display }}
+                                        </p>
+                                    </div>
+                                </a>
+                            </li>
                         {% endif %}
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {{ user.username|capfirst }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ user.get_role_display }}
-                        </p>
-                    </div>
-                </a>
-            </li>
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-
+                    {% endif %}
+                {% endfor %}
             </ul>
         </div>
     </div>
@@ -193,7 +193,6 @@
 
 <script type="module">
 
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getDatabase, ref, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
     
@@ -233,8 +232,7 @@
     ];
  
     // إذا كانت الغرفة جماعية، أضفها مباشرة مع وقت الإنشاء
-    function fetchLastMessage(roomName, roomType, members, creationTime) 
-    {
+    function fetchLastMessage(roomName, roomType, members, creationTime) {
         const messagesRef = ref(database, `chat_rooms/${roomName}/messages`);
         const lastMessageQuery = query(messagesRef, limitToLast(1));
 
@@ -278,8 +276,7 @@
         });
     }
 
-    function sortAndRenderRooms() 
-    {
+    function sortAndRenderRooms() {
         // تحويل الكائن إلى مصفوفة ثم الفرز
         const sortedRooms = Object.values(chatRooms).sort((a, b) => {
             if (!a.lastMessageTime) return 1; // إذا كانت الغرفة بلا رسائل، ضعها في الأسفل
@@ -360,242 +357,239 @@
     );
     "{% endfor %}"
 
-
+    // استهداف العناصر الخاصة بقائمة المستخدمين والأزرار العائمة
     const userListButton = document.getElementById('user-list-button');
     const userList = document.getElementById('user-list');
+    {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
+    const createGroupButton = document.getElementById('floating-create-group-button');
+    {% endif %}
 
+    // عند الضغط على زر عرض القائمة، يتم تبديل عرض القائمة وزر إنشاء المجموعة
     userListButton.addEventListener('click', (event) => {
         event.stopPropagation(); // منع إغلاق القائمة عند الضغط على الزر
-        userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
-    });
-
-    // إخفاء القائمة عند الضغط خارجها
-    document.addEventListener('click', (event) => {
-        if (event.target !== userListButton && !userList.contains(event.target)) {
+        if (userList.style.display === 'block') {
             userList.style.display = 'none';
-        }
-    });
-
-
-
-  
-
-
-               // فتح وإغلاق مودال إنشاء مجموعة جديدة
-const createGroupButton = document.getElementById('create-group-button');
-const createGroupModal = document.getElementById('create-group-modal');
-const closeModalButton = document.getElementById('close-modal-button');
-
-createGroupButton.addEventListener('click', () => {
-    createGroupModal.classList.remove('hidden');
-    updateStudentList(); // تحديث القائمة عند فتح الـ Modal
-});
-
-closeModalButton.addEventListener('click', () => {
-    createGroupModal.classList.add('hidden');
-});
-
-// إغلاق Modal عند الضغط خارجها
-window.addEventListener('click', (event) => {
-    if (event.target === createGroupModal) {
-        createGroupModal.classList.add('hidden');
-    }
-});
-
-// التحقق من الحقول المطلوبة
-const createGroupForm = document.getElementById('create-group-form');
-const groupNameInput = document.getElementById('group-name');
-const groupNameError = document.getElementById('group-name-error');
-const genderError = document.getElementById('gender-error');
-const isMaleOnlyRadio = document.getElementById('is-male-only');
-const isFemaleOnlyRadio = document.getElementById('is-female-only');
-const studentsError = document.getElementById('students-error'); // إضافة عنصر لعرض أخطاء الطلاب
-
-createGroupForm.addEventListener('submit', async (event) => {
-    event.preventDefault(); // منع الإرسال الافتراضي للنموذج
-
-    const groupName = groupNameInput.value.trim();
-    const isMaleOnly = isMaleOnlyRadio.checked;
-    const isFemaleOnly = isFemaleOnlyRadio.checked;
-    const studentIds = Array.from(studentSelect.selectedOptions).map(option => option.value);
-
-    
-    // إخفاء جميع رسائل الخطأ
-    groupNameError.classList.add('hidden');
-    genderError.classList.add('hidden');
-    studentsError.classList.add('hidden');
-
-    let hasErrors = false;
-
-    // تحقق من الاسم
-    if (!groupName) {
-        groupNameError.textContent = 'Please enter a group name.';
-        groupNameError.classList.remove('hidden');
-        hasErrors = true;
-    } else if (groupName.length < 2 || groupName.length > 50) {
-        groupNameError.textContent = 'Name must be between 3-50 characters.';
-        groupNameError.classList.remove('hidden');
-        hasErrors = true;
-    } else if (!/^[A-Za-z0-9\s\-_]+$/.test(groupName)) {
-        groupNameError.textContent = 'Only English letters, numbers, spaces, hyphens, and underscores are allowed.';
-        groupNameError.classList.remove('hidden');
-        hasErrors = true;
-    }
-
-    // تحقق من الجنس
-    if (!isMaleOnly && !isFemaleOnly) {
-        genderError.textContent = 'Please select a group type (Male Only or Female Only).';
-        genderError.classList.remove('hidden');
-        hasErrors = true;
-    }
-
-    // تحقق من الطلاب
-    if (studentIds.length === 0) {
-        studentsError.textContent = 'Please select at least one student.';
-        studentsError.classList.remove('hidden');
-        hasErrors = true;
-    }
-
-    // إذا كان هناك أخطاء، توقف عن الإرسال
-    if (hasErrors) {
-        return;
-    }
-
-    // إعداد البيانات لإرسالها
-    const formData = new FormData(createGroupForm);
-    
-    formData.append('student_ids', studentIds.join(',')); // إضافة الطلاب المحددين
-
-    try {
-        const response = await fetch("/chat/create_group/", {  // تأكد من أن المسار صحيح
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}', // إضافة CSRF token
-            },
-        });
-
-        const responseData = await response.json();
-        console.log("Server Response:", responseData); // طباعة استجابة الخادم
-
-        if (response.ok) {
-            // إذا تم إنشاء المجموعة بنجاح، يتم توجيه المستخدم إلى صفحة الدردشة
-            window.location.href = `/chat/${responseData.room_name}/`;
+            if (typeof createGroupButton !== 'undefined' && createGroupButton) {
+                createGroupButton.style.display = 'none';
+            }
         } else {
-            // عرض أخطاء الخادم
-            if (responseData.errors) {
-                for (const [field, message] of Object.entries(responseData.errors)) {
-                    const errorElement = document.getElementById(`${field}-error`);
-                    if (errorElement) {
-                        errorElement.textContent = message;
-                        errorElement.classList.remove('hidden');
-                    } else {
-                        alert(message); // عرض الأخطاء العامة
-                    }
-                }
-            } else {
-                alert(`Failed to create group: ${responseData.error}`);
+            userList.style.display = 'block';
+            if (typeof createGroupButton !== 'undefined' && createGroupButton) {
+                createGroupButton.style.display = 'block';
             }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while creating the group.');
+    });
+
+    // إخفاء القائمة والأزرار عند الضغط خارجها
+    document.addEventListener('click', (event) => {
+        if (
+            event.target !== userListButton &&
+            !userList.contains(event.target) &&
+            (typeof createGroupButton === 'undefined' || event.target !== createGroupButton)
+        ) {
+            userList.style.display = 'none';
+            if (typeof createGroupButton !== 'undefined' && createGroupButton) {
+                createGroupButton.style.display = 'none';
+            }
+        }
+    });
+
+    // فتح وإغلاق مودال إنشاء مجموعة جديدة
+    {% if request.user.role == 'INSTRUCTOR' or request.user.role == 'ADMIN' %}
+    const createGroupModal = document.getElementById('create-group-modal');
+    const closeModalButton = document.getElementById('close-modal-button');
+
+    createGroupButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // لمنع إغلاق القائمة عند الضغط على زر إنشاء المجموعة
+        createGroupModal.classList.remove('hidden');
+        updateStudentList(); // تحديث القائمة عند فتح الـ Modal
+    });
+    {% endif %}
+
+    closeModalButton.addEventListener('click', () => {
+        createGroupModal.classList.add('hidden');
+    });
+
+    // إغلاق Modal عند الضغط خارجها
+    window.addEventListener('click', (event) => {
+        if (event.target === createGroupModal) {
+            createGroupModal.classList.add('hidden');
+        }
+    });
+
+    // التحقق من الحقول المطلوبة
+    const createGroupForm = document.getElementById('create-group-form');
+    const groupNameInput = document.getElementById('group-name');
+    const groupNameError = document.getElementById('group-name-error');
+    const genderError = document.getElementById('gender-error');
+    const isMaleOnlyRadio = document.getElementById('is-male-only');
+    const isFemaleOnlyRadio = document.getElementById('is-female-only');
+    const studentsError = document.getElementById('students-error'); // إضافة عنصر لعرض أخطاء الطلاب
+
+    createGroupForm.addEventListener('submit', async (event) => {
+        event.preventDefault(); // منع الإرسال الافتراضي للنموذج
+
+        const groupName = groupNameInput.value.trim();
+        const isMaleOnly = isMaleOnlyRadio.checked;
+        const isFemaleOnly = isFemaleOnlyRadio.checked;
+        const studentIds = Array.from(studentSelect.selectedOptions).map(option => option.value);
+
+        // إخفاء جميع رسائل الخطأ
+        groupNameError.classList.add('hidden');
+        genderError.classList.add('hidden');
+        studentsError.classList.add('hidden');
+
+        let hasErrors = false;
+
+        // تحقق من الاسم
+        if (!groupName) {
+            groupNameError.textContent = 'Please enter a group name.';
+            groupNameError.classList.remove('hidden');
+            hasErrors = true;
+        } else if (groupName.length < 2 || groupName.length > 50) {
+            groupNameError.textContent = 'Name must be between 3-50 characters.';
+            groupNameError.classList.remove('hidden');
+            hasErrors = true;
+        } else if (!/^[A-Za-z0-9\s\-_]+$/.test(groupName)) {
+            groupNameError.textContent = 'Only English letters, numbers, spaces, hyphens, and underscores are allowed.';
+            groupNameError.classList.remove('hidden');
+            hasErrors = true;
+        }
+
+        // تحقق من الجنس
+        if (!isMaleOnly && !isFemaleOnly) {
+            genderError.textContent = 'Please select a group type (Male Only or Female Only).';
+            genderError.classList.remove('hidden');
+            hasErrors = true;
+        }
+
+        // تحقق من الطلاب
+        if (studentIds.length === 0) {
+            studentsError.textContent = 'Please select at least one student.';
+            studentsError.classList.remove('hidden');
+            hasErrors = true;
+        }
+
+        // إذا كان هناك أخطاء، توقف عن الإرسال
+        if (hasErrors) {
+            return;
+        }
+
+        // إعداد البيانات لإرسالها
+        const formData = new FormData(createGroupForm);
+        formData.append('student_ids', studentIds.join(',')); // إضافة الطلاب المحددين
+
+        try {
+            const response = await fetch("/chat/create_group/", {  // تأكد من أن المسار صحيح
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // إضافة CSRF token
+                },
+            });
+
+            const responseData = await response.json();
+            console.log("Server Response:", responseData); // طباعة استجابة الخادم
+
+            if (response.ok) {
+                // إذا تم إنشاء المجموعة بنجاح، يتم توجيه المستخدم إلى صفحة الدردشة
+                window.location.href = `/chat/${responseData.room_name}/`;
+            } else {
+                // عرض أخطاء الخادم
+                if (responseData.errors) {
+                    for (const [field, message] of Object.entries(responseData.errors)) {
+                        const errorElement = document.getElementById(`${field}-error`);
+                        if (errorElement) {
+                            errorElement.textContent = message;
+                            errorElement.classList.remove('hidden');
+                        } else {
+                            alert(message); // عرض الأخطاء العامة
+                        }
+                    }
+                } else {
+                    alert(`Failed to create group: ${responseData.error}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while creating the group.');
+        }
+    });
+
+    // وظيفة البحث عن الطلاب
+    const searchStudentInput = document.getElementById('search-student');
+    const studentSelect = document.getElementById('student-ids');
+
+    searchStudentInput.addEventListener('input', () => {
+        const searchQuery = searchStudentInput.value.toLowerCase();
+        Array.from(studentSelect.options).forEach(option => {
+            const studentName = option.text.toLowerCase();
+            if (studentName.includes(searchQuery)) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    });
+
+    // تحديث قائمة الطلاب عند تغيير نوع المجموعة
+    isMaleOnlyRadio.addEventListener('change', updateStudentList);
+    isFemaleOnlyRadio.addEventListener('change', updateStudentList);
+
+    function updateStudentList() {
+        const isMaleOnly = isMaleOnlyRadio.checked;
+        const isFemaleOnly = isFemaleOnlyRadio.checked;
+        Array.from(studentSelect.options).forEach(option => {
+            const gender = option.getAttribute('data-gender');
+            if ((isMaleOnly && gender === 'M') || (isFemaleOnly && gender === 'F')) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
     }
-});
 
-// وظيفة البحث عن الطلاب
-const searchStudentInput = document.getElementById('search-student');
-const studentSelect = document.getElementById('student-ids');
+    console.log("Form Data:", {
+        name: groupNameInput.value.trim(),
+        gender: isMaleOnlyRadio.checked ? 'male' : 'female',
+        student_ids: Array.from(studentSelect.selectedOptions).map(option => option.value),
+    });
 
-searchStudentInput.addEventListener('input', () => {
-    const searchQuery = searchStudentInput.value.toLowerCase();
-    Array.from(studentSelect.options).forEach(option => {
-        const studentName = option.text.toLowerCase();
-        if (studentName.includes(searchQuery)) {
-            option.style.display = 'block';
-        } else {
-            option.style.display = 'none';
+    // وظيفة البحث داخل قائمة المستخدمين
+    const searchUserInput = document.getElementById('search-user');
+    const userListContainer = document.getElementById('user-list');
+    const userListItems = userListContainer.querySelectorAll('ul li');
+
+    searchUserInput.addEventListener('input', () => {
+        const searchQuery = searchUserInput.value.toLowerCase();
+
+        userListItems.forEach(item => {
+            const itemText = item.textContent.toLowerCase();
+            if (itemText.includes(searchQuery)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // وظيفة البحث في قائمة الغرف
+    const searchRoomInput = document.getElementById("search-room");
+    const roomsContainer = document.getElementById("rooms-container");
+
+    searchRoomInput.addEventListener("input", function () {
+        const searchQuery = this.value.trim().toLowerCase();
+        const roomElements = roomsContainer.children;
+
+        for (let roomElement of roomElements) {
+            const roomName = roomElement.querySelector("p.text-sm").textContent.toLowerCase();
+            if (roomName.includes(searchQuery)) {
+                roomElement.style.display = "flex";
+            } else {
+                roomElement.style.display = "none";
+            }
         }
     });
-});
-
-// تحديث قائمة الطلاب عند تغيير نوع المجموعة
-
-isMaleOnlyRadio.addEventListener('change', updateStudentList);
-isFemaleOnlyRadio.addEventListener('change', updateStudentList);
-
-function updateStudentList() {
-    const isMaleOnly = isMaleOnlyRadio.checked;
-    const isFemaleOnly = isFemaleOnlyRadio.checked;
-    Array.from(studentSelect.options).forEach(option => {
-        const gender = option.getAttribute('data-gender');
-        if ((isMaleOnly && gender === 'M') || (isFemaleOnly && gender === 'F')) {
-            option.style.display = 'block';
-        } else {
-            option.style.display = 'none';
-        }
-    });
-}
-
-console.log("Form Data:", {
-    name: groupNameInput.value.trim(),
-    gender: isMaleOnlyRadio.checked ? 'male' : 'female',
-    student_ids: Array.from(studentSelect.selectedOptions).map(option => option.value),
-});
-
-
-
-
-
-
-
-// استهداف مربع البحث وقائمة المستخدمين
-const searchUserInput = document.getElementById('search-user');
-const userListContainer = document.getElementById('user-list');
-// استهداف جميع عناصر li داخل قائمة المستخدمين
-const userListItems = userListContainer.querySelectorAll('ul li');
-
-searchUserInput.addEventListener('input', () => {
-    const searchQuery = searchUserInput.value.toLowerCase();
-
-    userListItems.forEach(item => {
-        // الحصول على النص الكامل داخل العنصر (يمكنك تخصيصه إذا أردت البحث داخل جزء محدد)
-        const itemText = item.textContent.toLowerCase();
-
-        // إذا تضمن نص العنصر نص البحث يتم عرضه، وإلا يتم إخفاؤه
-        if (itemText.includes(searchQuery)) {
-            item.style.display = '';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-});
-
-
-
-
-// استهداف حقل البحث وحاوية الغرف
-const searchRoomInput = document.getElementById("search-room");
-const roomsContainer = document.getElementById("rooms-container");
-
-// تنفيذ البحث عند الكتابة في حقل البحث
-searchRoomInput.addEventListener("input", function () {
-    const searchQuery = this.value.trim().toLowerCase();
-
-    // جلب جميع عناصر الغرف
-    const roomElements = roomsContainer.children;
-
-    // فلترة الغرف وعرض/إخفاء المطابقة
-    for (let roomElement of roomElements) {
-        const roomName = roomElement.querySelector("p.text-sm").textContent.toLowerCase();
-        if (roomName.includes(searchQuery)) {
-            roomElement.style.display = "flex"; // إظهار العنصر
-        } else {
-            roomElement.style.display = "none"; // إخفاء العنصر
-        }
-    }
-});
-
 
 </script>
 {% endblock %}

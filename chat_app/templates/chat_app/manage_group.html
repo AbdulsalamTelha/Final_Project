@@ -1,9 +1,35 @@
 {% extends 'base.html' %}
 
 {% block title %} 
-Chat:{{ room.name|upper }} 
+Management : {{ group.name|upper }} 
 
 {% endblock title %}
+
+{% comment %} {% block breadcrumb %}
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li>
+        <a href="{% url 'chat_list' %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            Chats
+        </a>
+    </li>
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li>
+        <a href="{% url 'chat_room'  room.name %}" class="hover:text-blue-600 dark:hover:text-blue-400">
+            {{ room.name|upper }}
+        </a>
+    </li> 
+    <li>
+        <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-800 dark:text-gray-200 font-semibold">
+        Management
+    </li>
+{% endblock breadcrumb %} {% endcomment %}
+
 
 {% block breadcrumb %}
     <li>
@@ -17,18 +43,26 @@ Chat:{{ room.name|upper }}
     <li>
         <span class="mx-1">/</span>
     </li>
-    {% comment %} <li>
-        <a href="{% url 'chat_room'  room.name %}" class="hover:text-blue-600 dark:hover:text-blue-400">
-            {{ room.name|upper }}
-        </a>
-    </li> {% endcomment %}
+    <li class="hover:text-blue-600 dark:hover:text-blue-400">
+        {% if group.type == 'private' %}
+            {% for member in group.members.all %}
+                {% if member != request.user %}
+                    {{ member.get_full_name|capfirst }}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <a href="{% url 'chat_room' group.name %}">{{ group.name|upper }}</a>
+        {% endif %}
+    </li>
     <li>
         <span class="mx-1">/</span>
     </li>
     <li class="text-gray-800 dark:text-gray-200 font-semibold">
         Management
     </li>
+
 {% endblock breadcrumb %}
+
 
 {% block content %}
 <div class="container mx-auto p-4">

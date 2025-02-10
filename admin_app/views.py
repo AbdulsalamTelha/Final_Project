@@ -48,19 +48,19 @@ def get_groups_view(request):
 
 
 def home_view(request):
-    if request.user.is_authenticated:
-        # Redirect user based on role
-        if request.user.role == User.Roles.ADMIN:
-            return redirect('admin_dashboard')  # Admin dashboard view
-        elif request.user.role == User.Roles.INSTRUCTOR:
-            return redirect('instructor_dashboard')  # Instructor dashboard view
-        elif request.user.role == User.Roles.STUDENT:
-            return redirect('student_dashboard')  # Student dashboard view
-        else:
-            messages.error(request, "Your role is not recognized.")
-            return redirect('access_denied')
-    else:
-        return redirect('login')  # Redirect to login page if user is not authenticated
+    # if request.user.is_authenticated:
+    #     # Redirect user based on role
+    #     if request.user.role == User.Roles.ADMIN:
+    #         return redirect('admin_dashboard')  # Admin dashboard view
+    #     elif request.user.role == User.Roles.INSTRUCTOR:
+    #         return redirect('instructor_dashboard')  # Instructor dashboard view
+    #     elif request.user.role == User.Roles.STUDENT:
+    #         return redirect('student_dashboard')  # Student dashboard view
+    #     else:
+    #         messages.error(request, "Your role is not recognized.")
+    #         return redirect('access_denied')
+    # else:
+        return render(request,'landing_page.html')  # Redirect to login page if user is not authenticated
     
 
 def login_view(request):
@@ -98,7 +98,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
 
 def access_denied(request):
     return render(request, 'access_denied.html')
@@ -1135,3 +1135,60 @@ def departments_list(request):
         'actual_ordering': ordering,
         'total_count': total_count,
     })
+    
+
+def read_log(file_path, filter_keyword=None,):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            if filter_keyword:
+                lines = [line for line in lines if filter_keyword.lower() in line.lower()]
+            return lines[::-1]  # Show latest logs first
+    except FileNotFoundError:
+        return ["Log file not found."]
+    
+    
+@login_required
+def log_viewer(request):
+    if request.user.role != User.Roles.ADMIN:
+        return redirect("403")
+    
+    log_type = request.GET.get('log_type', 'admin')  # Default to admin logs
+    filter_keyword = request.GET.get('filter', '')
+
+    log_file_paths = {
+        'admin': os.path.join(settings.BASE_DIR, 'sss/logs', 'admin_app.log'),
+        'server': os.path.join(settings.BASE_DIR, 'sss/logs', 'default.log')
+    }
+
+    log_file = log_file_paths.get(log_type, log_file_paths['admin'])
+    logs = read_log(log_file, filter_keyword)
+
+    return render(request, 'log_viewer.html', {
+        'logs': logs,
+        'log_type': log_type,
+        'filter_keyword': filter_keyword
+    })
+
+    
+@login_required
+def download_logs(request):
+    if request.user.role != User.Roles.ADMIN:
+        return redirect("403")
+    log_type = request.GET.get('log_type', 'admin')
+    
+    if log_type == 'admin':
+        log_file = os.path.join(settings.BASE_DIR, 'sss/logs', 'admin_app.log')
+    elif log_type == 'server':
+        log_file = os.path.join(settings.BASE_DIR, 'sss/logs', 'default.log')
+  # Adjust if chat logs are separate
+    else:
+        return HttpResponse('Invalid log type specified.', status=400)
+
+    if not os.path.exists(log_file):
+        return HttpResponse('Log file not found.', status=404)
+
+    with open(log_file, 'r') as f:
+        response = HttpResponse(f.read(), content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{log_type}_logs.txt"'
+        return response

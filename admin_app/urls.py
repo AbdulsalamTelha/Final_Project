@@ -2,9 +2,9 @@ from django.shortcuts import render
 from django.urls import path
 from django.conf.urls import  handler400, handler403, handler404, handler500
 
-from .views import (departments_list, library_my_uploaded_files, delete_file, departments_with_groups, get_groups_view, 
+from .views import (departments_list, download_logs, library_my_uploaded_files, delete_file, departments_with_groups, get_groups_view, 
                     access_denied, change_password_view, edit_profile_view, group_students, 
-                    instructor_dashboard, edit_file, upload_file, instructors_list, admin_dashboard, student_dashboard,
+                    instructor_dashboard, edit_file, log_viewer, upload_file, instructors_list, admin_dashboard, student_dashboard,
                     library_view, home_view, login_view, logout_view, profile_view, request_otp, resend_otp, reset_password, 
                     request_account, students_list, verify_otp)
 
@@ -49,6 +49,8 @@ urlpatterns = [
     path('405/', custom_405, name='405'),
     path('500/', custom_500, name='500'),
     path('test-404/', lambda request: render(request, '404.html', status=404)),
+    path('logs/', log_viewer, name='log_viewer'),
+    path('downloadLogs/', download_logs, name='download_logs'),
 
 ]
 

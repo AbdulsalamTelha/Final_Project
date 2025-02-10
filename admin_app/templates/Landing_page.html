@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Services System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .mouse-gradient {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(121, 179, 245, 0.15) 0%, transparent 40%);
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      transition: opacity 0.3s;
+    }
+    .dark .mouse-gradient {
+      mix-blend-mode: screen;
+      background: radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 60%);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("{% static 'img/yemen.svg' %}");    /* صورة الخريطة */
+      background-size: 60% auto;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      z-index: -2;
+      transition: filter 0.3s ease, opacity 0.3s ease;
+      opacity: 0.2;
+    }
+
+    .dark body::after {
+      filter: invert(1) hue-rotate(180deg) brightness(1.1);
+      opacity: 0.2;
+    }
+
+    body {
+      background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9));
+    }
+
+    .dark body {
+      background: linear-gradient(rgba(17, 24, 39, 0.632), rgba(17, 24, 39, 0.582));
+    }
+
+    header, main, section, footer {
+      position: relative;
+      z-index: 20;
+    }
+
+    .feature-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .feature-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: rotate(15deg) scale(1.1);
+    }
+
+    
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const gradient = document.createElement('div');
+      gradient.className = 'mouse-gradient opacity-0';
+      document.body.appendChild(gradient);
+
+      document.addEventListener('mousemove', (e) => {
+        gradient.style.left = `${e.clientX}px`;
+        gradient.style.top = `${e.clientY}px`;
+        gradient.classList.remove('opacity-0');
+      });
+
+      document.addEventListener('mouseleave', () => {
+        gradient.classList.add('opacity-0');
+      });
+      const logo = document.querySelector("header img");
+      logo.addEventListener("mouseenter", () => {
+        gsap.to(logo, {
+          duration: 0.3,
+          y: -3,
+          scale: 1.5,
+          ease: "power2.out"
+        });
+      });
+      logo.addEventListener("mouseleave", () => {
+        gsap.to(logo, {
+          duration: 0.3,
+          y: 0,
+          scale: 1,
+          ease: "power2.out"
+        });
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("opacity-100", "translate-y-0");
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll(".scroll-item").forEach(item => {
+        item.classList.add("opacity-0", "translate-y-10", "transition-all", "duration-700");
+        observer.observe(item);
+      });
+
+      const toggleButton = document.getElementById("theme-toggle");
+      const htmlElement = document.documentElement;
+      const icon = document.getElementById("theme-icon");
+      
+      toggleButton.addEventListener("click", () => {
+        htmlElement.classList.toggle("dark");
+        icon.innerHTML = htmlElement.classList.contains("dark") ?
+          `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>` :
+          `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>`;
+      });
+    });
+  </script>
+</head>
+<!-- الكرات الزرقاء -->
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white relative overflow-x-hidden">
+  <!-- <div class="absolute w-[32rem] h-[32rem] bg-blue-300 rounded-full opacity-50 top-60 -left-20 transform scale-125 blur-3xl animation-float mix-blend-multiply dark:opacity-30 dark:mix-blend-screen"></div> -->
+  <div class="absolute w-[32rem] h-[32rem] bg-blue-300 rounded-full opacity-40 top-0 -left-40 transform scale-125 blur-3xl animation-float mix-blend-multiply dark:opacity-30 dark:mix-blend-screen"></div>
+  <div class="absolute w-[32rem] h-[32rem] bg-blue-300 rounded-full opacity-40 top-60 -right-20 transform scale-125 blur-3xl animation-float mix-blend-multiply dark:opacity-15 dark:mix-blend-screen"></div>
+  <!-- <div class="absolute w-[32rem] h-[32rem] bg-blue-300 rounded-full opacity-50 top-60 -right-20 transform scale-125 blur-3xl animation-float mix-blend-multiply dark:opacity-30 dark:mix-blend-screen"></div> -->
+
+<!-- Header -->
+  <header class="sticky top-0 bg-blue-600 dark:bg-blue-400 backdrop-blur-md z-50 p-6 shadow-sm">
+    <nav class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="{% static 'img/logo_white.png' %}" alt="Logo" class="h-10 mr-3" />
+        <h1 class="text-2xl font-bold text-white">Student Services System</h1>
+      </div>
+      <button id="theme-toggle" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 shadow-md hover:shadow-lg">
+        <span id="theme-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>
+        </span>
+      </button>
+    </nav>
+  </header>
+
+<!-- Main -->
+
+  <main class="container mx-auto flex flex-col items-center justify-center min-h-screen px-6 py-24 relative">
+    <div class="max-w-4xl text-center space-y-8">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 dark:text-gray-100 scroll-item leading-tight">
+        <span class="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">Student Services Platform</span>
+        <span class="bg-white bg-clip-text text-transparent"> </span>     
+      </h1>
+      <h3 class="text-lg md:text-3xl text-black-700 dark:text-gray-300 scroll-item max-w-3xl mx-auto">
+        Streamline your academic journey with a unified platform: access a comprehensive digital library and get in through integrated chat tools.
+      </h3>
+      <div class="scroll-item space-x-4">
+        <a href="/request_account/" class="inline-block bg-blue-600 text-white px-8 py-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 text-lg font-medium dark:bg-blue-500 dark:hover:bg-blue-600 transform hover:-translate-y-1 hover:scale-105">
+            Request Account
+        </a>
+        <a href="/login/" class="inline-block border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all duration-300 text-lg font-medium dark:border-gray-600 dark:text-gray-300 dark:hover:border-blue-500 transform hover:-translate-y-1">
+          Sign in
+        </a>
+      </div>
+    </div>
+  </main>
+<!-- Features -->
+<section class="container mx-auto px-6 py-16 relative flex justify-center">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center">
+    <!-- Library Feature -->
+    <div class="scroll-item bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg feature-card relative overflow-hidden flex flex-col items-center text-center">
+      <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-6 feature-icon">
+        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M5 4v16M19 4v16M8 4v16M16 4v16M3 6h18M3 18h18"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Library</h3>
+      <p class="text-gray-600 dark:text-gray-400">
+        Download, upload courses, lectures, and much more all in one place.
+      </p>
+    </div>
+
+    <!-- Communication Feature -->
+    <div class="scroll-item bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg feature-card relative overflow-hidden flex flex-col items-center text-center">
+      <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-6 feature-icon">
+        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Communication</h3>
+      <p class="text-gray-600 dark:text-gray-400">
+        Chat with classmates, get consultations from your teachers.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+  <footer class="bg-gray-50 dark:bg-gray-800 mt-auto">
+    <div class="container mx-auto px-6 py-12">
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-gray-600 dark:text-gray-400">
+        <div>
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Student Services System</h4>
+          <p class="text-sm">Empowering students through innovative solutions </p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Services</h4>
+          <ul class="space-y-2 text-sm">
+            <li>Chat </li>
+            <li>Library </li>
+
+          </ul>
+        </div>
+        <ul class="space-y-2 text-sm">
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Contact</h4>
+            <li>support@studentservices.com</li>
+            <li>+967773804888</li>
+            <li>Open 24/7</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-700 mt-12 pt-6 text-center text-sm">
+        &copy; 2025 Student Services System. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    //   gsap.from("header", { duration: 1, y: -100, opacity: 0, ease: "power3.out" });
+      // Header animations
+      gsap.from("header", {duration: 1,y: -100,opacity: 0,ease: "power3.out",
+            onComplete: () => {
+                // Enhanced header text animation
+                gsap.timeline()
+                    // .from("header img", {duration: 1,opacity: 0,scale: 0.8,rotation: -15,ease: "back.out(1.7)"})
+                    .from("header h1", {duration: 0.6,opacity: 0,y: 20,skewX: 15,ease: "elastic.out(1, 0.4)",
+                        onComplete: () => {
+                            // Continuous floating animation
+                            gsap.to("header img", {duration: 5,y: 3,rotation: 360,repeat: -1,yoyo: true,ease: "sine.inOut"});}
+                    }, "-=0.3");
+            }
+        });
+    });
+  </script>
+</body>
+</html>

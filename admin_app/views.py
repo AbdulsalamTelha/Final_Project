@@ -48,19 +48,19 @@ def get_groups_view(request):
 
 
 def home_view(request):
-    # if request.user.is_authenticated:
-    #     # Redirect user based on role
-    #     if request.user.role == User.Roles.ADMIN:
-    #         return redirect('admin_dashboard')  # Admin dashboard view
-    #     elif request.user.role == User.Roles.INSTRUCTOR:
-    #         return redirect('instructor_dashboard')  # Instructor dashboard view
-    #     elif request.user.role == User.Roles.STUDENT:
-    #         return redirect('student_dashboard')  # Student dashboard view
-    #     else:
-    #         messages.error(request, "Your role is not recognized.")
-    #         return redirect('access_denied')
-    # else:
-        return render(request,'landing_page.html')  # Redirect to login page if user is not authenticated
+    if request.user.is_authenticated:
+        # Redirect user based on role
+        if request.user.role == User.Roles.ADMIN:
+            return redirect('admin_dashboard')  # Admin dashboard view
+        elif request.user.role == User.Roles.INSTRUCTOR:
+            return redirect('instructor_dashboard')  # Instructor dashboard view
+        elif request.user.role == User.Roles.STUDENT:
+            return redirect('student_dashboard')  # Student dashboard view
+        else:
+            messages.error(request, "Your role is not recognized.")
+            return redirect('access_denied')
+    else:
+        return render(request,'landing_page.html')  # Redirect to home page if user is not authenticated
     
 
 def login_view(request):

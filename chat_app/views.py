@@ -3,12 +3,13 @@ import random
 import string
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import  Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
 from admin_app.models import User, Department
+# from admin_app.views import 404
 from .models import ChatRoom, Message
 from django.db.models import Q
 from django.contrib import messages
@@ -51,6 +52,10 @@ def chat_room(request, room_name):
     all_users = User.objects.exclude(id=request.user.id)
     
     group = get_object_or_404(ChatRoom, name=room_name)
+    
+    if request.user not in group.members.all():
+        # إذا لم يكن المستخدم عضواً، نرفع Http404 لكي لا يتمكن من الوصول
+        raise Http404
 
     # Pass the room, messages, and all_users to the template
     context = {

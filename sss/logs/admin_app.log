@@ -60,3 +60,339 @@
 [08/Feb/2025 00:01:08] INFO [admin_app.views:250] User c updated profile successfully.
 [08/Feb/2025 00:01:08] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=c
 [08/Feb/2025 00:01:08] INFO [admin_app.models:355] Calculating age for User: c
+[09/Feb/2025 17:59:19] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[09/Feb/2025 17:59:19] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[09/Feb/2025 20:23:35] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[09/Feb/2025 20:23:35] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[10/Feb/2025 21:20:52] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[10/Feb/2025 21:20:53] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[10/Feb/2025 21:20:59] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[10/Feb/2025 21:21:14] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[10/Feb/2025 21:21:24] INFO [chat_app:30] Request received: method=GET, path=/chat/group111/, user=lenovo
+[10/Feb/2025 21:21:26] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/19/, user=lenovo
+[10/Feb/2025 21:22:22] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/19/, user=lenovo
+[10/Feb/2025 21:27:29] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[10/Feb/2025 22:00:55] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[10/Feb/2025 22:01:02] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[10/Feb/2025 22:28:27] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[10/Feb/2025 22:31:16] INFO [admin_app:30] Request received: method=GET, path=/request_account/, user=lenovo
+[10/Feb/2025 22:36:04] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[10/Feb/2025 22:36:05] INFO [admin_app:30] Request received: method=GET, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:36:14] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[10/Feb/2025 22:36:17] INFO [admin_app:30] Request received: method=GET, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:38:48] INFO [admin_app:30] Request received: method=POST, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:38:52] INFO [admin_app.views:518] OTP sent successfully for user abdulsalam.
+[10/Feb/2025 22:38:52] INFO [admin_app:30] Request received: method=GET, path=/verify_otp/, user=lenovo
+[10/Feb/2025 22:44:52] INFO [admin_app:30] Request received: method=GET, path=/verify_otp/, user=lenovo
+[10/Feb/2025 22:45:19] INFO [admin_app:30] Request received: method=GET, path=/reset_password/, user=lenovo
+[10/Feb/2025 22:45:19] ERROR [admin_app.views:620] Password reset failed: OTP not verified for user None.
+[10/Feb/2025 22:45:19] INFO [admin_app:30] Request received: method=GET, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:45:23] INFO [admin_app:30] Request received: method=POST, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:45:23] ERROR [admin_app.views:495] OTP request failed: Username missing.
+[10/Feb/2025 22:45:27] INFO [admin_app:30] Request received: method=POST, path=/request_otp/, user=lenovo
+[10/Feb/2025 22:45:30] INFO [admin_app.views:518] OTP sent successfully for user abdulsalam.
+[10/Feb/2025 22:45:30] INFO [admin_app:30] Request received: method=GET, path=/verify_otp/, user=lenovo
+[10/Feb/2025 22:45:59] INFO [admin_app:30] Request received: method=POST, path=/verify_otp/, user=lenovo
+[10/Feb/2025 22:45:59] INFO [admin_app.views:601] OTP verified successfully for user abdulsalam.
+[10/Feb/2025 22:45:59] INFO [admin_app:30] Request received: method=GET, path=/reset_password/, user=lenovo
+[10/Feb/2025 22:47:52] INFO [admin_app:30] Request received: method=POST, path=/reset_password/, user=lenovo
+[10/Feb/2025 22:47:53] INFO [admin_app.views:642] Password reset successfully for user abdulsalam.
+[10/Feb/2025 22:47:53] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[10/Feb/2025 22:48:05] INFO [admin_app:30] Request received: method=POST, path=/login/, user=lenovo
+[10/Feb/2025 22:48:05] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 00:54:05] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[11/Feb/2025 00:54:19] INFO [admin_app:30] Request received: method=GET, path=/login/, user=lenovo
+[11/Feb/2025 00:54:35] INFO [admin_app:30] Request received: method=POST, path=/login/, user=lenovo
+[11/Feb/2025 00:54:37] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=abdulsalam
+[11/Feb/2025 00:54:43] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=abdulsalam
+[11/Feb/2025 00:54:43] INFO [admin_app.models:337] Calculating age for User: abdulsalam
+[11/Feb/2025 00:55:03] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=abdulsalam
+[11/Feb/2025 00:55:03] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 00:55:05] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 00:55:12] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 00:55:14] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=osama
+[11/Feb/2025 00:56:34] INFO [admin_app:30] Request received: method=GET, path=/students_list/, user=osama
+[11/Feb/2025 00:58:19] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=osama
+[11/Feb/2025 00:59:54] INFO [admin_app:30] Request received: method=GET, path=/departments_with_groups/, user=osama
+[11/Feb/2025 01:00:51] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=osama
+[11/Feb/2025 01:01:04] INFO [admin_app:30] Request received: method=GET, path=/departments_with_groups/, user=osama
+[11/Feb/2025 01:01:41] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=osama
+[11/Feb/2025 01:04:20] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=osama
+[11/Feb/2025 01:05:42] INFO [admin_app:30] Request received: method=GET, path=/library_list/upload_file/, user=osama
+[11/Feb/2025 01:07:44] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=osama
+[11/Feb/2025 01:09:57] INFO [admin_app:30] Request received: method=GET, path=/library_my_uploaded_files/edit_file/28/, user=osama
+[11/Feb/2025 01:11:32] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=osama
+[11/Feb/2025 01:11:38] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:11:49] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:12:07] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:12:09] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:12:27] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=osama
+[11/Feb/2025 01:12:27] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 01:12:31] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 01:12:39] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 01:12:40] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 01:12:46] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=lenovo
+[11/Feb/2025 01:12:46] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 01:12:49] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 01:12:56] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 01:12:57] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=osama
+[11/Feb/2025 01:13:01] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:15:10] INFO [chat_app:30] Request received: method=GET, path=/chat/is/, user=osama
+[11/Feb/2025 01:24:39] INFO [chat_app:30] Request received: method=GET, path=/chat/get_group_members/?room_name=is, user=osama
+[11/Feb/2025 01:24:39] ERROR [chat_app.views:230] get_group_members failed: ChatRoom 'is' does not exist.
+[11/Feb/2025 01:26:06] INFO [chat_app:30] Request received: method=GET, path=/chat/AlTaqua/, user=osama
+[11/Feb/2025 01:26:11] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/11/, user=osama
+[11/Feb/2025 01:28:03] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[11/Feb/2025 01:28:12] INFO [chat_app:30] Request received: method=GET, path=/chat/AlTaqua/, user=osama
+[11/Feb/2025 01:28:30] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=osama
+[11/Feb/2025 01:28:30] INFO [admin_app.models:337] Calculating age for User: osama
+[11/Feb/2025 01:30:22] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=osama
+[11/Feb/2025 01:41:35] INFO [admin_app:30] Request received: method=GET, path=/profile/change_password/, user=osama
+[11/Feb/2025 01:46:12] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=osama
+[11/Feb/2025 01:46:12] INFO [admin_app.models:337] Calculating age for User: osama
+[11/Feb/2025 01:46:19] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=osama
+[11/Feb/2025 01:48:05] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=osama
+[11/Feb/2025 01:48:05] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 01:49:05] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 01:49:14] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 01:49:15] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=maryam
+[11/Feb/2025 02:04:07] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=maryam
+[11/Feb/2025 02:04:09] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=maryam
+[11/Feb/2025 02:04:09] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 09:20:32] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 09:24:02] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 09:24:08] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 09:24:30] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 09:24:32] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:24:47] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=lenovo
+[11/Feb/2025 09:25:53] INFO [admin_app:30] Request received: method=GET, path=/library_list/?page=2, user=lenovo
+[11/Feb/2025 09:26:26] INFO [admin_app:30] Request received: method=GET, path=/library_list/?page=3, user=lenovo
+[11/Feb/2025 09:26:31] INFO [admin_app:30] Request received: method=GET, path=/library_list/?page=2, user=lenovo
+[11/Feb/2025 09:26:38] INFO [admin_app:30] Request received: method=GET, path=/library_list/?page=1, user=lenovo
+[11/Feb/2025 09:26:58] INFO [admin_app:30] Request received: method=GET, path=/library_list/?view=card&course=&category=Documents&type=&uploader=&search=, user=lenovo
+[11/Feb/2025 09:27:56] INFO [admin_app.models:316] Clean completed for User: Mohammed Almamari
+[11/Feb/2025 09:29:51] INFO [admin_app.models:107] File '„‰ «·›’· «·—«»⁄ «·Ï «·›’· «·”«»⁄.pdf' saved by user 'Lenovo Lenovo'.
+[11/Feb/2025 09:35:40] INFO [admin_app.models:316] Clean completed for User: Akram Othman
+[11/Feb/2025 09:35:50] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[11/Feb/2025 09:35:50] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:36:49] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=lenovo
+[11/Feb/2025 09:37:10] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=lenovo
+[11/Feb/2025 09:41:00] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:41:03] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=lenovo
+[11/Feb/2025 09:41:36] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:41:39] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=lenovo
+[11/Feb/2025 09:45:35] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=lenovo
+[11/Feb/2025 09:47:21] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:53:15] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[11/Feb/2025 09:53:22] INFO [chat_app:30] Request received: method=GET, path=/chat/is/, user=lenovo
+[11/Feb/2025 09:53:55] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[11/Feb/2025 09:53:55] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[11/Feb/2025 09:53:59] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[11/Feb/2025 09:54:02] INFO [chat_app:30] Request received: method=GET, path=/chat/is/, user=lenovo
+[11/Feb/2025 09:54:35] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/1/, user=lenovo
+[11/Feb/2025 09:54:47] INFO [chat_app:30] Request received: method=POST, path=/chat/manage_group/1/, user=lenovo
+[11/Feb/2025 09:54:47] INFO [chat_app.views:329] Group 'is' deleted by user 'lenovo'.
+[11/Feb/2025 09:54:47] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[11/Feb/2025 09:56:51] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=Anonymous
+[11/Feb/2025 09:56:51] INFO [admin_app:30] Request received: method=GET, path=/login/?next=/chat/, user=Anonymous
+[11/Feb/2025 09:57:06] INFO [admin_app:30] Request received: method=POST, path=/login/?next=/chat/, user=Anonymous
+[11/Feb/2025 09:57:08] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 09:58:39] INFO [admin_app.models:316] Clean completed for User: Laila Ali Zaki
+[11/Feb/2025 09:58:54] INFO [admin_app.models:316] Clean completed for User: Laila Ali Zaki
+[11/Feb/2025 10:00:37] INFO [admin_app.models:316] Clean completed for User: Ibraheem Bassam Ali Ahmed Telha
+[11/Feb/2025 10:00:45] INFO [admin_app.models:364] Returning string representation for Instructor: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:01:02] INFO [admin_app.models:316] Clean completed for User: Ibraheem Bassam Ali Ahmed Telha
+[11/Feb/2025 10:01:15] INFO [admin_app.models:364] Returning string representation for Instructor: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:01:32] INFO [admin_app.models:364] Returning string representation for Instructor: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:01:47] INFO [admin_app.models:364] Returning string representation for Instructor: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:01:54] INFO [admin_app.models:364] Returning string representation for Instructor: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:02:02] INFO [admin_app.models:316] Clean completed for User: Mohammed Bassam Ahmed Ali Telha
+[11/Feb/2025 10:03:17] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[11/Feb/2025 10:03:17] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:03:22] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:04:21] INFO [chat_app:30] Request received: method=POST, path=/chat/create_group/, user=akram
+[11/Feb/2025 10:04:21] INFO [chat_app.views:198] Received group creation data: name='Information Technology', gender='male', student_ids=['25', '33', '26', '980']
+[11/Feb/2025 10:04:21] INFO [chat_app.models:70] Chat room 'Information Technology' created by user 'akram'.
+[11/Feb/2025 10:04:21] INFO [chat_app.models:75] Creator 'akram' added as member to chat room 'Information Technology'.
+[11/Feb/2025 10:04:21] INFO [chat_app.models:42] User 'c' added to chat room 'Information Technology'.
+[11/Feb/2025 10:04:21] INFO [chat_app.models:42] User 'mohammed' added to chat room 'Information Technology'.
+[11/Feb/2025 10:04:21] INFO [chat_app.models:42] User 'e' added to chat room 'Information Technology'.
+[11/Feb/2025 10:04:21] INFO [chat_app.models:42] User 'mohammed11' added to chat room 'Information Technology'.
+[11/Feb/2025 10:04:21] INFO [chat_app.views:217] Group 'Information Technology' created successfully by user 'akram'.
+[11/Feb/2025 10:04:21] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:04:57] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[11/Feb/2025 10:04:57] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:05:01] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:05:36] INFO [chat_app:30] Request received: method=GET, path=/chat/start_private_chat/979/, user=akram
+[11/Feb/2025 10:05:36] INFO [chat_app.views:95] Private chat room 'private_979_981' created by user 'akram' with user 'ali1'.
+[11/Feb/2025 10:05:36] INFO [chat_app:30] Request received: method=GET, path=/chat/private_979_981/, user=akram
+[11/Feb/2025 10:06:01] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:06:04] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/21/, user=akram
+[11/Feb/2025 10:06:17] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=akram
+[11/Feb/2025 10:06:26] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[11/Feb/2025 10:06:26] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:06:29] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:06:36] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:07:26] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:07:30] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/21/, user=akram
+[11/Feb/2025 10:07:39] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:08:45] INFO [admin_app:30] Request received: method=GET, path=/students_list/, user=akram
+[11/Feb/2025 10:10:41] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=akram
+[11/Feb/2025 10:10:46] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=akram
+[11/Feb/2025 10:10:55] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=akram
+[11/Feb/2025 10:11:55] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=akram
+[11/Feb/2025 10:13:19] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=akram
+[11/Feb/2025 10:14:19] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=akram
+[11/Feb/2025 10:14:19] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:14:21] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:14:30] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:14:32] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=ali1
+[11/Feb/2025 10:18:03] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=ali1
+[11/Feb/2025 10:18:27] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=ali1
+[11/Feb/2025 10:18:27] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:18:29] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:18:43] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:18:45] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:19:32] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:19:36] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=akram
+[11/Feb/2025 10:20:07] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:20:09] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=akram
+[11/Feb/2025 10:20:22] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=akram
+[11/Feb/2025 10:20:25] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:21:32] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:21:39] INFO [admin_app:30] Request received: method=GET, path=/logs/, user=akram
+[11/Feb/2025 10:22:25] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:22:46] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:22:49] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:23:02] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:23:04] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=mohammed2
+[11/Feb/2025 10:23:17] INFO [admin_app:30] Request received: method=GET, path=/group/25/students/, user=mohammed2
+[11/Feb/2025 10:23:20] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=mohammed2
+[11/Feb/2025 10:23:23] INFO [admin_app:30] Request received: method=GET, path=/group/35/students/, user=mohammed2
+[11/Feb/2025 10:23:26] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=mohammed2
+[11/Feb/2025 10:23:34] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=mohammed2
+[11/Feb/2025 10:23:37] INFO [admin_app:30] Request received: method=GET, path=/departments_with_groups/, user=mohammed2
+[11/Feb/2025 10:23:39] INFO [admin_app:30] Request received: method=GET, path=/students_list/, user=mohammed2
+[11/Feb/2025 10:23:41] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=mohammed2
+[11/Feb/2025 10:23:45] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:24:54] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=mohammed2
+[11/Feb/2025 10:25:02] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:25:04] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=mohammed2
+[11/Feb/2025 10:25:28] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:26:26] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=mohammed2
+[11/Feb/2025 10:26:33] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=mohammed2
+[11/Feb/2025 10:26:33] INFO [admin_app.models:337] Calculating age for User: mohammed2
+[11/Feb/2025 10:26:40] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=mohammed2
+[11/Feb/2025 10:27:16] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=mohammed2
+[11/Feb/2025 10:27:42] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=mohammed2
+[11/Feb/2025 10:27:42] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:27:43] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:27:52] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:27:54] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=ali1
+[11/Feb/2025 10:27:59] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=ali1
+[11/Feb/2025 10:28:05] INFO [chat_app:30] Request received: method=GET, path=/chat/group111/, user=ali1
+[11/Feb/2025 10:28:08] INFO [chat_app:30] Request received: method=GET, path=/chat/AlTaqua/, user=ali1
+[11/Feb/2025 10:28:11] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=ali1
+[11/Feb/2025 10:28:14] INFO [chat_app:30] Request received: method=GET, path=/chat/get_group_members/?room_name=Information%20Technology, user=ali1
+[11/Feb/2025 10:28:14] ERROR [chat_app.views:235] get_group_members failed: ChatRoom 'Information Technology' does not exist.
+[11/Feb/2025 10:28:20] INFO [chat_app:30] Request received: method=GET, path=/chat/start_private_chat/981/, user=ali1
+[11/Feb/2025 10:28:20] INFO [chat_app.views:97] Private chat room 'private_979_981' already exists.
+[11/Feb/2025 10:28:20] INFO [chat_app:30] Request received: method=GET, path=/chat/private_979_981/, user=ali1
+[11/Feb/2025 10:28:21] INFO [chat_app:30] Request received: method=GET, path=/chat/private_979_981/, user=ali1
+[11/Feb/2025 10:28:59] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[11/Feb/2025 10:28:59] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:29:03] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:29:07] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:29:10] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/21/, user=akram
+[11/Feb/2025 10:39:18] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:39:21] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=akram
+[11/Feb/2025 10:39:21] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:39:31] INFO [admin_app:30] Request received: method=GET, path=/request_account/, user=Anonymous
+[11/Feb/2025 10:39:42] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:40:13] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:40:15] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:40:31] INFO [admin_app:30] Request received: method=GET, path=/students_list/, user=akram
+[11/Feb/2025 10:40:36] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=akram
+[11/Feb/2025 10:40:41] INFO [admin_app:30] Request received: method=GET, path=/departments_with_groups/, user=akram
+[11/Feb/2025 10:40:46] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=akram
+[11/Feb/2025 10:40:56] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=akram
+[11/Feb/2025 10:41:00] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=akram
+[11/Feb/2025 10:41:33] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:42:07] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[11/Feb/2025 10:42:08] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[11/Feb/2025 10:42:11] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=akram
+[11/Feb/2025 10:42:37] INFO [admin_app:30] Request received: method=GET, path=/student_dashboard/, user=ali1
+[11/Feb/2025 10:42:44] INFO [admin_app:30] Request received: method=GET, path=/instructors_list/, user=ali1
+[11/Feb/2025 10:42:49] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=ali1
+[11/Feb/2025 10:42:52] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=ali1
+[11/Feb/2025 10:42:56] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=ali1
+[11/Feb/2025 10:42:59] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=ali1
+[11/Feb/2025 10:43:03] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=ali1
+[11/Feb/2025 10:43:09] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=ali1
+[11/Feb/2025 10:43:09] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[11/Feb/2025 10:43:11] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[11/Feb/2025 10:43:19] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[11/Feb/2025 10:43:20] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=mohammed2
+[11/Feb/2025 10:43:34] INFO [admin_app:30] Request received: method=GET, path=/students_list/, user=mohammed2
+[11/Feb/2025 10:43:39] INFO [admin_app:30] Request received: method=GET, path=/departments_list/, user=mohammed2
+[11/Feb/2025 10:43:50] INFO [admin_app:30] Request received: method=GET, path=/departments_with_groups/, user=mohammed2
+[11/Feb/2025 10:43:55] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:44:04] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:44:25] INFO [admin_app:30] Request received: method=GET, path=/library_list/upload_file/, user=mohammed2
+[11/Feb/2025 10:44:58] INFO [admin_app:30] Request received: method=GET, path=/library_list/library_my_uploaded_files/, user=mohammed2
+[11/Feb/2025 10:45:09] INFO [admin_app:30] Request received: method=GET, path=/profile/, user=mohammed2
+[11/Feb/2025 10:45:09] INFO [admin_app.models:337] Calculating age for User: mohammed2
+[11/Feb/2025 10:45:29] INFO [admin_app:30] Request received: method=GET, path=/profile/edit_profile/, user=mohammed2
+[11/Feb/2025 10:45:47] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=mohammed2
+[11/Feb/2025 10:47:07] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=mohammed2
+[11/Feb/2025 10:47:15] INFO [chat_app:30] Request received: method=GET, path=/chat/Information%20Technology/, user=akram
+[11/Feb/2025 10:48:08] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:49:08] INFO [admin_app:30] Request received: method=GET, path=/library_list/?view=card&course=&category=Video&type=&uploader=&search=, user=mohammed2
+[11/Feb/2025 10:51:55] INFO [admin_app:30] Request received: method=GET, path=/library_list/?view=card&course=14&category=Documents&type=&uploader=&search=, user=mohammed2
+[11/Feb/2025 10:52:22] INFO [admin_app:30] Request received: method=GET, path=/library_list/, user=mohammed2
+[11/Feb/2025 10:52:24] INFO [admin_app:30] Request received: method=GET, path=/library_list/?view=list, user=mohammed2
+[12/Feb/2025 22:45:10] INFO [admin_app:30] Request received: method=GET, path=/, user=akram
+[12/Feb/2025 22:45:10] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=akram
+[12/Feb/2025 22:45:24] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=akram
+[12/Feb/2025 22:45:24] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[12/Feb/2025 22:46:17] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=Anonymous
+[12/Feb/2025 22:46:17] INFO [admin_app:30] Request received: method=GET, path=/login/?next=/chat/, user=Anonymous
+[12/Feb/2025 22:46:49] INFO [admin_app:30] Request received: method=POST, path=/login/?next=/chat/, user=Anonymous
+[12/Feb/2025 22:46:50] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[12/Feb/2025 22:46:55] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=lenovo
+[12/Feb/2025 22:47:27] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=lenovo
+[12/Feb/2025 22:47:27] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[12/Feb/2025 22:47:28] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[12/Feb/2025 22:47:31] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[12/Feb/2025 22:47:34] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[12/Feb/2025 22:47:43] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[12/Feb/2025 22:47:44] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=osama
+[12/Feb/2025 22:47:58] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[12/Feb/2025 22:48:15] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=osama
+[12/Feb/2025 22:48:15] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[12/Feb/2025 22:48:18] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[12/Feb/2025 22:48:23] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[12/Feb/2025 22:48:24] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[12/Feb/2025 22:49:06] INFO [admin_app:30] Request received: method=GET, path=/, user=lenovo
+[12/Feb/2025 22:49:06] INFO [admin_app:30] Request received: method=GET, path=/admin_dashboard/, user=lenovo
+[12/Feb/2025 22:49:09] INFO [admin_app:30] Request received: method=GET, path=/logout/, user=lenovo
+[12/Feb/2025 22:49:09] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[12/Feb/2025 22:49:17] INFO [admin_app:30] Request received: method=GET, path=/login/, user=Anonymous
+[12/Feb/2025 22:49:23] INFO [admin_app:30] Request received: method=POST, path=/login/, user=Anonymous
+[12/Feb/2025 22:49:24] INFO [admin_app:30] Request received: method=GET, path=/instructor_dashboard/, user=osama
+[12/Feb/2025 22:49:28] INFO [chat_app:30] Request received: method=GET, path=/chat/, user=osama
+[12/Feb/2025 22:50:02] INFO [chat_app:30] Request received: method=POST, path=/chat/create_group/, user=osama
+[12/Feb/2025 22:50:02] INFO [chat_app.views:198] Received group creation data: name='is', gender='male', student_ids=['33', '980', '979']
+[12/Feb/2025 22:50:02] INFO [chat_app.models:70] Chat room 'is' created by user 'osama'.
+[12/Feb/2025 22:50:02] INFO [chat_app.models:75] Creator 'osama' added as member to chat room 'is'.
+[12/Feb/2025 22:50:02] INFO [chat_app.models:42] User 'mohammed' added to chat room 'is'.
+[12/Feb/2025 22:50:02] INFO [chat_app.models:42] User 'mohammed11' added to chat room 'is'.
+[12/Feb/2025 22:50:02] INFO [chat_app.models:42] User 'ali1' added to chat room 'is'.
+[12/Feb/2025 22:50:02] INFO [chat_app.views:217] Group 'is' created successfully by user 'osama'.
+[12/Feb/2025 22:50:02] INFO [chat_app:30] Request received: method=GET, path=/chat/is/, user=osama
+[12/Feb/2025 22:51:04] INFO [admin_app:30] Request received: method=GET, path=/, user=Anonymous
+[12/Feb/2025 22:52:20] INFO [chat_app:30] Request received: method=GET, path=/chat/get_group_members/?room_name=is, user=osama
+[12/Feb/2025 22:52:20] ERROR [chat_app.views:235] get_group_members failed: ChatRoom 'is' does not exist.
+[12/Feb/2025 22:53:14] INFO [chat_app:30] Request received: method=GET, path=/chat/get_group_members/?room_name=is, user=osama
+[12/Feb/2025 22:53:14] ERROR [chat_app.views:235] get_group_members failed: ChatRoom 'is' does not exist.
+[12/Feb/2025 23:13:15] INFO [chat_app:30] Request received: method=GET, path=/chat/manage_group/23/, user=osama
